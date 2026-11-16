@@ -365,8 +365,11 @@ const EVENTS = [
       ]);
     } },
   { w: 5, c: () => S.married && age() < 42 && S.kids.length < 3, f: () => {
-      S.kids.push(S.month); const v = 300e4; S.cash += v;
-      log(`👶 ${S.kids.length}번째 아이가 태어났어요! 첫만남이용권 +${won(v)} (양육비 월 ${won(100e4 * S.cpi)}, 20년)`); toast('👶 아기가 태어났어요!');
+      modal('👶 아이 계획', `<p>배우자가 "우리 ${S.kids.length ? '아이 하나 더' : '아이'} 가질까?" 하고 물어요.<br>양육비가 <b>월 ${won(100e4 * S.cpi)}</b>씩 20년간 들지만, 행복은 돈으로 못 사죠!</p>`, [
+        ['좋아! 👶', 'gold', () => { S.kids.push(S.month); const v = 300e4; S.cash += v;
+          log(`👶 ${S.kids.length}번째 아이가 태어났어요! 첫만남이용권 +${won(v)}`); toast('👶 아기가 태어났어요!'); }],
+        ['조금 더 나중에', '', () => log('🙂 아이 계획은 조금 미루기로 했어요.')],
+      ]);
     } },
   { w: 2, c: () => S.cash >= 3000e4, f: () => {
       const amt = Math.round(Math.max(3000e4, S.cash * .2) / 1e6) * 1e6;
