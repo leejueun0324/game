@@ -36,6 +36,7 @@
   button:hover:not(:disabled) { filter: brightness(1.2); }
   button:active:not(:disabled) { transform: scale(.95); }
   button:disabled { opacity: .35; cursor: not-allowed; }
+  button { white-space: nowrap; }
   button.gold { background: linear-gradient(180deg, var(--gold), var(--gold2)); color: #2a1a00; border: none; }
   button.red { background: #45202d; border-color: #7a3448; }
   button.blue { background: #1b3253; border-color: #2f5b8f; }
@@ -179,24 +180,25 @@ const START_AGE = 20, END_AGE = 60;
 const MONTH_MS = 3000;            // 1배속: 한 달 = 3초
 const ENERGY_MAX = 8;             // 한 달에 쓸 수 있는 활동 횟수
 
-// 직업: sal=세후 월급, req=필요 역량, ten=현 직급 필요 근속(개월)
+// 직업: sal=세후 월급, req=필요 역량, ten=현 직급 필요 근속(개월), p=승진 심사 기본 합격률
 const JOBS = [
-  { n: '편의점 알바',     sal: 200e4,  req: 0,  ten: 0 },
-  { n: '중소기업 사원',   sal: 250e4,  req: 2,  ten: 12 },
-  { n: '대기업 대리',     sal: 380e4,  req: 5,  ten: 24 },
-  { n: '대기업 과장',     sal: 480e4,  req: 8,  ten: 36 },
-  { n: '대기업 차장',     sal: 580e4,  req: 11, ten: 36 },
-  { n: '대기업 부장',     sal: 700e4,  req: 14, ten: 48 },
-  { n: '상무 (임원)',     sal: 1100e4, req: 18, ten: 48 },
-  { n: '대표이사 (CEO)',  sal: 2500e4, req: 22, ten: 60 },
+  { n: '편의점 알바',     sal: 200e4,  req: 0,  ten: 0,  p: 1 },
+  { n: '중소기업 사원',   sal: 250e4,  req: 2,  ten: 12, p: .85 },
+  { n: '대기업 대리',     sal: 380e4,  req: 5,  ten: 24, p: .7 },
+  { n: '대기업 과장',     sal: 480e4,  req: 8,  ten: 36, p: .6 },
+  { n: '대기업 차장',     sal: 580e4,  req: 11, ten: 36, p: .5 },
+  { n: '대기업 부장',     sal: 700e4,  req: 14, ten: 48, p: .35 },
+  { n: '상무 (임원)',     sal: 1100e4, req: 18, ten: 48, p: .15 },
+  { n: '대표이사 (CEO)',  sal: 2500e4, req: 22, ten: 60, p: .07 },
 ];
+const promoChance = nj => clamp(nj.p + .02 * (S.skill - nj.req), nj.p * .7, Math.min(.92, nj.p * 1.4));
 
 // 주식: 월 기준 기대수익(drift)과 변동성(vol)
 const STOCKS = [
   { id: 'etf',  n: '코스피200 ETF', d: '시장 전체 분산 · 연 7% 내외', p: 40000, vol: .045, drift: .0055, beta: .9 },
   { id: 'star', n: '별빛전자',      d: '반도체 대형주',               p: 70000, vol: .075, drift: .006,  beta: 1.1 },
   { id: 'mal',  n: '말랑게임즈',    d: '신작에 울고 웃는 성장주',     p: 30000, vol: .13,  drift: .005,  beta: 1.4 },
-  { id: 'coin', n: '멍멍코인',      d: '변동성 극심 · 0원도 가능',    p: 500,   vol: .24,  drift: -.002, beta: 2 },
+  { id: 'coin', n: '멍멍코인',      d: '변동성 극심 · 0원도 가능',    p: 500,   vol: .24,  drift: -.025, beta: 2 },
 ];
 const TRADE_FEE = .002;
 
@@ -213,11 +215,11 @@ const ACQ_TAX = .025, SELL_FEE = .005, GAIN_TAX = .22, LTV = .6, DSR = .4;
 
 // 사업: profit=매장당 평균 월 순이익, risk=매달 폐업 확률
 const BIZ = [
-  { id: 'ice',   n: '무인 아이스크림점', cost: 6000e4, profit: 110e4,  risk: .008 },
-  { id: 'cafe',  n: '동네 카페',         cost: 1.5e8,  profit: 250e4,  risk: .012 },
-  { id: 'chick', n: '치킨집',            cost: 2e8,    profit: 360e4,  risk: .012 },
-  { id: 'acad',  n: '입시 학원',         cost: 6e8,    profit: 1100e4, risk: .006 },
-  { id: 'fact',  n: '중소 제조공장',     cost: 60e8,   profit: 9000e4, risk: .003 },
+  { id: 'ice',   n: '무인 아이스크림점', cost: 6000e4, profit: 80e4,   risk: .008 },
+  { id: 'cafe',  n: '동네 카페',         cost: 1.5e8,  profit: 200e4,  risk: .012 },
+  { id: 'chick', n: '치킨집',            cost: 2e8,    profit: 280e4,  risk: .012 },
+  { id: 'acad',  n: '입시 학원',         cost: 6e8,    profit: 700e4,  risk: .006 },
+  { id: 'fact',  n: '중소 제조공장',     cost: 60e8,   profit: 5500e4, risk: .003 },
 ];
 const ANGEL_COST = 1e8;   // 스타트업 엔젤투자 1건
 const BIZ_TAX = .2, RENT_TAX = .15, INT_TAX = .154;
@@ -273,7 +275,7 @@ const job = () => JOBS[S.job];
 const salary = () => Math.round(job().sal * (1 + S.skill * 0.02) * S.raise);
 const partnerIncome = () => S.married ? Math.round(260e4 * S.raise) : 0;
 const kidsActive = () => S.kids.filter(b => S.month - b < 240).length;
-const living = () => Math.round((120e4 + (S.married ? 80e4 : 0) + kidsActive() * 100e4) * S.cpi);
+const living = () => Math.round((120e4 + (S.married ? 80e4 : 0) + kidsActive() * 100e4) * S.cpi + (salary() + partnerIncome()) * .15);   // 버는 만큼 씀씀이도 커짐
 const skillCost = () => Math.round(50e4 * Math.pow(1.28, S.skill) * S.cpi);
 
 const ePrice = e => Math.round(e.p * S.hidx[e.id]);
@@ -541,14 +543,15 @@ function doAct(a, id, arg, ev) {
   }
   if (a === 'study') {
     const c = skillCost();
+    if (S.studied === S.month) return toast('공부는 한 달에 한 번만 할 수 있어요');
     if (S.energy < 2) return toast('공부엔 에너지 2가 필요해요'); if (S.cash < c) return toast('학원비가 부족해요');
-    S.cash -= c; S.energy -= 2; S.skill++; S.health -= 2; log(`📚 자격증·공부로 역량 Lv.${S.skill}`); floatTxt(ev, '역량 +1');
+    S.cash -= c; S.energy -= 2; S.skill++; S.studied = S.month; S.health -= 2; log(`📚 자격증·공부로 역량 Lv.${S.skill}`); floatTxt(ev, '역량 +1');
   }
   if (a === 'promo') {
     const nj = JOBS[S.job + 1]; if (!nj) return;
-    const p = clamp(.55 + .06 * (S.skill - nj.req), .3, .92);
+    const p = promoChance(nj);
     if (chance(p)) { S.job++; S.tenure = 0; log(`🎊 승진 성공! ${job().n} (월급 ${won(salary())})`); toast('🎊 승진! ' + job().n); }
-    else { S.promoCd = 6; log(`😢 승진 심사 탈락… 6개월 뒤 재도전 (합격률 ${Math.round(p * 100)}%)`); toast('승진 탈락…'); }
+    else { S.promoCd = S.job >= 4 ? 12 : 6; log(`😢 승진 심사 탈락… ${S.promoCd}개월 뒤 재도전 (합격률 ${Math.round(p * 100)}%)`); toast('승진 탈락…'); }
   }
   if (a === 'buyS') {
     const k = STOCKS.find(x => x.id === id), s = S.stocks[id];
@@ -644,7 +647,7 @@ function viewHome() {
     if (S.tenure < nj.ten) lacks.push(`근속 ${nj.ten - S.tenure}개월 더`);
     if (S.promoCd) lacks.push(`재심사 ${S.promoCd}개월 후`);
     canPromo = !lacks.length;
-    promo = `다음: <b>${nj.n}</b> · ${canPromo ? '<span class="good">심사 가능!</span>' : lacks.join(', ') + ' 필요'}`;
+    promo = `다음: <b>${nj.n}</b> (합격률 ${Math.round(promoChance(nj) * 100)}%) · ${canPromo ? '<span class="good">심사 가능!</span>' : lacks.join(', ') + ' 필요'}`;
   }
   const hc = S.health >= 60 ? 'var(--good)' : S.health >= 30 ? 'var(--gold)' : 'var(--bad)';
   const ot = Math.round(salary() / 20 * 1.5);
@@ -667,7 +670,7 @@ function viewHome() {
       <button data-a="ot" ${dis(S.energy > 0 && S.health >= 10)}>🌙 야근<small>+${fmt(ot)}</small></button>
       <button data-a="side" ${dis(S.energy > 0 && S.health >= 10)}>🛵 배달<small>+${fmt(8e4 * S.cpi)}</small></button>
       <button data-a="gym" ${dis(S.energy > 0)}>🏋️ 운동<small>❤️+7</small></button>
-      <button data-a="study" ${dis(S.energy > 1 && S.cash >= skillCost())}>📚 공부<small>-${fmt(skillCost())}</small></button>
+      <button data-a="study" ${dis(S.energy > 1 && S.cash >= skillCost() && S.studied !== S.month)}>📚 공부<small>-${fmt(skillCost())}</small></button>
     </div>
     <div class="muted" style="margin-top:6px">에너지는 매달 충전돼요. 야근·부업은 건강을 깎고, 공부는 승진에 필요해요.</div>
   </div>
