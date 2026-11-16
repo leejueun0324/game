@@ -2,16 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>부자되기 대작전</title>
 <style>
   :root {
-    --bg: #0f1420;
-    --panel: #182032;
-    --panel2: #1f2940;
-    --line: #2c3854;
-    --text: #e8ecf6;
-    --muted: #8e9ab8;
+    --bg: #0b0f19;
+    --panel: #161d2d;
+    --panel2: #1e273b;
+    --line: #2b3650;
+    --text: #e9edf6;
+    --muted: #8d99b6;
     --gold: #ffcc4d;
     --gold2: #ff9f1c;
     --up: #ff5a6e;     /* 한국식: 오르면 빨강 */
@@ -21,207 +21,149 @@
   }
   * { box-sizing: border-box; }
   html, body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
+    margin: 0; height: 100%; overflow: hidden;
+    background: #05070d; color: var(--text);
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-size: 14px;
     -webkit-tap-highlight-color: transparent;
   }
   button {
-    font-family: inherit;
-    font-weight: 700;
-    border: none;
-    border-radius: 10px;
-    padding: 8px 12px;
-    cursor: pointer;
-    background: var(--panel2);
-    color: var(--text);
-    border: 1px solid var(--line);
-    transition: transform .08s, filter .15s;
+    font-family: inherit; font-weight: 700; font-size: 13px;
+    border-radius: 9px; padding: 7px 9px; cursor: pointer;
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    transition: transform .08s, filter .15s; touch-action: manipulation;
   }
   button:hover:not(:disabled) { filter: brightness(1.2); }
-  button:active:not(:disabled) { transform: scale(.96); }
+  button:active:not(:disabled) { transform: scale(.95); }
   button:disabled { opacity: .35; cursor: not-allowed; }
   button.gold { background: linear-gradient(180deg, var(--gold), var(--gold2)); color: #2a1a00; border: none; }
-  button.red { background: #4a2030; border-color: #7a3448; }
-  button.blue { background: #1d3557; border-color: #2f5b8f; }
-  button.sm { padding: 6px 9px; font-size: 13px; }
+  button.red { background: #45202d; border-color: #7a3448; }
+  button.blue { background: #1b3253; border-color: #2f5b8f; }
+  button.xs { padding: 5px 7px; font-size: 12px; }
 
-  #app { max-width: 1080px; margin: 0 auto; padding: 12px 16px 40px; }
-
-  /* 상단 */
-  header {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
-    padding: 12px 16px; margin-bottom: 12px;
+  /* 앱 전체: 폰 한 화면 */
+  #app {
+    max-width: 480px; margin: 0 auto; height: 100vh; height: 100dvh;
+    display: flex; flex-direction: column; background: var(--bg);
+    border-left: 1px solid #141a28; border-right: 1px solid #141a28;
   }
-  .logo { font-size: 22px; font-weight: 900; color: var(--gold); white-space: nowrap; }
-  .stats { display: flex; flex-wrap: wrap; gap: 6px 18px; flex: 1; }
-  .stat .k { font-size: 12px; color: var(--muted); }
-  .stat .v { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .stat .v.gold { color: var(--gold); }
-  .speed { display: flex; gap: 4px; }
+
+  header { padding: 8px 12px 6px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .hrow { display: flex; align-items: center; gap: 8px; }
+  .logo { font-size: 16px; font-weight: 900; color: var(--gold); white-space: nowrap; }
+  #sAge { font-weight: 800; font-size: 14px; flex: 1; text-align: center; white-space: nowrap; }
+  .speed { display: flex; gap: 3px; }
+  .speed button { padding: 4px 7px; font-size: 12px; }
   .speed button.on { background: var(--gold); color: #2a1a00; border-color: var(--gold); }
-  @media (max-width: 600px) {
-    .logo { width: 100%; font-size: 20px; }
-    .stats { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
-    .stat .v { font-size: 16px; }
-    .speed { width: 100%; }
-    .speed button { flex: 1; }
-  }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; }
-  .badge.boom { background: #4a2030; color: var(--up); }
-  .badge.bust { background: #1d3557; color: var(--down); }
-  .badge.norm { background: #2a3550; color: var(--muted); }
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr 0.8fr; gap: 4px; margin-top: 6px; }
+  .stat .k { font-size: 11px; color: var(--muted); }
+  .stat .v { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat .v.gold { color: var(--gold); }
+  #timebar { height: 3px; background: var(--line); }
+  #timebar div { height: 100%; width: 0; background: var(--gold); }
 
-  #timebar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; margin: -6px 0 12px; }
-  #timebar div { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  main { flex: 1; overflow-y: auto; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px; }
 
-  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 12px; }
-  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
-
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
-  .card h3 { margin: 0 0 10px; font-size: 16px; }
-  .muted { color: var(--muted); font-size: 13px; }
-
-  /* 일하기 */
-  #workBtn {
-    width: 100%; height: 150px; font-size: 26px; border-radius: 20px; border: none;
-    background: radial-gradient(circle at 50% 35%, #ffe08a, var(--gold) 45%, var(--gold2));
-    color: #2a1a00; box-shadow: 0 6px 0 #b86a00, 0 0 30px rgba(255, 190, 60, .25);
-    position: relative; user-select: none;
-  }
-  #workBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #b86a00; }
-  #workBtn small { display: block; font-size: 15px; margin-top: 6px; }
-  .float {
-    position: fixed; pointer-events: none; font-weight: 900; color: var(--gold);
-    text-shadow: 0 2px 4px #000; animation: up 0.9s ease-out forwards; z-index: 50;
-  }
-  @keyframes up { to { transform: translateY(-70px); opacity: 0; } }
-
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+  .card h4 { margin: 0 0 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .muted { color: var(--muted); font-size: 12px; }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .jobname { font-size: 20px; font-weight: 900; }
-  .ladder { display: flex; gap: 3px; margin: 8px 0; }
-  .ladder span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
-  .ladder span.on { background: var(--gold); }
-  .mt { margin-top: 10px; }
+  .b { font-weight: 800; }
 
-  /* 탭 */
-  .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-  .tabs button.on { background: var(--gold); color: #2a1a00; border-color: var(--gold); }
-  .item {
-    background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
-    padding: 10px 12px; margin-bottom: 8px;
-  }
-  .item .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .item .name { font-weight: 800; font-size: 16px; }
-  .item .price { font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
-  .item .btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .jobname { font-size: 18px; font-weight: 900; }
+  .ladder { display: flex; gap: 3px; margin: 6px 0; }
+  .ladder span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+  .ladder span.on { background: var(--gold); }
+
+  .bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; flex: 1; }
+  .bar div { height: 100%; border-radius: 4px; }
+  .acts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+  .acts button { padding: 8px 2px; line-height: 1.25; }
+  .acts button small { display: block; font-size: 11px; font-weight: 600; opacity: .85; }
+
+  .ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; font-size: 12px; }
+  .ledger div { display: flex; justify-content: space-between; }
+
+  .item { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+  .item .name { font-weight: 800; font-size: 14px; }
+  .item .price { font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .item .btns { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .item .btns .lbl { font-size: 11px; color: var(--muted); margin: 0 2px 0 4px; }
+  .item .btns .lbl:first-child { margin-left: 0; }
+  .sp { flex: 1; }
   .up { color: var(--up); } .down { color: var(--down); }
   .good { color: var(--good); } .bad { color: var(--bad); }
-  svg.spark { width: 100%; height: 40px; display: block; margin-top: 6px; }
+  svg.spark { width: 76px; height: 28px; display: block; }
+  .tip { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
-  /* 로그 */
-  #log { max-height: 220px; overflow-y: auto; font-size: 14px; line-height: 1.6; }
-  #log div { border-bottom: 1px dashed var(--line); padding: 3px 0; }
-  #log .t { color: var(--muted); font-size: 12px; margin-right: 6px; }
+  #chart { width: 100%; height: 70px; display: block; }
 
-  #chart { width: 100%; height: 120px; display: block; }
-
-  /* 모달 */
-  .modal {
-    position: fixed; inset: 0; background: rgba(5, 8, 15, .78); display: flex;
-    align-items: center; justify-content: center; z-index: 100; padding: 16px;
+  #ticker {
+    padding: 6px 12px; font-size: 12.5px; background: var(--panel); border-top: 1px solid var(--line);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
   }
+  #ticker .t { color: var(--muted); margin-right: 6px; }
+
+  nav { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--panel); border-top: 1px solid var(--line);
+        padding-bottom: env(safe-area-inset-bottom); }
+  nav button { background: none; border: none; border-radius: 0; padding: 7px 0 8px; font-size: 11px; color: var(--muted); line-height: 1.3; }
+  nav button span { display: block; font-size: 19px; }
+  nav button.on { color: var(--gold); }
+
+  .float { position: fixed; pointer-events: none; font-weight: 900; color: var(--gold); text-shadow: 0 2px 4px #000;
+           animation: up .9s ease-out forwards; z-index: 50; font-size: 14px; }
+  @keyframes up { to { transform: translateY(-50px); opacity: 0; } }
+
+  .modal { position: fixed; inset: 0; background: rgba(5, 8, 15, .8); display: flex; align-items: center;
+           justify-content: center; z-index: 100; padding: 16px; }
   .modal.hidden { display: none; }
-  .modal .box {
-    background: var(--panel); border: 2px solid var(--gold); border-radius: 20px;
-    max-width: 440px; width: 100%; padding: 22px; text-align: center;
-  }
-  .modal h2 { margin: 0 0 8px; color: var(--gold); font-size: 26px; }
-  .modal p { line-height: 1.7; margin: 8px 0 16px; }
+  .modal .box { background: var(--panel); border: 2px solid var(--gold); border-radius: 18px; max-width: 420px; width: 100%;
+                padding: 18px; text-align: center; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { margin: 0 0 6px; color: var(--gold); font-size: 22px; }
+  .modal p { line-height: 1.65; margin: 6px 0 14px; }
   .modal .btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-  .modal .btns button { padding: 12px 20px; font-size: 16px; }
-  .big { font-size: 40px; font-weight: 900; color: var(--gold); margin: 8px 0; }
+  .modal .btns button { padding: 11px 18px; font-size: 15px; }
+  .big { font-size: 34px; font-weight: 900; color: var(--gold); margin: 6px 0; }
+  .loglist { text-align: left; font-size: 13px; line-height: 1.55; }
+  .loglist div { border-bottom: 1px dashed var(--line); padding: 3px 0; }
+  .loglist .t { color: var(--muted); font-size: 11px; margin-right: 6px; }
 
-  #toast {
-    position: fixed; left: 50%; top: 16px; transform: translateX(-50%);
-    background: var(--gold); color: #2a1a00; font-weight: 900; padding: 10px 18px;
-    border-radius: 999px; z-index: 90; opacity: 0; transition: opacity .3s; pointer-events: none;
-    max-width: 90vw; text-align: center;
-  }
+  #toast { position: fixed; left: 50%; bottom: 130px; transform: translateX(-50%); background: var(--gold); color: #2a1a00;
+           font-weight: 900; padding: 8px 16px; border-radius: 999px; z-index: 90; opacity: 0; transition: opacity .3s;
+           pointer-events: none; max-width: 92vw; text-align: center; font-size: 13px; }
   #toast.show { opacity: 1; }
 </style>
 </head>
 <body>
 <div id="app">
   <header>
-    <div class="logo">💰 부자되기 대작전</div>
+    <div class="hrow">
+      <div class="logo">💰 부자되기</div>
+      <div id="sAge"></div>
+      <div class="speed" id="speed">
+        <button data-speed="0">⏸</button>
+        <button data-speed="1">1x</button>
+        <button data-speed="2">2x</button>
+        <button data-speed="4">4x</button>
+      </div>
+    </div>
     <div class="stats">
-      <div class="stat"><div class="k">나이</div><div class="v" id="sAge"></div></div>
       <div class="stat"><div class="k">현금</div><div class="v" id="sCash"></div></div>
       <div class="stat"><div class="k">순자산</div><div class="v gold" id="sNet"></div></div>
-      <div class="stat"><div class="k">월 수지</div><div class="v" id="sFlow"></div></div>
-      <div class="stat"><div class="k">경기</div><div class="v" id="sMarket"></div></div>
-    </div>
-    <div class="speed" id="speed">
-      <button class="sm" data-speed="0">⏸</button>
-      <button class="sm" data-speed="1">1배</button>
-      <button class="sm" data-speed="2">2배</button>
-      <button class="sm" data-speed="4">4배</button>
+      <div class="stat"><div class="k">월 수지(예상)</div><div class="v" id="sFlow"></div></div>
+      <div class="stat"><div class="k">경기·금리</div><div class="v" id="sMarket"></div></div>
     </div>
   </header>
   <div id="timebar"><div></div></div>
-
-  <div class="grid">
-    <div>
-      <div class="card">
-        <button id="workBtn">💼 일하기<small id="clickVal"></small></button>
-        <div class="mt">
-          <div class="row"><span class="muted">현재 직업</span><span class="muted" id="jobSal"></span></div>
-          <div class="jobname" id="jobName"></div>
-          <div class="ladder" id="ladder"></div>
-        </div>
-        <div class="row mt">
-          <div>
-            <div style="font-weight:800">📚 자기계발 Lv.<span id="skLv"></span></div>
-            <div class="muted">클릭 수입 +10%, 월급 +3%</div>
-          </div>
-          <button class="gold" id="skBtn"></button>
-        </div>
-        <div class="row mt">
-          <div>
-            <div style="font-weight:800">🏢 승진 도전</div>
-            <div class="muted" id="promoTxt"></div>
-          </div>
-          <button class="gold" id="promoBtn">승진!</button>
-        </div>
-      </div>
-
-      <div class="card mt">
-        <h3>📈 순자산 그래프</h3>
-        <canvas id="chart"></canvas>
-      </div>
-
-      <div class="card mt">
-        <div class="row" style="margin-bottom:6px">
-          <h3 style="margin:0">📰 소식</h3>
-          <button class="sm red" id="resetBtn">새 게임</button>
-        </div>
-        <div id="log"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="tabs" id="tabs">
-        <button data-tab="stock">📊 주식·코인</button>
-        <button data-tab="estate">🏠 부동산</button>
-        <button data-tab="biz">🏪 사업</button>
-        <button data-tab="bank">🏦 은행</button>
-      </div>
-      <div id="tabBody"></div>
-    </div>
-  </div>
+  <main id="main"></main>
+  <div id="ticker"></div>
+  <nav id="nav">
+    <button data-tab="home"><span>🏠</span>홈</button>
+    <button data-tab="stock"><span>📈</span>투자</button>
+    <button data-tab="estate"><span>🏘️</span>부동산</button>
+    <button data-tab="biz"><span>🏪</span>사업</button>
+    <button data-tab="bank"><span>🏦</span>은행</button>
+  </nav>
 </div>
 
 <div class="modal hidden" id="modal"><div class="box">
@@ -232,54 +174,61 @@
 <div id="toast"></div>
 
 <script>
-// ================= 데이터 =================
+// ===================== 기본 데이터 (2026년 한국 기준, 세후 금액) =====================
 const START_AGE = 20, END_AGE = 60;
-const MONTH_MS = 2500;          // 1배속에서 한 달 = 2.5초
+const MONTH_MS = 3000;            // 1배속: 한 달 = 3초
+const ENERGY_MAX = 8;             // 한 달에 쓸 수 있는 활동 횟수
 
+// 직업: sal=세후 월급, req=필요 역량, ten=현 직급 필요 근속(개월)
 const JOBS = [
-  { n: '편의점 알바',    sal: 150e4,  click: 1e4,   req: 0 },
-  { n: '중소기업 사원',  sal: 250e4,  click: 2e4,   req: 3 },
-  { n: '대기업 대리',    sal: 400e4,  click: 4e4,   req: 6 },
-  { n: '대기업 과장',    sal: 600e4,  click: 7e4,   req: 10 },
-  { n: '대기업 부장',    sal: 900e4,  click: 12e4,  req: 15 },
-  { n: '상무 이사',      sal: 1500e4, click: 25e4,  req: 20 },
-  { n: '대표이사 CEO',   sal: 3000e4, click: 50e4,  req: 26 },
+  { n: '편의점 알바',     sal: 200e4,  req: 0,  ten: 0 },
+  { n: '중소기업 사원',   sal: 250e4,  req: 2,  ten: 12 },
+  { n: '대기업 대리',     sal: 380e4,  req: 5,  ten: 24 },
+  { n: '대기업 과장',     sal: 480e4,  req: 8,  ten: 36 },
+  { n: '대기업 차장',     sal: 580e4,  req: 11, ten: 36 },
+  { n: '대기업 부장',     sal: 700e4,  req: 14, ten: 48 },
+  { n: '상무 (임원)',     sal: 1100e4, req: 18, ten: 48 },
+  { n: '대표이사 (CEO)',  sal: 2500e4, req: 22, ten: 60 },
 ];
 
+// 주식: 월 기준 기대수익(drift)과 변동성(vol)
 const STOCKS = [
-  { id: 'gukbap', n: '든든국밥 ETF', d: '시장 전체에 분산. 느리지만 꾸준히',   p: 10000, vol: .025, drift: .006, beta: .8 },
-  { id: 'star',   n: '별빛전자',     d: '튼튼한 대형 우량주',                  p: 70000, vol: .05,  drift: .007, beta: 1 },
-  { id: 'mal',    n: '말랑게임즈',   d: '신작 하나에 울고 웃는 성장주',        p: 30000, vol: .11,  drift: .008, beta: 1.5 },
-  { id: 'dog',    n: '멍멍코인 🐶',  d: '오늘 10배, 내일 반토막. 책임은 본인', p: 100,   vol: .28,  drift: -.004, beta: 2.2 },
+  { id: 'etf',  n: '코스피200 ETF', d: '시장 전체 분산 · 연 7% 내외', p: 40000, vol: .045, drift: .0055, beta: .9 },
+  { id: 'star', n: '별빛전자',      d: '반도체 대형주',               p: 70000, vol: .075, drift: .006,  beta: 1.1 },
+  { id: 'mal',  n: '말랑게임즈',    d: '신작에 울고 웃는 성장주',     p: 30000, vol: .13,  drift: .005,  beta: 1.4 },
+  { id: 'coin', n: '멍멍코인',      d: '변동성 극심 · 0원도 가능',    p: 500,   vol: .24,  drift: -.002, beta: 2 },
 ];
+const TRADE_FEE = .002;
 
+// 부동산: rent=월세, prem=월 추가 상승률(입지), res=주거용
 const ESTATE = [
-  { id: 'goshi', n: '고시원 한 칸',  p: 5e7,   rent: 35e4 },
-  { id: 'one',   n: '원룸',          p: 15e7,  rent: 85e4 },
-  { id: 'offi',  n: '오피스텔',      p: 3e8,   rent: 150e4 },
-  { id: 'apt',   n: '아파트',        p: 9e8,   rent: 250e4 },
-  { id: 'shop',  n: '상가 건물',     p: 40e8,  rent: 1500e4 },
-  { id: 'tower', n: '도심 빌딩',     p: 300e8, rent: 1.2e8 },
+  { id: 'villa', n: '빌라',           p: 2e8,  rent: 65e4,   prem: -.002,  res: true },
+  { id: 'offi',  n: '오피스텔',       p: 3e8,  rent: 100e4,  prem: -.0012, res: true },
+  { id: 'apt',   n: '수도권 아파트',  p: 6e8,  rent: 140e4,  prem: 0,      res: true },
+  { id: 'seoul', n: '서울 아파트',    p: 15e8, rent: 280e4,  prem: .0016,  res: true },
+  { id: 'shop',  n: '상가',           p: 20e8, rent: 650e4,  prem: -.0006, res: false },
+  { id: 'bldg',  n: '꼬마빌딩',       p: 80e8, rent: 2300e4, prem: .0008,  res: false },
 ];
+const ACQ_TAX = .025, SELL_FEE = .005, GAIN_TAX = .22, LTV = .6, DSR = .4;
 
+// 사업: profit=매장당 평균 월 순이익, risk=매달 폐업 확률
 const BIZ = [
-  { id: 'fish',  n: '붕어빵 노점 🐟',  cost: 300e4,  profit: 25e4 },
-  { id: 'cafe',  n: '동네 카페 ☕',     cost: 5000e4, profit: 300e4 },
-  { id: 'chick', n: '치킨집 🍗',        cost: 2e8,    profit: 1000e4 },
-  { id: 'mart',  n: '편의점 체인 🏪',   cost: 20e8,   profit: 8000e4 },
-  { id: 'game',  n: '게임 회사 🎮',     cost: 150e8,  profit: 5e8 },
-  { id: 'ai',    n: 'AI 스타트업 🤖',   cost: 1000e8, profit: 30e8 },
+  { id: 'ice',   n: '무인 아이스크림점', cost: 6000e4, profit: 110e4,  risk: .008 },
+  { id: 'cafe',  n: '동네 카페',         cost: 1.5e8,  profit: 250e4,  risk: .012 },
+  { id: 'chick', n: '치킨집',            cost: 2e8,    profit: 360e4,  risk: .012 },
+  { id: 'acad',  n: '입시 학원',         cost: 6e8,    profit: 1100e4, risk: .006 },
+  { id: 'fact',  n: '중소 제조공장',     cost: 60e8,   profit: 9000e4, risk: .003 },
 ];
-const BIZ_GROW = 1.7;   // 확장할 때마다 비용 증가 배수
+const ANGEL_COST = 1e8;   // 스타트업 엔젤투자 1건
+const BIZ_TAX = .2, RENT_TAX = .15, INT_TAX = .154;
 
-const MILESTONES = [1e7, 1e8, 1e9, 1e10, 1e11, 1e12];
+const MILESTONES = [1e7, 1e8, 5e8, 1e9, 3e9, 1e10, 5e10, 1e11, 1e12];
 
-const DEPOSIT_RATE = .03, LOAN_RATE = .06;
-
-// ================= 유틸 =================
+// ===================== 유틸 =====================
 const $ = id => document.getElementById(id);
 const rand = (a, b) => a + Math.random() * (b - a);
 const chance = p => Math.random() < p;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 
 function fmt(n) {
@@ -287,84 +236,92 @@ function fmt(n) {
   n = Math.abs(n);
   if (n >= 1e12) return s + (n / 1e12).toFixed(2).replace(/\.?0+$/, '') + '조';
   if (n >= 1e8) {
-    const eok = Math.floor(n / 1e8), man = Math.floor((n % 1e8) / 1e4);
-    return s + eok.toLocaleString() + '억' + (man && eok < 100 ? ' ' + man.toLocaleString() + '만' : '') + '원';
+    const eok = Math.floor(n / 1e8), man = Math.floor((n % 1e8) / 1e6) * 100;
+    return s + eok.toLocaleString() + '억' + (man && eok < 100 ? ' ' + man.toLocaleString() + '만' : '');
   }
-  if (n >= 1e4) return s + Math.floor(n / 1e4).toLocaleString() + '만원';
+  if (n >= 1e4) return s + Math.floor(n / 1e4).toLocaleString() + '만';
   return s + Math.floor(n).toLocaleString() + '원';
 }
-function pct(x) { return (x >= 0 ? '+' : '') + (x * 100).toFixed(1) + '%'; }
+const won = n => fmt(n) + (Math.abs(n) >= 1e4 && Math.abs(n) < 1e12 ? '원' : '');
+const pct = x => (x >= 0 ? '+' : '') + (x * 100).toFixed(1) + '%';
 
-// ================= 상태 =================
+// ===================== 상태 =====================
 let S;
 function newState() {
   const st = {
-    month: 0, cash: 100e4, skill: 0, job: 0,
-    deposit: 0, loan: 0,
-    stocks: {}, estate: {}, biz: {},
-    housing: 1, market: { s: 'norm', left: 12 },
-    hist: [], log: [], miles: 0, over: false, clicks: 0,
+    month: 0, cash: 300e4, cpi: 1, raise: 1,
+    job: 0, tenure: 0, skill: 0, promoCd: 0,
+    health: 85, energy: ENERGY_MAX,
+    deposit: 0, credit: 0, rate: 2.75,
+    stocks: {}, estate: {}, hidx: {}, biz: {}, angel: 0,
+    married: false, kids: [], karma: 0,
+    market: { s: 'norm', left: 12 }, lastBiz: 0,
+    hist: [], log: [], miles: 0, over: false,
   };
   STOCKS.forEach(k => st.stocks[k.id] = { p: k.p, qty: 0, cost: 0, h: [k.p] });
-  ESTATE.forEach(e => st.estate[e.id] = 0);
+  ESTATE.forEach(e => { st.estate[e.id] = { n: 0, cost: 0, debt: 0 }; st.hidx[e.id] = 1; });
   BIZ.forEach(b => st.biz[b.id] = 0);
   return st;
 }
-function save() { try { localStorage.setItem('richgame_v1', JSON.stringify(S)); } catch (e) {} }
-function load() {
-  try { const t = localStorage.getItem('richgame_v1'); if (t) return JSON.parse(t); } catch (e) {}
+const SAVE_KEY = 'richgame_v2';
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+function load() { try { const t = localStorage.getItem(SAVE_KEY); if (t) return JSON.parse(t); } catch (e) {} return null; }
+
+// ===================== 계산 =====================
+const age = () => START_AGE + Math.floor(S.month / 12);
+const job = () => JOBS[S.job];
+const salary = () => Math.round(job().sal * (1 + S.skill * 0.02) * S.raise);
+const partnerIncome = () => S.married ? Math.round(260e4 * S.raise) : 0;
+const kidsActive = () => S.kids.filter(b => S.month - b < 240).length;
+const living = () => Math.round((120e4 + (S.married ? 80e4 : 0) + kidsActive() * 100e4) * S.cpi);
+const skillCost = () => Math.round(50e4 * Math.pow(1.28, S.skill) * S.cpi);
+
+const ePrice = e => Math.round(e.p * S.hidx[e.id]);
+const eRent = e => Math.round(e.rent * Math.sqrt(S.hidx[e.id]));
+function homeId() {   // 가장 비싼 주거용 집에 직접 산다
+  for (let i = ESTATE.length - 1; i >= 0; i--) if (ESTATE[i].res && S.estate[ESTATE[i].id].n > 0) return ESTATE[i].id;
   return null;
 }
-
-// ================= 계산 =================
-const job = () => JOBS[S.job];
-const clickValue = () => Math.round(job().click * (1 + S.skill * 0.1));
-const salary = () => Math.round(job().sal * (1 + S.skill * 0.03));
-const skillCost = () => Math.round(20e4 * Math.pow(1.32, S.skill));
-const living = () => Math.round(70e4 + salary() * 0.35);
-const estatePrice = e => Math.round(e.p * S.housing);
-const estateRent = e => Math.round(e.rent * Math.sqrt(S.housing));
-const bizCost = b => Math.round(b.cost * Math.pow(BIZ_GROW, S.biz[b.id]));
-const bizProfit = b => b.profit * S.biz[b.id] * (1 + 0.15 * Math.max(0, S.biz[b.id] - 1));
-const marketMul = () => S.market.s === 'boom' ? 1.2 : S.market.s === 'bust' ? 0.75 : 1;
-
-function stockValue() { return STOCKS.reduce((a, k) => a + S.stocks[k.id].qty * S.stocks[k.id].p, 0); }
-function estateValue() { return ESTATE.reduce((a, e) => a + S.estate[e.id] * estatePrice(e), 0); }
-function bizValue() {   // 사업체 가치 = 투자한 돈의 절반
-  return BIZ.reduce((a, b) => {
-    let sum = 0; for (let i = 0; i < S.biz[b.id]; i++) sum += b.cost * Math.pow(BIZ_GROW, i);
-    return a + sum * 0.5;
-  }, 0);
+const housingCost = () => homeId() ? 0 : Math.round((S.married ? 100e4 : 60e4) * S.cpi);   // 월세살이
+function rentGross() {
+  const h = homeId();
+  return ESTATE.reduce((a, e) => a + (S.estate[e.id].n - (e.id === h ? 1 : 0)) * eRent(e), 0);
 }
-function netWorth() { return S.cash + S.deposit + stockValue() + estateValue() + bizValue() - S.loan; }
-function loanLimit() {
-  return Math.max(0, Math.round(5000e4 + estateValue() * 0.6 + S.deposit * 0.9 + stockValue() * 0.3 + bizValue() * 0.5) - S.loan);
+const mortRate = () => (S.rate + 1.5) / 100;
+const creditRate = () => (S.rate + 2.8) / 100;
+const depRate = () => (S.rate + 0.3) / 100;
+const mortDebt = () => ESTATE.reduce((a, e) => a + S.estate[e.id].debt, 0);
+const marketMul = () => S.market.s === 'boom' ? 1.15 : S.market.s === 'bust' ? 0.75 : 1;
+const bizCost = b => Math.round(b.cost * S.cpi);
+function bizExpected() { return BIZ.reduce((a, b) => a + S.biz[b.id] * b.profit * S.cpi, 0) * marketMul() * (1 - BIZ_TAX); }
+
+const stockValue = () => STOCKS.reduce((a, k) => a + S.stocks[k.id].qty * S.stocks[k.id].p, 0);
+const estateValue = () => ESTATE.reduce((a, e) => a + S.estate[e.id].n * ePrice(e), 0);
+const bizValue = () => BIZ.reduce((a, b) => a + S.biz[b.id] * bizCost(b) * 0.5, 0) + S.angel * ANGEL_COST;
+const netWorth = () => S.cash + S.deposit + stockValue() + estateValue() + bizValue() - mortDebt() - S.credit;
+
+const monthIncome = () => salary() + partnerIncome() + rentGross() * (1 - RENT_TAX) + bizExpected();
+function annualDebtPay(extraMort = 0, extraCredit = 0) {   // 원리금 대략 (주담대 30년, 신용 5년)
+  return (mortDebt() + extraMort) * (mortRate() + 1 / 30) + (S.credit + extraCredit) * (creditRate() + 1 / 5);
 }
-function rentIncome() { return ESTATE.reduce((a, e) => a + S.estate[e.id] * estateRent(e), 0); }
-function bizIncome() { return BIZ.reduce((a, b) => a + bizProfit(b), 0) * marketMul(); }
+const dsrOK = (m, c) => annualDebtPay(m, c) <= monthIncome() * 12 * DSR;
+const creditLimit = () => Math.max(0, Math.round((salary() + partnerIncome()) * 12) - S.credit);
+
 function monthlyFlow() {
-  return salary() + rentIncome() + bizIncome() + S.deposit * DEPOSIT_RATE / 12 - living() - S.loan * LOAN_RATE / 12;
+  return monthIncome() + S.deposit * depRate() / 12 * (1 - INT_TAX)
+    - living() - housingCost() - mortDebt() * mortRate() / 12 - S.credit * creditRate() / 12;
 }
 
-// ================= 로그 / 토스트 =================
-function ageStr(m = S.month) { return (START_AGE + Math.floor(m / 12)) + '세 ' + (m % 12 + 1) + '월'; }
-function log(msg) {
-  S.log.unshift({ t: ageStr(), m: msg });
-  if (S.log.length > 60) S.log.length = 60;
-  renderLog();
-}
+// ===================== 로그 / 토스트 / 모달 =====================
+const ageStr = (m = S.month) => (START_AGE + Math.floor(m / 12)) + '세 ' + (m % 12 + 1) + '월';
+function log(msg) { S.log.unshift({ t: ageStr(), m: msg }); if (S.log.length > 80) S.log.length = 80; renderTicker(); }
 let toastT;
-function toast(msg) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200);
-}
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2300); }
 
-// ================= 모달 =================
 let paused = false;
 function modal(title, html, buttons) {
   paused = true;
-  $('mTitle').textContent = title;
-  $('mBody').innerHTML = html;
+  $('mTitle').textContent = title; $('mBody').innerHTML = html;
   const mb = $('mBtns'); mb.innerHTML = '';
   buttons.forEach(([label, cls, fn]) => {
     const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls;
@@ -374,327 +331,461 @@ function modal(title, html, buttons) {
   $('modal').classList.remove('hidden');
 }
 
-// ================= 이벤트 =================
+// ===================== 이벤트 =====================
+function shock(id, mul) { const s = S.stocks[id]; s.p = Math.max(1, s.p * mul); s.h[s.h.length - 1] = s.p; }
+const ownsAny = () => ESTATE.some(e => S.estate[e.id].n > 0);
 const EVENTS = [
-  { w: 10, f: () => { const v = 5e4; S.cash += v; log('🎫 로또 4등 당첨! +' + fmt(v)); } },
-  { w: 0.15, f: () => { const v = 20e8; S.cash += v; log('🎉🎉 로또 1등 당첨!!! +' + fmt(v)); toast('로또 1등!!! +20억'); } },
-  { w: 6, f: () => { const v = 30e4; S.cash -= v; log('🤧 독감에 걸렸어요. 병원비 -' + fmt(v)); } },
-  { w: 5, f: () => { const v = 120e4; S.cash -= v; log('📱 휴대폰을 떨어뜨렸어요. 수리비 -' + fmt(v)); } },
-  { w: 6, f: () => { const v = salary(); S.cash += v; log('🎁 성과급이 나왔어요! +' + fmt(v)); } },
-  { w: 4, c: () => S.month < 120, f: () => { const v = 50e4; S.cash += v; log('👵 할머니가 용돈을 주셨어요. +' + fmt(v)); } },
-  { w: 3, c: () => netWorth() > 10e8, f: () => { const v = Math.round(S.cash * 0.03); S.cash -= v; log('🧾 세무조사! 추가 세금 -' + fmt(v)); } },
-  { w: 4, f: () => { stockShock('dog', rand(2.5, 5)); log('🚀 유명 인플루언서가 멍멍코인을 언급! 가격 폭등'); } },
-  { w: 4, f: () => { stockShock('dog', rand(.2, .4)); log('💥 코인 거래소 해킹! 멍멍코인 폭락'); } },
-  { w: 4, f: () => { stockShock('star', 1.2); log('📱 별빛전자 신제품 대박! 주가 +20%'); } },
-  { w: 4, f: () => { stockShock('mal', 1.6); log('🎮 말랑게임즈 신작 흥행 대성공! 주가 +60%'); } },
-  { w: 4, f: () => { stockShock('mal', .55); log('😱 말랑게임즈 신작 폭망... 주가 -45%'); } },
-  { w: 3, f: () => { S.housing *= .93; log('🏛 정부가 부동산 규제 발표. 집값 -7%'); } },
-  { w: 3, f: () => { S.housing *= 1.08; log('🚇 신도시·지하철 개발 호재! 집값 +8%'); } },
-  { w: 3, c: () => S.biz.cafe + S.biz.chick + S.biz.fish > 0, f: () => {
-      const v = Math.round(bizIncome() * 1.5); S.cash += v; log('📺 내 가게가 맛집 방송에 나왔어요! 추가 수익 +' + fmt(v)); } },
-  // 선택 이벤트
-  { w: 3, c: () => S.cash >= 3000e4, f: () => {
-      const amt = Math.round(Math.max(3000e4, S.cash * 0.2) / 1e6) * 1e6;
-      modal('🤝 친구의 동업 제안', `<p>"나랑 같이 사업하자! ${fmt(amt)}만 투자해 줘. 대박 나면 세 배로 돌려줄게!"</p><p class="muted">성공 확률은… 글쎄요?</p>`, [
-        ['투자한다', 'gold', () => {
-          S.cash -= amt;
-          if (chance(0.4)) { S.cash += amt * 3; log('🥳 친구 사업이 대박! ' + fmt(amt * 3) + ' 회수'); toast('동업 대성공! +' + fmt(amt * 2)); }
-          else { log('😭 친구 사업이 망했어요… -' + fmt(amt)); toast('동업 실패… -' + fmt(amt)); }
-        }],
-        ['정중히 거절', '', () => log('🙅 친구의 동업 제안을 거절했어요.')],
+  { w: 8, f: () => { const v = Math.round(rand(20, 60)) * 1e4; S.cash -= v; log('💌 친구 결혼식·경조사비 -' + won(v)); } },
+  { w: 5, f: () => { const v = 15e4; S.cash -= v; S.health -= 5; log('🤧 독감으로 병원비 -' + won(v)); } },
+  { w: 4, f: () => { const v = Math.round(150e4 * S.cpi); S.cash -= v; log('🚗 접촉사고 수리비 -' + won(v)); } },
+  { w: 4, f: () => { const v = 5e4; S.cash += v; log('🎫 로또 4등 당첨! +' + won(v)); } },
+  { w: .03, f: () => { const v = 20e8; S.cash += v; log('🎉 로또 1등 당첨!!! 세후 +' + won(v)); toast('🎉 로또 1등!!!'); } },
+  { w: 3, f: () => { shock('coin', rand(1.8, 3.2)); log('🚀 멍멍코인, 해외 거래소 상장 소식에 폭등!'); } },
+  { w: 3, f: () => { shock('coin', rand(.35, .6)); log('💥 코인 거래소 해킹 사태… 멍멍코인 폭락'); } },
+  { w: 3, f: () => { shock('star', 1.15); log('📱 별빛전자 실적 서프라이즈! 주가 +15%'); } },
+  { w: 3, f: () => { shock('star', .86); log('📉 반도체 업황 부진… 별빛전자 -14%'); } },
+  { w: 3, f: () => { shock('mal', 1.45); log('🎮 말랑게임즈 신작 흥행! 주가 +45%'); } },
+  { w: 3, f: () => { shock('mal', .65); log('😱 말랑게임즈 신작 혹평… 주가 -35%'); } },
+  { w: 2, f: () => { ESTATE.forEach(e => S.hidx[e.id] *= .96); log('🏛 정부 부동산 규제 발표. 집값 -4%'); } },
+  { w: 3, f: () => { const e = ESTATE[Math.floor(Math.random() * ESTATE.length)]; S.hidx[e.id] *= 1.08; log(`🚇 교통 호재! ${e.n} 시세 +8%`); } },
+  { w: 3, c: () => rentGross() > 0, f: () => { const v = Math.round(rentGross() * 0.3); S.cash -= v; log('🏚 공실 발생, 월세 일부 못 받음 -' + won(v)); } },
+  { w: 3, c: ownsAny, f: () => { const v = Math.round(rand(100, 400) * 1e4 * S.cpi); S.cash -= v; log('🔧 보일러·누수 수리비 -' + won(v)); } },
+  { w: 3, c: () => netWorth() > 30e8, f: () => { const v = Math.round(S.cash * .02); S.cash -= v; log('🧾 세무조사로 추가 세금 -' + won(v)); } },
+  { w: 3, c: () => age() >= 45, f: () => { const v = Math.round(rand(500, 1500) * 1e4 * S.cpi); S.cash -= v; log('🏥 부모님 병원비 -' + won(v)); } },
+  { w: 3, c: () => S.job >= 2 && S.job < 7, f: () => {
+      if (!(S.market.s === 'bust' || chance(.25))) return;
+      const v = salary() * 6; S.cash += v; S.job--; S.tenure = 0;
+      log(`📦 구조조정으로 권고사직… 위로금 +${won(v)}, ${job().n}(으)로 재취업`); toast('권고사직 당했어요…'); } },
+  // ---- 선택 이벤트 ----
+  { w: 7, c: () => !S.married && age() >= 27 && age() <= 40, f: () => {
+      const cost = Math.round(3000e4 * S.cpi);
+      modal('💍 결혼 제안', `<p>오래 만난 연인이 결혼하자고 해요!<br>결혼 비용 <b>${won(cost)}</b>, 생활비가 늘지만<br>배우자 소득(월 ${won(260e4 * S.raise)})이 더해져요.</p>`, [
+        ['결혼한다 💒', 'gold', () => { S.married = true; S.cash -= cost; log('💒 결혼했어요! 맞벌이 시작'); toast('💒 결혼 축하해요!'); }],
+        ['아직은…', '', () => log('🙂 결혼은 조금 더 생각해 보기로 했어요.')],
       ]);
     } },
-  { w: 3, c: () => S.cash >= 1000e4, f: () => {
-      const amt = Math.round(S.cash * 0.5 / 1e6) * 1e6;
-      modal('📞 수상한 전화', `<p>"고객님! <b>매달 10% 수익 보장</b> 투자 상품이 있습니다. ${fmt(amt)}만 넣으시면 돼요!"</p>`, [
-        ['넣는다!', 'red', () => { S.cash -= amt; log('🚨 투자 사기였어요! -' + fmt(amt) + ' (수익 보장은 거짓말!)'); toast('사기당했어요… -' + fmt(amt)); }],
-        ['끊는다', 'gold', () => { log('👍 "수익 보장"은 사기! 현명하게 전화를 끊었어요.'); }],
+  { w: 5, c: () => S.married && age() < 42 && S.kids.length < 3, f: () => {
+      S.kids.push(S.month); const v = 300e4; S.cash += v;
+      log(`👶 ${S.kids.length}번째 아이가 태어났어요! 첫만남이용권 +${won(v)} (양육비 월 ${won(100e4 * S.cpi)}, 20년)`); toast('👶 아기가 태어났어요!');
+    } },
+  { w: 2, c: () => S.cash >= 3000e4, f: () => {
+      const amt = Math.round(Math.max(3000e4, S.cash * .2) / 1e6) * 1e6;
+      modal('🤝 친구의 동업 제안', `<p>"같이 사업하자! ${won(amt)}만 투자해 줘. 잘 되면 3배로 돌려줄게!"</p><p class="muted">현실의 창업 성공률은 높지 않아요…</p>`, [
+        ['투자한다', 'gold', () => { S.cash -= amt;
+          if (chance(.25)) { S.cash += amt * 3; log('🥳 친구 사업 대박! ' + won(amt * 3) + ' 회수'); toast('동업 성공! +' + won(amt * 2)); }
+          else log('😭 친구 사업이 망했어요… -' + won(amt)); }],
+        ['거절', '', () => log('🙅 동업 제안을 거절했어요.')],
       ]);
     } },
-  { w: 3, c: () => S.job < JOBS.length - 1, f: () => {
-      modal('💼 이직 제안', `<p>헤드헌터: "<b>${JOBS[S.job + 1].n}</b> 자리로 모시고 싶습니다. 다만 회사가 좀… 불안정해요."</p><p class="muted">60% 확률로 성공, 실패하면 한 단계 내려가요.</p>`, [
-        ['도전한다', 'gold', () => {
-          if (chance(.6)) { S.job++; log('🎊 이직 성공! 이제 ' + job().n); toast('이직 성공! ' + job().n); }
-          else { S.job = Math.max(0, S.job - 1); log('😵 회사가 망해서 ' + job().n + '(으)로 재취업했어요.'); }
-        }],
-        ['지금 회사가 좋아요', '', () => log('🙂 이직 제안을 거절했어요.')],
+  { w: 2, c: () => S.cash >= 1000e4, f: () => {
+      const amt = Math.round(S.cash * .5 / 1e6) * 1e6;
+      modal('📞 수상한 전화', `<p>"고객님! <b>월 10% 원금보장</b> 투자 상품입니다. ${won(amt)}만 넣으세요!"</p>`, [
+        ['넣는다', 'red', () => { S.cash -= amt; log('🚨 투자 사기였어요! -' + won(amt)); toast('사기당했어요… -' + won(amt)); }],
+        ['끊는다', 'gold', () => log('👍 "원금보장 고수익"은 100% 사기! 현명하게 끊었어요.')],
+      ]);
+    } },
+  { w: 3, c: () => S.job >= 1 && S.job < JOBS.length - 1, f: () => {
+      modal('💼 이직 제안', `<p>헤드헌터: "<b>${JOBS[S.job + 1].n}</b> 자리 어떠세요? 다만 회사 재무가 좀 불안해요."</p><p class="muted">60% 성공 · 실패하면 한 단계 아래로</p>`, [
+        ['도전', 'gold', () => { S.tenure = 0;
+          if (chance(.6)) { S.job++; log('🎊 이직 성공! ' + job().n); toast('이직 성공! ' + job().n); }
+          else { S.job = Math.max(0, S.job - 1); log('😵 이직한 회사가 어려워져 ' + job().n + '(으)로…'); } }],
+        ['거절', '', () => log('🙂 이직 제안을 거절했어요.')],
       ]);
     } },
   { w: 2, c: () => S.cash >= 500e4, f: () => {
-      const amt = Math.round(S.cash * 0.1 / 1e4) * 1e4;
-      modal('🙏 기부 요청', `<p>어려운 이웃을 위해 ${fmt(amt)}을 기부할까요?</p><p class="muted">기부하면 좋은 일이 생길지도…</p>`, [
-        ['기부한다 ❤️', 'gold', () => { S.cash -= amt; S.karma = (S.karma || 0) + 1; log('❤️ ' + fmt(amt) + '을 기부했어요. 마음이 따뜻해집니다.'); }],
-        ['다음에요', '', () => {}],
+      const amt = Math.round(S.cash * .05 / 1e4) * 1e4;
+      modal('❤️ 기부 요청', `<p>어려운 이웃을 위해 ${won(amt)}을 기부할까요?</p>`, [
+        ['기부한다', 'gold', () => { S.cash -= amt; S.karma++; log('❤️ ' + won(amt) + ' 기부. 마음이 따뜻해져요.'); }],
+        ['다음에', '', null],
       ]);
     } },
-  { w: 2, c: () => (S.karma || 0) > 0, f: () => {
-      S.karma--; const v = Math.max(1000e4, Math.round(netWorth() * 0.05)); S.cash += v;
-      log('🌈 예전에 도와준 사람이 은혜를 갚았어요! +' + fmt(v));
-    } },
+  { w: 2, c: () => S.karma > 0, f: () => { S.karma--; const v = Math.max(1000e4, Math.round(netWorth() * .03)); S.cash += v; log('🌈 예전에 도운 사람이 좋은 기회를 줬어요! +' + won(v)); } },
 ];
-function stockShock(id, mul) { const s = S.stocks[id]; s.p = Math.max(1, s.p * mul); s.h[s.h.length - 1] = s.p; }
 function randomEvent() {
   const list = EVENTS.filter(e => !e.c || e.c());
-  const tot = list.reduce((a, e) => a + e.w, 0);
-  let r = Math.random() * tot;
+  let r = Math.random() * list.reduce((a, e) => a + e.w, 0);
   for (const e of list) { r -= e.w; if (r <= 0) { e.f(); return; } }
 }
 
-// ================= 한 달 진행 =================
+// ===================== 한 달 진행 =====================
 function nextMonth() {
   if (S.over) return;
-  S.month++;
+  S.month++; S.tenure++; S.promoCd = Math.max(0, S.promoCd - 1);
+  S.energy = ENERGY_MAX;
+  S.cpi *= 1.0021;   // 물가 연 2.5%
+  if (S.month % 12 === 0) { S.raise *= 1.03; log(`🎂 ${age()}살! 연봉 3% 인상, 물가도 올랐어요.`); }
 
-  // 경기 변화
+  // 경기 순환
   if (--S.market.left <= 0) {
-    const r = Math.random();
-    const ns = r < .3 ? 'boom' : r < .55 ? 'bust' : 'norm';
-    S.market = { s: ns, left: Math.floor(rand(8, 30)) };
-    if (ns === 'boom') log('📈 경기 호황이 시작됐어요! 주식·사업이 잘 돼요.');
-    else if (ns === 'bust') log('📉 경기 불황이 찾아왔어요… 조심하세요.');
-    else log('➖ 경기가 평범해졌어요.');
+    const r = Math.random(), ns = r < .3 ? 'boom' : r < .55 ? 'bust' : 'norm';
+    S.market = { s: ns, left: Math.floor(rand(10, 36)) };
+    log(ns === 'boom' ? '📈 경기 호황 시작! 주식·사업이 잘 돼요.' : ns === 'bust' ? '📉 경기 불황… 주가 하락·폐업 위험 증가' : '➖ 경기가 평범해졌어요.');
   }
-  const mDrift = S.market.s === 'boom' ? .02 : S.market.s === 'bust' ? -.025 : 0;
-  const common = gauss() * .03;   // 시장 전체 움직임
+  // 기준금리
+  if (chance(.07)) {
+    const d = S.market.s === 'boom' ? .25 : S.market.s === 'bust' ? -.25 : (chance(.5) ? .25 : -.25);
+    const nr = clamp(S.rate + d, .5, 6);
+    if (nr !== S.rate) { S.rate = nr; log(`🏦 한국은행 기준금리 ${d > 0 ? '인상' : '인하'} → ${S.rate.toFixed(2)}%`); }
+  }
+  const mDrift = S.market.s === 'boom' ? .012 : S.market.s === 'bust' ? -.018 : 0;
+  const common = gauss() * .025;
 
-  // 주가
   STOCKS.forEach(k => {
     const s = S.stocks[k.id];
     let r = k.drift + k.beta * (mDrift + common) + k.vol * gauss();
-    if (k.id === 'dog' && chance(.04)) r += Math.log(rand(2, 6));    // 코인 펌핑
-    if (k.id === 'dog' && chance(.04)) r += Math.log(rand(.15, .5)); // 코인 폭락
     s.p = Math.max(1, s.p * Math.exp(r));
-    s.h.push(s.p); if (s.h.length > 48) s.h.shift();
+    s.h.push(s.p); if (s.h.length > 36) s.h.shift();
+  });
+  ESTATE.forEach(e => {
+    S.hidx[e.id] *= Math.exp(.0026 + e.prem + mDrift * .25 - (S.rate - 2.75) * .0007 + gauss() * .009);
   });
 
-  // 집값
-  S.housing *= Math.exp(.004 + mDrift * .3 + gauss() * .012);
+  // 수입
+  let biz = 0;
+  BIZ.forEach(b => {
+    for (let i = 0; i < S.biz[b.id]; i++) biz += b.profit * S.cpi * marketMul() * (1 + .6 * gauss());
+    if (S.biz[b.id] > 0 && chance(b.risk * S.biz[b.id] * (S.market.s === 'bust' ? 2 : 1))) {
+      S.biz[b.id]--; const back = Math.round(bizCost(b) * .2); S.cash += back;
+      log(`🚪 ${b.n} 한 곳이 경영난으로 폐업… 권리금 ${won(back)} 회수`);
+    }
+  });
+  biz = biz > 0 ? biz * (1 - BIZ_TAX) : biz;
+  S.lastBiz = biz;
+  for (let i = S.angel; i > 0; i--) {
+    if (chance(.006)) { S.angel--; const m = Math.round(rand(5, 25)); S.cash += ANGEL_COST * m * .78; log(`🦄 투자한 스타트업 상장! ${m}배 엑싯 → 세후 +${won(ANGEL_COST * m * .78)}`); toast(`🦄 스타트업 대박! ${m}배`); }
+    else if (chance(.024)) { S.angel--; log('💀 투자한 스타트업이 문을 닫았어요. -' + won(ANGEL_COST)); }
+  }
 
-  // 돈 들어오고 나가기
-  S.cash += salary() + rentIncome() + bizIncome() * rand(.85, 1.15);
-  S.cash -= living();
-  S.deposit *= 1 + DEPOSIT_RATE / 12;
-  S.cash -= S.loan * LOAN_RATE / 12;
+  S.cash += salary() + partnerIncome() + rentGross() * (1 - RENT_TAX) + biz;
+  S.cash += S.deposit * depRate() / 12 * (1 - INT_TAX);
+  S.cash -= living() + housingCost() + mortDebt() * mortRate() / 12 + S.credit * creditRate() / 12;
 
-  // 이벤트
-  if (chance(.22)) randomEvent();
+  if (S.month % 12 === 2) { const v = Math.round(salary() * rand(-.2, .6)); S.cash += v; log(v >= 0 ? `🧾 연말정산 환급 +${won(v)}` : `🧾 연말정산 추가 납부 ${won(v)}`); }
+  if (S.month % 12 === 0 && S.job >= 1) {
+    const v = Math.round(salary() * (S.market.s === 'boom' ? rand(1.5, 3) : S.market.s === 'bust' ? rand(0, .5) : rand(.5, 1.5)));
+    if (v > 0) { S.cash += v; log('🎁 연말 성과급 +' + won(v)); }
+  }
 
-  // 현금이 마이너스면 자동 대출
+  // 건강
+  const a = age();
+  S.health += a < 40 ? 4 : a < 50 ? 3 : 2;
+  if (a >= 50) S.health -= 1;
+  S.health = clamp(S.health, 0, 100);
+  if (S.health < 30 && chance(.25)) { const v = Math.round(300e4 * S.cpi); S.cash -= v; S.health += 10; log('🏥 과로로 쓰러져 입원… 병원비 -' + won(v)); toast('건강 관리하세요!'); }
+
+  if (chance(.25)) randomEvent();
+
+  // 현금 부족 → 예금 → 신용대출
   if (S.cash < 0) {
-    const need = -S.cash;
-    if (S.deposit >= need) { S.deposit -= need; S.cash = 0; log('🏦 현금이 부족해 예금에서 ' + fmt(need) + ' 인출했어요.'); }
-    else { need > 0 && (S.loan += need); S.cash = 0; log('⚠️ 현금이 부족해 ' + fmt(need) + '을 자동 대출받았어요.'); }
+    let need = -S.cash;
+    const fromDep = Math.min(need, S.deposit); S.deposit -= fromDep; need -= fromDep;
+    S.cash = 0;
+    if (fromDep) log('🏦 현금 부족, 예금에서 ' + won(fromDep) + ' 인출');
+    if (need > 0) { S.credit += need; log('⚠️ 현금 부족으로 마이너스통장 ' + won(need) + ' 사용'); }
   }
 
   const nw = netWorth();
   S.hist.push(nw);
+  if (nw < -1e8 || (nw < 0 && S.credit > Math.max(3000e4, (salary() + partnerIncome()) * 18))) { gameOver(true); return; }
 
-  // 파산
-  if (nw < -5000e4) { gameOver(true); return; }
-
-  // 목표 달성
   while (S.miles < MILESTONES.length && nw >= MILESTONES[S.miles]) {
-    const m = MILESTONES[S.miles++];
-    log('🏆 순자산 ' + fmt(m) + ' 돌파!');
-    toast('🏆 순자산 ' + fmt(m) + ' 돌파!');
+    const m = MILESTONES[S.miles++]; log('🏆 순자산 ' + won(m) + ' 돌파!'); toast('🏆 순자산 ' + won(m) + ' 돌파!');
   }
-
-  if (S.month % 12 === 0) log('🎂 ' + (START_AGE + S.month / 12) + '살이 됐어요.');
   if (S.month >= (END_AGE - START_AGE) * 12) { gameOver(false); return; }
-
   save();
 }
 
-function rankOf(nw) {
-  if (nw < 0) return ['💸 빚쟁이', '다음 생엔 꼭…'];
-  if (nw < 1e8) return ['🙂 평범한 서민', '그래도 열심히 살았어요!'];
-  if (nw < 10e8) return ['🏡 든든한 중산층', '내 집 마련 성공!'];
-  if (nw < 100e8) return ['💎 자산가', '동네에서 알아주는 부자!'];
-  if (nw < 1000e8) return ['🏰 재벌', '뉴스에 나오는 부자!'];
-  if (nw < 1e12) return ['👑 대재벌', '나라에서 손꼽히는 부자!'];
-  return ['🌟 전설의 갑부', '조 단위 자산! 당신은 전설입니다!'];
+// ===================== 결말 =====================
+function rankOf(nwReal) {   // 현재가치 기준 (대략 한국 순자산 분포)
+  if (nwReal < 0) return ['💸 빚더미', '다음엔 대출을 조심해요…'];
+  if (nwReal < 3e8) return ['🙂 평범한 서민', '그래도 성실히 살았어요!'];
+  if (nwReal < 10e8) return ['🏡 중산층', '대한민국 중산층 진입!'];
+  if (nwReal < 30e8) return ['💎 상위 5% 자산가', '노후 걱정 없는 부자!'];
+  if (nwReal < 100e8) return ['🏰 상위 1% 부자', '진짜 부자 소리 듣는 수준!'];
+  if (nwReal < 1000e8) return ['👑 슈퍼리치', '뉴스에 나올 만한 부자!'];
+  return ['🌟 재벌', '전설적인 자수성가!'];
 }
-
 function gameOver(bankrupt) {
   S.over = true; save(); render();
   const nw = netWorth();
   if (bankrupt) {
-    modal('💥 파산!', `<p>빚을 감당할 수 없게 되었어요…<br>${ageStr()}에 게임이 끝났습니다.</p><div class="big">${fmt(nw)}</div><p class="muted">대출은 신중하게! 코인 몰빵은 위험해요.</p>`,
-      [['다시 시작', 'gold', restart]]);
+    modal('💥 파산', `<p>빚을 감당하지 못해 ${ageStr()}에 개인회생을 신청했어요.</p><div class="big">${won(nw)}</div><p class="muted">레버리지와 몰빵 투자는 조심!</p>`, [['다시 시작', 'gold', restart]]);
   } else {
-    const [t, d] = rankOf(nw);
-    modal('🎊 은퇴! (60세)', `<p>40년 동안의 부자되기 도전이 끝났어요.</p><div class="muted">최종 순자산</div><div class="big">${fmt(nw)}</div><p style="font-size:22px;font-weight:900">${t}</p><p class="muted">${d}<br>일하기 버튼 ${S.clicks.toLocaleString()}번 클릭</p>`,
+    const real = nw / S.cpi, [t, d] = rankOf(real);
+    modal('🎊 60세 은퇴', `<p>40년의 경제생활이 끝났어요.</p><div class="muted">최종 순자산</div><div class="big">${won(nw)}</div>
+      <div class="muted">오늘 돈 가치로 환산: ${won(real)}</div>
+      <p style="font-size:20px;font-weight:900;margin-top:12px">${t}</p><p class="muted">${d}<br>${job().n} · ${S.married ? '기혼' : '미혼'} · 자녀 ${S.kids.length}명</p>`,
       [['다시 도전', 'gold', restart]]);
   }
 }
-function restart() { S = newState(); log('👋 20살, 통장에 100만원으로 시작! 60살까지 최대한 부자가 되어 보세요.'); tab = 'stock'; render(); save(); }
+function restart() { S = newState(); tab = 'home'; log('👋 20살, 통장 300만원으로 시작! 월세 살며 알바부터…'); render(); save(); }
 
-// ================= 행동 =================
-function act(a, id, arg) {
+// ===================== 행동 =====================
+function doAct(a, id, arg, ev) {
   if (S.over) return;
+  if (a === 'ot') {     // 야근
+    if (S.energy < 1 || S.health < 10) return toast(S.health < 10 ? '너무 피곤해요! 쉬어야 해요' : '이번 달 에너지가 없어요');
+    const v = Math.round(salary() / 20 * 1.5); S.cash += v; S.energy--; S.health -= 4; floatTxt(ev, '+' + won(v));
+  }
+  if (a === 'side') {   // 배달 부업
+    if (S.energy < 1 || S.health < 10) return toast(S.health < 10 ? '너무 피곤해요! 쉬어야 해요' : '이번 달 에너지가 없어요');
+    const v = Math.round(rand(6, 10) * 1e4 * S.cpi); S.cash += v; S.energy--; S.health -= 3; floatTxt(ev, '+' + won(v));
+  }
+  if (a === 'gym') {
+    const c = Math.round(5e4 * S.cpi);
+    if (S.energy < 1) return toast('이번 달 에너지가 없어요'); if (S.cash < c) return toast('돈이 부족해요');
+    S.cash -= c; S.energy--; S.health = Math.min(100, S.health + 7); floatTxt(ev, '건강 +7');
+  }
+  if (a === 'study') {
+    const c = skillCost();
+    if (S.energy < 2) return toast('공부엔 에너지 2가 필요해요'); if (S.cash < c) return toast('학원비가 부족해요');
+    S.cash -= c; S.energy -= 2; S.skill++; S.health -= 2; log(`📚 자격증·공부로 역량 Lv.${S.skill}`); floatTxt(ev, '역량 +1');
+  }
+  if (a === 'promo') {
+    const nj = JOBS[S.job + 1]; if (!nj) return;
+    const p = clamp(.55 + .06 * (S.skill - nj.req), .3, .92);
+    if (chance(p)) { S.job++; S.tenure = 0; log(`🎊 승진 성공! ${job().n} (월급 ${won(salary())})`); toast('🎊 승진! ' + job().n); }
+    else { S.promoCd = 6; log(`😢 승진 심사 탈락… 6개월 뒤 재도전 (합격률 ${Math.round(p * 100)}%)`); toast('승진 탈락…'); }
+  }
   if (a === 'buyS') {
     const k = STOCKS.find(x => x.id === id), s = S.stocks[id];
-    const qty = Math.floor(S.cash * arg / s.p);
-    if (qty < 1) return toast('돈이 부족해요!');
-    const cost = qty * s.p;
+    const qty = Math.floor(S.cash * arg / (s.p * (1 + TRADE_FEE)));
+    if (qty < 1) return toast('현금이 부족해요');
+    const cost = qty * s.p * (1 + TRADE_FEE);
     S.cash -= cost; s.cost += cost; s.qty += qty;
-    log(`🛒 ${k.n} ${qty.toLocaleString()}주 매수 (${fmt(cost)})`);
+    log(`🛒 ${k.n} ${qty.toLocaleString()}주 매수 ${won(cost)}`);
   }
   if (a === 'sellS') {
     const k = STOCKS.find(x => x.id === id), s = S.stocks[id];
     const qty = arg === 1 ? s.qty : Math.floor(s.qty * arg);
-    if (qty < 1) return toast('팔 주식이 없어요!');
-    const avg = s.cost / s.qty, gain = qty * (s.p - avg);
-    S.cash += qty * s.p; s.cost -= avg * qty; s.qty -= qty;
-    if (s.qty === 0) s.cost = 0;
-    log(`💵 ${k.n} ${qty.toLocaleString()}주 매도 (${gain >= 0 ? '수익' : '손실'} ${fmt(Math.abs(gain))})`);
+    if (qty < 1) return toast('팔 주식이 없어요');
+    const avg = s.cost / s.qty, get = qty * s.p * (1 - TRADE_FEE), gain = get - avg * qty;
+    S.cash += get; s.cost -= avg * qty; s.qty -= qty; if (!s.qty) s.cost = 0;
+    log(`💵 ${k.n} ${qty.toLocaleString()}주 매도 (${gain >= 0 ? '수익 +' : '손실 '}${won(gain)})`);
   }
   if (a === 'buyE') {
-    const e = ESTATE.find(x => x.id === id), p = estatePrice(e);
-    if (S.cash < p) return toast('현금이 ' + fmt(p - S.cash) + ' 부족해요! (은행 대출을 써 보세요)');
-    S.cash -= p; S.estate[id]++; log(`🏠 ${e.n} 구입! (${fmt(p)})`);
+    const e = ESTATE.find(x => x.id === id), p = ePrice(e), tax = p * ACQ_TAX;
+    const loan = arg ? Math.round(p * LTV) : 0, need = p + tax - loan;
+    if (S.cash < need) return toast(`현금 ${won(need - S.cash)} 부족 (취득세 포함)`);
+    if (loan && !dsrOK(loan, 0)) return toast('DSR 40% 초과! 소득 대비 빚이 많아 대출 불가');
+    const first = !homeId() && e.res;
+    S.cash -= need; const st = S.estate[id]; st.n++; st.cost += p + tax; st.debt += loan;
+    log(`🏠 ${e.n} 매입 ${won(p)}${loan ? ` (주담대 ${won(loan)})` : ''}${first ? ' — 내 집 마련! 월세 탈출 🎉' : ''}`);
   }
   if (a === 'sellE') {
-    const e = ESTATE.find(x => x.id === id), p = estatePrice(e);
-    if (!S.estate[id]) return;
-    S.cash += p; S.estate[id]--; log(`🔑 ${e.n} 매각 (${fmt(p)})`);
+    const e = ESTATE.find(x => x.id === id), st = S.estate[id]; if (!st.n) return;
+    const p = ePrice(e), avg = st.cost / st.n, debt = st.debt / st.n;
+    const gain = p - avg, tax = gain > 0 ? gain * GAIN_TAX : 0, fee = p * SELL_FEE;
+    const get = p - tax - fee - debt;
+    S.cash += get; st.n--; st.cost -= avg; st.debt -= debt;
+    log(`🔑 ${e.n} 매도 ${won(p)} (양도세 ${won(tax)}, 대출상환 ${won(debt)}) → ${won(get)}`);
   }
   if (a === 'biz') {
     const b = BIZ.find(x => x.id === id), c = bizCost(b);
-    if (S.cash < c) return toast('현금이 ' + fmt(c - S.cash) + ' 부족해요!');
-    S.cash -= c; S.biz[id]++;
-    log(S.biz[id] === 1 ? `🎉 ${b.n} 창업!` : `📈 ${b.n} Lv.${S.biz[id]}로 확장!`);
+    if (S.cash < c) return toast(`현금 ${won(c - S.cash)} 부족`);
+    S.cash -= c; S.biz[id]++; log(S.biz[id] === 1 ? `🎉 ${b.n} 창업! (${won(c)})` : `📈 ${b.n} ${S.biz[id]}호점 오픈!`);
   }
-  if (a === 'dep') {
-    const v = Math.floor(S.cash * arg); if (v <= 0) return toast('현금이 없어요!');
-    S.cash -= v; S.deposit += v; log('🏦 예금 ' + fmt(v) + ' 입금');
+  if (a === 'sellB') {
+    const b = BIZ.find(x => x.id === id); if (!S.biz[id]) return;
+    const v = Math.round(bizCost(b) * .5); S.biz[id]--; S.cash += v; log(`🤝 ${b.n} 한 곳 양도 +${won(v)}`);
   }
-  if (a === 'wd') {
-    const v = Math.floor(S.deposit * arg); if (v <= 0) return toast('예금이 없어요!');
-    S.deposit -= v; S.cash += v; log('🏦 예금 ' + fmt(v) + ' 출금');
+  if (a === 'angel') {
+    if (S.cash < ANGEL_COST) return toast('현금이 부족해요');
+    S.cash -= ANGEL_COST; S.angel++; log('🦄 스타트업에 엔젤투자 ' + won(ANGEL_COST));
   }
+  if (a === 'dep') { const v = Math.floor(S.cash * arg); if (v <= 0) return toast('현금이 없어요'); S.cash -= v; S.deposit += v; log('🏦 예금 ' + won(v) + ' 입금'); }
+  if (a === 'wd') { const v = Math.floor(S.deposit * arg); if (v <= 0) return toast('예금이 없어요'); S.deposit -= v; S.cash += v; log('🏦 예금 ' + won(v) + ' 출금'); }
   if (a === 'loan') {
-    const lim = loanLimit(); const v = arg === 0 ? lim : Math.min(arg, lim);
-    if (v < 1e4) return toast('대출 한도가 없어요!');
-    S.loan += v; S.cash += v; log('💳 ' + fmt(v) + ' 대출 (연 ' + LOAN_RATE * 100 + '%)');
+    const v = Math.min(arg || Infinity, creditLimit());
+    if (v < 1e4) return toast('신용대출 한도가 없어요');
+    if (!dsrOK(0, v)) return toast('DSR 40% 초과! 소득 대비 빚이 많아요');
+    S.credit += v; S.cash += v; log(`💳 신용대출 ${won(v)} (연 ${(creditRate() * 100).toFixed(1)}%)`);
   }
   if (a === 'repay') {
-    const v = Math.min(S.cash, S.loan, arg === 0 ? Infinity : arg);
-    if (v <= 0) return toast(S.loan ? '현금이 없어요!' : '갚을 빚이 없어요!');
-    S.loan -= v; S.cash -= v; log('✅ 대출 ' + fmt(v) + ' 상환');
+    const v = Math.min(S.cash, S.credit); if (v <= 0) return toast(S.credit ? '현금이 없어요' : '갚을 빚이 없어요');
+    S.credit -= v; S.cash -= v; log('✅ 신용대출 ' + won(v) + ' 상환');
+  }
+  if (a === 'repayM') {
+    let v = Math.min(S.cash, mortDebt()); if (v <= 0) return toast(mortDebt() ? '현금이 없어요' : '주담대가 없어요');
+    S.cash -= v; log('✅ 주택담보대출 ' + won(v) + ' 상환');
+    for (const e of ESTATE) { const st = S.estate[e.id], x = Math.min(st.debt, v); st.debt -= x; v -= x; }
   }
   render(); save();
 }
+function floatTxt(ev, text) {
+  if (!ev) return;
+  const f = document.createElement('div'); f.className = 'float'; f.textContent = text;
+  const r = ev.target.closest('button').getBoundingClientRect();
+  f.style.left = (r.left + r.width / 2 - 30) + 'px'; f.style.top = (r.top - 8) + 'px';
+  document.body.appendChild(f); setTimeout(() => f.remove(), 900);
+}
 
-// ================= 화면 =================
-let tab = 'stock', speed = 1;
+// ===================== 화면 =====================
+let tab = 'home', speed = 1;
 
 function spark(h) {
-  if (h.length < 2) return '';
+  if (h.length < 2) return '<svg class="spark"></svg>';
   const mn = Math.min(...h), mx = Math.max(...h), r = mx - mn || 1;
-  const pts = h.map((v, i) => `${(i / (h.length - 1) * 100).toFixed(1)},${(38 - (v - mn) / r * 34).toFixed(1)}`).join(' ');
-  const col = h[h.length - 1] >= h[0] ? 'var(--up)' : 'var(--down)';
-  return `<svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+  const pts = h.map((v, i) => `${(i / (h.length - 1) * 100).toFixed(1)},${(27 - (v - mn) / r * 24).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 100 28" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${h[h.length - 1] >= h[0] ? 'var(--up)' : 'var(--down)'}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+const sign = (v, cls = true) => `<span class="${cls ? (v >= 0 ? 'good' : 'bad') : ''}">${v >= 0 ? '+' : ''}${won(v)}</span>`;
+const dis = c => c ? '' : 'disabled';
+
+function viewHome() {
+  const nj = JOBS[S.job + 1];
+  let promo = '최고 자리에 올랐어요 👑', canPromo = false;
+  if (nj) {
+    const lacks = [];
+    if (S.skill < nj.req) lacks.push(`역량 Lv.${nj.req}`);
+    if (S.tenure < nj.ten) lacks.push(`근속 ${nj.ten - S.tenure}개월 더`);
+    if (S.promoCd) lacks.push(`재심사 ${S.promoCd}개월 후`);
+    canPromo = !lacks.length;
+    promo = `다음: <b>${nj.n}</b> · ${canPromo ? '<span class="good">심사 가능!</span>' : lacks.join(', ') + ' 필요'}`;
+  }
+  const hc = S.health >= 60 ? 'var(--good)' : S.health >= 30 ? 'var(--gold)' : 'var(--bad)';
+  const ot = Math.round(salary() / 20 * 1.5);
+  const interest = mortDebt() * mortRate() / 12 + S.credit * creditRate() / 12;
+  return `
+  <div class="card">
+    <div class="row"><span class="muted">${S.married ? '💑 기혼' : '🧍 미혼'}${S.kids.length ? ' · 👶 ' + S.kids.length : ''} · ${homeId() ? '🏠 자가' : '🏚 월세살이'}</span><span class="muted">근속 ${Math.floor(S.tenure / 12)}년 ${S.tenure % 12}개월</span></div>
+    <div class="row"><div class="jobname">${job().n}</div><div class="b">월 ${won(salary())}</div></div>
+    <div class="ladder">${JOBS.map((_, i) => `<span class="${i <= S.job ? 'on' : ''}"></span>`).join('')}</div>
+    <div class="row"><div class="muted" style="line-height:1.4">📚 역량 Lv.${S.skill}<br>${promo}</div>
+      <button class="gold" data-a="promo" ${dis(canPromo && !S.over)}>승진 심사</button></div>
+  </div>
+  <div class="card">
+    <div class="row" style="gap:10px">
+      <span class="b" style="white-space:nowrap">❤️ ${Math.round(S.health)}</span>
+      <div class="bar"><div style="width:${S.health}%;background:${hc}"></div></div>
+      <span class="b" style="white-space:nowrap">⚡ ${S.energy}/${ENERGY_MAX}</span>
+    </div>
+    <div class="acts">
+      <button data-a="ot" ${dis(S.energy > 0 && S.health >= 10)}>🌙 야근<small>+${fmt(ot)}</small></button>
+      <button data-a="side" ${dis(S.energy > 0 && S.health >= 10)}>🛵 배달<small>+${fmt(8e4 * S.cpi)}</small></button>
+      <button data-a="gym" ${dis(S.energy > 0)}>🏋️ 운동<small>❤️+7</small></button>
+      <button data-a="study" ${dis(S.energy > 1 && S.cash >= skillCost())}>📚 공부<small>-${fmt(skillCost())}</small></button>
+    </div>
+    <div class="muted" style="margin-top:6px">에너지는 매달 충전돼요. 야근·부업은 건강을 깎고, 공부는 승진에 필요해요.</div>
+  </div>
+  <div class="card">
+    <h4>📊 이번 달 가계부 <span class="muted">물가 ${(S.cpi * 100).toFixed(0)}</span></h4>
+    <div class="ledger">
+      <div><span>월급</span>${sign(salary())}</div>
+      <div><span>생활비</span>${sign(-living())}</div>
+      <div><span>배우자</span>${sign(partnerIncome())}</div>
+      <div><span>월세(내가 냄)</span>${sign(-housingCost())}</div>
+      <div><span>임대(세후)</span>${sign(rentGross() * (1 - RENT_TAX))}</div>
+      <div><span>대출이자</span>${sign(-interest)}</div>
+      <div><span>사업(지난달)</span>${sign(S.lastBiz)}</div>
+      <div><span>예금이자</span>${sign(S.deposit * depRate() / 12 * (1 - INT_TAX))}</div>
+    </div>
+  </div>
+  <div class="card"><h4>📈 순자산 추이</h4><canvas id="chart"></canvas></div>`;
 }
 
-function renderTab() {
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  let h = '';
-  if (tab === 'stock') {
-    h += `<div class="muted" style="margin-bottom:8px">매달 가격이 바뀌어요. 싸게 사서 비싸게 파세요! (빨강=상승, 파랑=하락)</div>`;
-    STOCKS.forEach(k => {
-      const s = S.stocks[k.id], prev = s.h[s.h.length - 2] ?? s.p, ch = s.p / prev - 1;
-      const val = s.qty * s.p, pl = s.qty ? val - s.cost : 0;
-      h += `<div class="item"><div class="top">
-        <div><div class="name">${k.n}</div><div class="muted">${k.d}</div></div>
-        <div class="price">${s.p < 1e8 ? Math.round(s.p).toLocaleString() + '원' : fmt(s.p)}<div class="${ch >= 0 ? 'up' : 'down'}" style="font-size:13px">${ch >= 0 ? '▲' : '▼'} ${pct(ch)}</div></div>
-      </div>${spark(s.h)}
-      <div class="muted">${s.qty ? `보유 ${s.qty.toLocaleString()}주 · 평가 ${fmt(val)} · <span class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${fmt(pl)} (${pct(pl / s.cost)})</span>` : '보유 없음'}</div>
-      <div class="btns">
-        <button class="sm red" data-a="buyS" data-id="${k.id}" data-arg=".1">현금 10% 매수</button>
-        <button class="sm red" data-a="buyS" data-id="${k.id}" data-arg=".5">50% 매수</button>
-        <button class="sm red" data-a="buyS" data-id="${k.id}" data-arg="1">전액 매수</button>
-        <button class="sm blue" data-a="sellS" data-id="${k.id}" data-arg=".5" ${s.qty ? '' : 'disabled'}>절반 매도</button>
-        <button class="sm blue" data-a="sellS" data-id="${k.id}" data-arg="1" ${s.qty ? '' : 'disabled'}>전량 매도</button>
+function viewStock() {
+  let h = `<div class="tip">매달 가격이 바뀌어요 (빨강▲ 파랑▼). 매매 수수료 0.2%. 장기·분산투자가 정석!</div>`;
+  STOCKS.forEach(k => {
+    const s = S.stocks[k.id], prev = s.h[s.h.length - 2] ?? s.p, ch = s.p / prev - 1;
+    const val = s.qty * s.p, pl = s.qty ? val - s.cost : 0;
+    h += `<div class="item">
+      <div class="row"><div><div class="name">${k.n}</div><div class="muted">${k.d}</div></div>${spark(s.h)}
+        <div class="price">${Math.round(s.p).toLocaleString()}원<div class="${ch >= 0 ? 'up' : 'down'}" style="font-size:12px">${ch >= 0 ? '▲' : '▼'}${pct(ch)}</div></div></div>
+      <div class="muted" style="margin-top:3px">${s.qty ? `${s.qty.toLocaleString()}주 · 평가 ${won(val)} · <span class="${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${won(pl)} (${pct(pl / s.cost)})</span>` : '보유 없음'}</div>
+      <div class="btns"><span class="lbl">사기</span>
+        <button class="xs red" data-a="buyS" data-id="${k.id}" data-arg=".1">10%</button>
+        <button class="xs red" data-a="buyS" data-id="${k.id}" data-arg=".5">50%</button>
+        <button class="xs red" data-a="buyS" data-id="${k.id}" data-arg="1">전액</button>
+        <span class="sp"></span><span class="lbl">팔기</span>
+        <button class="xs blue" data-a="sellS" data-id="${k.id}" data-arg=".5" ${dis(s.qty)}>절반</button>
+        <button class="xs blue" data-a="sellS" data-id="${k.id}" data-arg="1" ${dis(s.qty)}>전부</button>
       </div></div>`;
-    });
-  }
-  if (tab === 'estate') {
-    h += `<div class="muted" style="margin-bottom:8px">매달 월세가 들어오고 집값은 천천히 올라요. 집값 지수: <b>${(S.housing * 100).toFixed(1)}</b></div>`;
-    ESTATE.forEach(e => {
-      const p = estatePrice(e), n = S.estate[e.id];
-      h += `<div class="item"><div class="top">
-        <div><div class="name">${e.n}</div><div class="muted">월세 ${fmt(estateRent(e))} · 보유 ${n}채</div></div>
-        <div class="price">${fmt(p)}</div></div>
-        <div class="btns">
-          <button class="sm gold" data-a="buyE" data-id="${e.id}" ${S.cash >= p ? '' : 'disabled'}>구입</button>
-          <button class="sm" data-a="sellE" data-id="${e.id}" ${n ? '' : 'disabled'}>매각</button>
-        </div></div>`;
-    });
-  }
-  if (tab === 'biz') {
-    h += `<div class="muted" style="margin-bottom:8px">사업은 매달 꾸준히 돈을 벌어요. 확장할수록 수익이 더 커져요! 경기 영향: <b>×${marketMul()}</b></div>`;
-    BIZ.forEach(b => {
-      const lv = S.biz[b.id], c = bizCost(b);
-      const nextProfit = b.profit * (lv + 1) * (1 + 0.15 * lv);
-      h += `<div class="item"><div class="top">
-        <div><div class="name">${b.n} ${lv ? `<span class="badge norm">Lv.${lv}</span>` : ''}</div>
-        <div class="muted">${lv ? '월 수익 ' + fmt(bizProfit(b)) + ' → ' : '예상 월 수익 '}${fmt(nextProfit)}</div></div>
-        <button class="sm gold" data-a="biz" data-id="${b.id}" ${S.cash >= c ? '' : 'disabled'}>${lv ? '확장' : '창업'}<br>${fmt(c)}</button>
-      </div></div>`;
-    });
-  }
-  if (tab === 'bank') {
-    const lim = loanLimit();
-    h += `<div class="item"><div class="top"><div><div class="name">💰 정기예금</div><div class="muted">연 ${DEPOSIT_RATE * 100}% 이자 · 안전하지만 느려요</div></div>
-      <div class="price">${fmt(S.deposit)}</div></div>
-      <div class="btns">
-        <button class="sm gold" data-a="dep" data-arg=".5">현금 절반 입금</button>
-        <button class="sm gold" data-a="dep" data-arg="1">전액 입금</button>
-        <button class="sm" data-a="wd" data-arg=".5" ${S.deposit ? '' : 'disabled'}>절반 출금</button>
-        <button class="sm" data-a="wd" data-arg="1" ${S.deposit ? '' : 'disabled'}>전액 출금</button>
-      </div></div>
-      <div class="item"><div class="top"><div><div class="name">💳 대출</div><div class="muted">연 ${LOAN_RATE * 100}% 이자 · 남은 한도 ${fmt(lim)}<br>월 이자 ${fmt(S.loan * LOAN_RATE / 12)}</div></div>
-      <div class="price bad">${fmt(S.loan)}</div></div>
-      <div class="btns">
-        <button class="sm red" data-a="loan" data-arg="10000000" ${lim >= 1e4 ? '' : 'disabled'}>1000만 빌리기</button>
-        <button class="sm red" data-a="loan" data-arg="100000000" ${lim >= 1e4 ? '' : 'disabled'}>1억 빌리기</button>
-        <button class="sm red" data-a="loan" data-arg="0" ${lim >= 1e4 ? '' : 'disabled'}>최대로 빌리기</button>
-        <button class="sm blue" data-a="repay" data-arg="0" ${S.loan ? '' : 'disabled'}>최대한 갚기</button>
-      </div></div>
-      <div class="muted">💡 대출 한도는 부동산·예금·주식·사업 가치에 따라 늘어나요. 순자산이 크게 마이너스가 되면 <b class="bad">파산</b>!</div>
-      <div class="item mt"><div class="name">📋 이번 달 가계부</div><div class="muted" style="line-height:1.8">
-        월급 <span class="good">+${fmt(salary())}</span><br>
-        월세 수입 <span class="good">+${fmt(rentIncome())}</span><br>
-        사업 수익 <span class="good">+${fmt(bizIncome())}</span> (±15%)<br>
-        예금 이자 <span class="good">+${fmt(S.deposit * DEPOSIT_RATE / 12)}</span><br>
-        생활비 <span class="bad">-${fmt(living())}</span><br>
-        대출 이자 <span class="bad">-${fmt(S.loan * LOAN_RATE / 12)}</span>
-      </div></div>`;
-  }
-  $('tabBody').innerHTML = h;
+  });
+  return h;
 }
 
-function renderLog() {
-  $('log').innerHTML = S.log.map(l => `<div><span class="t">${l.t}</span>${l.m}</div>`).join('');
+function viewEstate() {
+  const hid = homeId();
+  let h = `<div class="tip">취득세 2.5% · 양도세 22% · 주담대 LTV 60%, DSR 40%, 금리 ${(mortRate() * 100).toFixed(1)}%<br>첫 주거용 집엔 내가 살아서 월세가 안 나가요 (대신 임대수입 없음)</div>`;
+  ESTATE.forEach(e => {
+    const st = S.estate[e.id], p = ePrice(e), need = p * (1 + ACQ_TAX);
+    h += `<div class="item">
+      <div class="row"><div><div class="name">${e.n} ${st.n ? `<span class="muted">×${st.n}${e.id === hid ? ' (거주중)' : ''}</span>` : ''}</div>
+        <div class="muted">월세 ${won(eRent(e))}${st.debt ? ' · 대출 ' + won(st.debt) : ''}</div></div>
+        <div class="price">${won(p)}<div class="muted">${st.n ? '' : '현금 ' + won(need)}</div></div></div>
+      <div class="btns">
+        <button class="xs gold" data-a="buyE" data-id="${e.id}" data-arg="0" ${dis(S.cash >= need)}>현금 매입</button>
+        <button class="xs gold" data-a="buyE" data-id="${e.id}" data-arg="1" ${dis(S.cash >= need - p * LTV)}>대출 끼고 (자기자본 ${won(need - p * LTV)})</button>
+        <span class="sp"></span>
+        <button class="xs" data-a="sellE" data-id="${e.id}" ${dis(st.n)}>매도</button>
+      </div></div>`;
+  });
+  return h;
+}
+
+function viewBiz() {
+  let h = `<div class="tip">매장마다 매달 수익이 크게 출렁이고 적자도 나요. 불황엔 폐업 위험 2배. 사업소득세 20%.</div>`;
+  BIZ.forEach(b => {
+    const n = S.biz[b.id], c = bizCost(b);
+    h += `<div class="item"><div class="row">
+      <div><div class="name">${b.n} ${n ? `<span class="muted">${n}곳</span>` : ''}</div>
+      <div class="muted">매장당 월 평균 ${won(b.profit * S.cpi)} · 연 폐업률 ${Math.round(b.risk * 12 * 100)}%</div></div>
+      <div style="display:flex;gap:4px">
+        ${n ? `<button class="xs" data-a="sellB" data-id="${b.id}">양도</button>` : ''}
+        <button class="xs gold" data-a="biz" data-id="${b.id}" ${dis(S.cash >= c)}>${n ? '추가' : '창업'}<br>${won(c)}</button>
+      </div></div></div>`;
+  });
+  h += `<div class="item"><div class="row">
+      <div><div class="name">🦄 스타트업 엔젤투자 ${S.angel ? `<span class="muted">${S.angel}건</span>` : ''}</div>
+      <div class="muted">대부분 망하지만, 가끔 5~25배 대박</div></div>
+      <button class="xs gold" data-a="angel" ${dis(S.cash >= ANGEL_COST)}>투자<br>${won(ANGEL_COST)}</button></div></div>`;
+  return h;
+}
+
+function viewBank() {
+  const cl = creditLimit();
+  return `<div class="tip">기준금리 <b>${S.rate.toFixed(2)}%</b> · 호황엔 오르고 불황엔 내려요. 금리가 오르면 집값엔 악재!</div>
+  <div class="item"><div class="row"><div><div class="name">💰 정기예금</div><div class="muted">연 ${(depRate() * 100).toFixed(2)}% (이자소득세 15.4%)</div></div><div class="price">${won(S.deposit)}</div></div>
+    <div class="btns"><span class="lbl">넣기</span>
+      <button class="xs gold" data-a="dep" data-arg=".5">현금 절반</button>
+      <button class="xs gold" data-a="dep" data-arg="1">전부</button><span class="sp"></span><span class="lbl">빼기</span>
+      <button class="xs" data-a="wd" data-arg=".5" ${dis(S.deposit)}>절반</button>
+      <button class="xs" data-a="wd" data-arg="1" ${dis(S.deposit)}>전부</button></div></div>
+  <div class="item"><div class="row"><div><div class="name">💳 신용대출</div><div class="muted">연 ${(creditRate() * 100).toFixed(1)}% · 남은 한도 ${won(cl)} (연봉 1배)</div></div><div class="price bad">${won(S.credit)}</div></div>
+    <div class="btns">
+      <button class="xs red" data-a="loan" data-arg="10000000" ${dis(cl >= 1e4)}>1000만 빌리기</button>
+      <button class="xs red" data-a="loan" data-arg="0" ${dis(cl >= 1e4)}>한도까지</button><span class="sp"></span>
+      <button class="xs blue" data-a="repay" ${dis(S.credit)}>갚기</button></div></div>
+  <div class="item"><div class="row"><div><div class="name">🏠 주택담보대출</div><div class="muted">연 ${(mortRate() * 100).toFixed(1)}% · 부동산 탭에서 대출 끼고 매입</div></div><div class="price bad">${won(mortDebt())}</div></div>
+    <div class="btns"><span class="sp"></span><button class="xs blue" data-a="repayM" ${dis(mortDebt())}>현금으로 갚기</button></div></div>
+  <div class="item"><div class="name">📋 재무 상태</div><div class="ledger" style="margin-top:4px">
+    <div><span>예금</span><span>${won(S.deposit)}</span></div><div><span>주식</span><span>${won(stockValue())}</span></div>
+    <div><span>부동산</span><span>${won(estateValue())}</span></div><div><span>사업</span><span>${won(bizValue())}</span></div>
+    <div><span>총 부채</span><span class="bad">${won(mortDebt() + S.credit)}</span></div>
+    <div><span>DSR</span><span>${monthIncome() > 0 ? Math.round(annualDebtPay() / (monthIncome() * 12) * 100) : 0}%</span></div>
+  </div></div>
+  <div class="tip">⚠️ 현금이 모자라면 예금→마이너스통장 순으로 자동으로 빠져요. 빚이 감당 못할 만큼 커지면 파산!</div>`;
 }
 
 function drawChart() {
-  const c = $('chart'), dpr = devicePixelRatio || 1;
-  const w = c.clientWidth, hgt = c.clientHeight;
+  const c = $('chart'); if (!c) return;
+  const dpr = devicePixelRatio || 1, w = c.clientWidth, hgt = c.clientHeight;
   c.width = w * dpr; c.height = hgt * dpr;
-  const g = c.getContext('2d'); g.scale(dpr, dpr); g.clearRect(0, 0, w, hgt);
+  const g = c.getContext('2d'); g.scale(dpr, dpr);
   const h = S.hist;
-  if (h.length < 2) {
-    g.fillStyle = '#8e9ab8'; g.font = '13px sans-serif'; g.fillText('한 달이 지나면 그래프가 그려져요', 10, hgt / 2); return;
-  }
+  if (h.length < 2) { g.fillStyle = '#8d99b6'; g.font = '12px sans-serif'; g.fillText('한 달이 지나면 그래프가 그려져요', 4, hgt / 2); return; }
   const mn = Math.min(0, ...h), mx = Math.max(...h), r = mx - mn || 1;
-  const x = i => i / (h.length - 1) * (w - 4) + 2, y = v => hgt - 6 - (v - mn) / r * (hgt - 22);
-  if (mn < 0) { g.strokeStyle = '#2c3854'; g.beginPath(); g.moveTo(0, y(0)); g.lineTo(w, y(0)); g.stroke(); }
+  const x = i => i / (h.length - 1) * (w - 2) + 1, y = v => hgt - 3 - (v - mn) / r * (hgt - 16);
   const grad = g.createLinearGradient(0, 0, 0, hgt); grad.addColorStop(0, 'rgba(255,204,77,.35)'); grad.addColorStop(1, 'rgba(255,204,77,0)');
   g.beginPath(); g.moveTo(x(0), y(mn)); h.forEach((v, i) => g.lineTo(x(i), y(v))); g.lineTo(x(h.length - 1), y(mn)); g.fillStyle = grad; g.fill();
   g.beginPath(); h.forEach((v, i) => i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v))); g.strokeStyle = '#ffcc4d'; g.lineWidth = 2; g.stroke();
-  g.fillStyle = '#8e9ab8'; g.font = '12px sans-serif'; g.fillText('최고 ' + fmt(mx), 6, 13);
+  g.fillStyle = '#8d99b6'; g.font = '11px sans-serif'; g.fillText('최고 ' + won(mx), 2, 10);
+}
+
+function renderTicker() {
+  const l = S.log[0];
+  $('ticker').innerHTML = l ? `<span class="t">${l.t}</span>${l.m}` : '';
 }
 
 function render() {
@@ -704,56 +795,30 @@ function render() {
   const f = monthlyFlow();
   $('sFlow').innerHTML = `<span class="${f >= 0 ? 'good' : 'bad'}">${f >= 0 ? '+' : ''}${fmt(f)}</span>`;
   const ms = S.market.s;
-  $('sMarket').innerHTML = `<span class="badge ${ms}">${ms === 'boom' ? '호황 🔥' : ms === 'bust' ? '불황 🥶' : '보통'}</span>`;
-
-  $('clickVal').textContent = '+' + fmt(clickValue()) + ' / 클릭';
-  $('jobName').textContent = job().n;
-  $('jobSal').textContent = '월급 ' + fmt(salary());
-  $('ladder').innerHTML = JOBS.map((_, i) => `<span class="${i <= S.job ? 'on' : ''}"></span>`).join('');
-  $('skLv').textContent = S.skill;
-  $('skBtn').textContent = fmt(skillCost());
-  $('skBtn').disabled = S.cash < skillCost() || S.over;
-  const nj = JOBS[S.job + 1];
-  if (nj) {
-    $('promoTxt').innerHTML = `다음: <b>${nj.n}</b> (자기계발 Lv.${nj.req} 필요)`;
-    $('promoBtn').disabled = S.skill < nj.req || S.over;
-  } else { $('promoTxt').textContent = '최고 자리에 올랐어요! 👑'; $('promoBtn').disabled = true; }
-
+  $('sMarket').innerHTML = `<span class="${ms === 'boom' ? 'up' : ms === 'bust' ? 'down' : ''}">${ms === 'boom' ? '호황' : ms === 'bust' ? '불황' : '보통'}</span> <span class="muted">${S.rate.toFixed(2)}%</span>`;
   document.querySelectorAll('#speed button').forEach(b => b.classList.toggle('on', +b.dataset.speed === speed));
-  renderTab();
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  const m = $('main'), top = m.scrollTop;
+  m.innerHTML = tab === 'home' ? viewHome() : tab === 'stock' ? viewStock() : tab === 'estate' ? viewEstate() : tab === 'biz' ? viewBiz() : viewBank();
+  m.scrollTop = top;
   drawChart();
+  renderTicker();
 }
 
-// ================= 입력 =================
-$('workBtn').addEventListener('click', e => {
-  if (S.over) return;
-  const v = clickValue(); S.cash += v; S.clicks++;
-  const f = document.createElement('div'); f.className = 'float'; f.textContent = '+' + fmt(v);
-  const x = e.clientX || (e.target.getBoundingClientRect().left + 100), y = e.clientY || e.target.getBoundingClientRect().top + 40;
-  f.style.left = (x - 30 + rand(-20, 20)) + 'px'; f.style.top = (y - 20) + 'px';
-  document.body.appendChild(f); setTimeout(() => f.remove(), 900);
-  render();
+// ===================== 입력 =====================
+$('main').addEventListener('click', e => {
+  const b = e.target.closest('button[data-a]'); if (!b || b.disabled) return;
+  doAct(b.dataset.a, b.dataset.id, b.dataset.arg !== undefined ? +b.dataset.arg : undefined, e);
 });
-$('skBtn').addEventListener('click', () => {
-  const c = skillCost(); if (S.cash < c) return;
-  S.cash -= c; S.skill++; log('📚 자기계발 Lv.' + S.skill + ' 달성!'); render(); save();
-});
-$('promoBtn').addEventListener('click', () => {
-  const nj = JOBS[S.job + 1]; if (!nj || S.skill < nj.req) return;
-  S.job++; log('🎊 승진! 이제 ' + job().n + ' (월급 ' + fmt(salary()) + ')'); toast('🎊 승진! ' + job().n); render(); save();
-});
-$('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; renderTab(); } });
-$('tabBody').addEventListener('click', e => {
-  const b = e.target.closest('button[data-a]'); if (!b) return;
-  act(b.dataset.a, b.dataset.id, b.dataset.arg !== undefined ? +b.dataset.arg : undefined);
-});
+$('nav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; $('main').scrollTop = 0; render(); } });
 $('speed').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { speed = +b.dataset.speed; render(); } });
-$('resetBtn').addEventListener('click', () => {
-  modal('새 게임?', '<p>지금까지의 기록이 모두 사라져요.</p>', [['새로 시작', 'red', restart], ['취소', '', null]]);
+$('ticker').addEventListener('click', () => {
+  modal('📰 지난 소식', `<div class="loglist">${S.log.slice(0, 40).map(l => `<div><span class="t">${l.t}</span>${l.m}</div>`).join('')}</div>`,
+    [['닫기', 'gold', null], ['새 게임', 'red', () => modal('새 게임?', '<p>지금까지 기록이 사라져요.</p>', [['새로 시작', 'red', restart], ['취소', '', null]])]]);
 });
 addEventListener('resize', drawChart);
 
-// ================= 시간 흐름 =================
+// ===================== 시간 흐름 =====================
 let acc = 0, last = performance.now();
 function loop(now) {
   const dt = Math.min(now - last, 200); last = now;
@@ -765,25 +830,23 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-// ================= 시작 =================
+// ===================== 시작 =====================
 S = load();
 if (!S || S.over) {
   S = newState();
-  log('👋 20살, 통장에 100만원으로 시작! 60살까지 최대한 부자가 되어 보세요.');
+  log('👋 20살, 통장 300만원으로 시작! 월세 살며 알바부터…');
   render();
-  modal('💰 부자되기 대작전', `<p style="text-align:left">
-    20살, 통장 잔고 <b>100만원</b>.<br>60살 은퇴할 때까지 <b>최대한 부자</b>가 되어 보세요!<br><br>
-    💼 <b>일하기</b> 버튼을 눌러 돈 벌기<br>
-    📚 <b>자기계발</b>로 실력을 쌓고 <b>승진</b><br>
-    📊 주식·코인으로 한탕? 🏠 부동산으로 월세?<br>
-    🏪 사업을 키워 매달 수익 올리기<br>
-    🏦 대출로 레버리지! 단, 빚이 너무 많으면 <b class="bad">파산</b><br><br>
-    <span class="muted">1달 = 2.5초. 오른쪽 위에서 속도 조절·일시정지 가능. 자동 저장돼요.</span></p>`,
-    [['게임 시작!', 'gold', null]]);
-} else {
-  render();
-  toast('저장된 게임을 불러왔어요');
-}
+  modal('💰 부자되기 대작전', `<p style="text-align:left;font-size:14px">
+    20살, 통장 <b>300만원</b>, 월세살이 알바생.<br>60살 은퇴까지 <b>최대한 부자</b>가 되어 보세요!<br><br>
+    🏠 <b>홈</b> 야근·부업으로 돈 벌기, 공부해서 <b>승진</b><br>
+    ❤️ 무리하면 건강이 나빠지고 병원비가 나가요<br>
+    📈 <b>투자</b> 주식·ETF·코인<br>
+    🏘️ <b>부동산</b> 대출 끼고 내 집 마련 → 월세 탈출<br>
+    🏪 <b>사업</b> 창업은 고수익·고위험<br>
+    🏦 <b>은행</b> 금리가 오르내려요<br><br>
+    <span class="muted">물가·연봉 인상, 세금, 결혼·육아, 경기 순환까지 반영! 1달=3초, 위에서 일시정지·배속. 아래 소식줄을 누르면 지난 소식을 볼 수 있어요.</span></p>`,
+    [['시작하기', 'gold', null]]);
+} else { render(); toast('저장된 게임을 불러왔어요'); }
 requestAnimationFrame(loop);
 </script>
 </body>
