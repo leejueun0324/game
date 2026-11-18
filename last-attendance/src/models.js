@@ -18,10 +18,10 @@ function makeHuman(ch, opt) {
   // 다리
   const legL = limb(body, -0.13, 0.92, 0), legR = limb(body, 0.13, 0.92, 0);
   for (const L of [legL, legR]) {
-    if (bot.type === 'shorts') { part(L, 0, -0.18, 0, 0.2, 0.36, 0.22, bot.color); part(L, 0, -0.6, 0, 0.16, 0.5, 0.17, skin); }
+    if (bot.type === 'shorts') { const sl = bot.len || 0.36; part(L, 0, -sl / 2, 0, 0.2, sl, 0.22, bot.color); part(L, 0, -(sl + 0.84) / 2, 0, 0.16, 0.84 - sl, 0.17, skin); }
     else { part(L, 0, -0.42, 0, bot.type === 'cargo' ? 0.23 : 0.19, 0.84, 0.21, bot.color);
       if (bot.type === 'cargo') part(L, 0, -0.42, 0.0, 0.25, 0.16, 0.15, bot.color); if (bot.type === 'training') part(L, 0.1, -0.42, 0, 0.02, 0.8, 0.22, '#e8e8e8'); }
-    part(L, 0, -0.88, 0.04, 0.2, 0.1, 0.3, opt.shoe || '#f0f0f0');
+    part(L, 0, -0.88, 0.04, 0.2, 0.1, 0.3, opt.shoe || ch.shoe || '#f0f0f0');
   }
   // 몸통
   const torso = new THREE.Group(); torso.position.y = 0.92; body.add(torso);
@@ -31,7 +31,7 @@ function makeHuman(ch, opt) {
     part(torso, sh / 2 - 0.08, 0.3, 0.01, 0.17, 0.64, 0.27, top.over);
     part(torso, 0, 0.3, -0.02, sh, 0.64, 0.24, top.over);
   } else {
-    part(torso, 0, 0.3, 0, sh, 0.64, 0.27, top.color);
+    const tl = top.len || 0.64; part(torso, 0, 0.62 - tl / 2, 0, sh + (tl > 0.7 ? 0.02 : 0), tl, 0.27 + (tl > 0.7 ? 0.01 : 0), top.color);
     if (top.type === 'hoodie') { part(torso, 0, 0.62, -0.13, sh * 0.7, 0.16, 0.14, top.color); part(torso, 0, 0.12, 0.14, sh * 0.6, 0.16, 0.02, top.color, { emissive: '#000' });
       part(torso, -0.06, 0.5, 0.14, 0.015, 0.16, 0.01, '#ddd'); part(torso, 0.06, 0.5, 0.14, 0.015, 0.16, 0.01, '#ddd'); }
     if (top.type === 'sweat') part(torso, 0, 0.6, 0, sh * 0.55, 0.05, 0.28, top.color);

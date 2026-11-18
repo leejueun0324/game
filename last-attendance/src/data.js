@@ -6,8 +6,8 @@
 // 외형: hair = long | bob | short / bangs = 0 없음, 1 있음, 2 숱 많음, 0.5 숱 적음
 const CHARS = [
   { id:'jueun', name:'이주은', short:'주은', tags:'#주도형 #활발함 #솔직함', hp:9, atk:9, spd:8, color:'#ff8fc4',
-    gender:'여', birth:'07년생', age:20, height:167, hair:'long', bangs:2, glasses:false, hairColor:'#6b4226', hairLen:1.5,
-    top:{ type:'hoodie', color:'#8e9297' }, bottom:{ type:'shorts', color:'#3b4a66' }, outfit:'회색 후드티, 짧은 반바지',
+    gender:'여', birth:'07년생', age:20, height:167, hair:'long', bangs:2, glasses:false, hairColor:'#6b4226', hairLen:1.5, shoe:'#151518',
+    top:{ type:'hoodie', color:'#8e9297', len:0.75 }, bottom:{ type:'shorts', color:'#18181c', len:0.2 }, outfit:'회색 후드티(롱), 검은색 짧은 반바지, 검은 신발',
     skill:{ id:'lure', name:'유인', cd:15, intro:'함정을 설치한 후 화재경보기나 스마트폰 알람을 통하여 소리를 울림.',
       effect:'조준한 지점으로 좀비들이 몰려가고, 함정에 걸린 좀비는 움직이지 못함.' } },
   { id:'juwon', name:'이주원', short:'주원', tags:'#다정함 #공감형 #감성적', hp:3, atk:4, spd:4, color:'#6ec3ff',
