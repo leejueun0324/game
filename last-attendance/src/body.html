@@ -3,19 +3,28 @@
 
 <!-- 표지 -->
 <section id="cover" class="screen">
-  <div class="rain"></div>
-  <div class="coverRoll" id="coverRoll"></div>
-  <div class="coverMain">
-    <div class="kicker">아자스 : 마지막 출석</div>
-    <h1 class="title"><span>마지막</span><span class="red">출석</span></h1>
-    <div class="stamp">결석 0</div>
-    <p class="tag">2026. 6. 23. 대구대학교 문헌정보학과 과방.<br>열한 명 — <b>한 명도 빠지지 말고, 전부 살아남아.</b></p>
-    <div class="col">
-      <button class="go" id="btnStart">시작하기</button>
-      <button class="go alt hidden" id="btnContinue">이어하기</button>
-      <div class="row"><button data-cards>🃏 캐릭터 카드</button><button data-rel>🕸 인물 관계도</button></div>
+  <div class="cv-shade"></div>
+  <div class="cv-flicker"></div>
+  <div class="cv-wrap">
+    <div class="sheet">
+      <div class="sh-head"><b>출 석 부</b><span>문헌정보학과 · 2026. 6. 23. (화)</span></div>
+      <div class="sh-rows" id="coverRoll"></div>
+      <div class="sh-foot">재적 11 · 출석 <em>11</em> · 결석 <em class="red">0</em></div>
+      <div class="sh-blood"></div>
+    </div>
+    <div class="coverMain">
+      <div class="kicker">DAEGU UNIVERSITY · 2026. 06. 23. 16:12</div>
+      <h1 class="title"><span>마지막</span><span class="red">출석</span></h1>
+      <div class="stamp">결석 0</div>
+      <p class="tag">평범했던 오후, 과방 문 밖에서 쿵— 소리가 났다.<br>열한 명. <b>한 명도 빠지지 말고, 전부 살아남아.</b></p>
+      <div class="col">
+        <button class="go" id="btnStart">시작하기</button>
+        <button class="go alt hidden" id="btnContinue">이어하기</button>
+        <div class="row"><button data-cards>🃏 캐릭터 카드</button><button data-rel>🕸 인물 관계도</button></div>
+      </div>
     </div>
   </div>
+  <div class="ticker"><div><span>⚠ [긴급재난문자] 원인불명의 감염병이 전국적으로 확산되고 있습니다. 외출을 자제하시고 안전한 장소에서 대기하시기 바랍니다.</span><span>⚠ 감염자의 공격성이 매우 높습니다. 접촉 및 교상을 피하십시오.</span><span>⚠ 감염자는 사망 후에도 움직일 수 있습니다.</span><span>⚠ 대구대학교 학생들은 지정 대피시설(성산홀)로 이동하십시오.</span></div></div>
 </section>
 
 <!-- 모드 선택 -->
@@ -83,8 +92,8 @@
 <div id="rollcall" class="hidden"></div>
 
 <div id="phone" class="hidden">
-  <div class="ph-top"><span id="phoneTitle">대구대 문정과 (11)</span><button id="phoneClose">✕</button></div>
-  <div class="ph-tabs"><button id="tabGroup" class="on">단톡방</button><button id="tabDM">1:1 메시지</button></div>
+  <div class="ph-top"><span id="phoneTitle">공구방 (11)</span><button id="phoneClose">✕</button></div>
+  <div class="ph-tabs"><button id="tabGroup" class="on">공구방</button><button id="tabDM">1:1 메시지</button></div>
   <div id="phoneBody"></div>
   <div id="phoneInputRow"><input id="phoneInput" placeholder="메시지 입력"><button id="phoneSend">전송</button></div>
 </div>

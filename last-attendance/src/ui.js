@@ -34,7 +34,7 @@ const UI = {
   init() {
     renderPortraits();
     // 표지
-    const roll = $('coverRoll'); roll.innerHTML = ROLL_ORDER.map((id, i) => `<div style="animation-delay:${0.6 + i * 0.18}s"><span>${CHAR[id].name}</span><b>${i === 10 ? '……있어' : '있어'}</b></div>`).join('');
+    const roll = $('coverRoll'); roll.innerHTML = ROLL_ORDER.map((id, i) => `<div style="animation-delay:${0.5 + i * 0.16}s"><i>${String(i + 1).padStart(2, '0')}</i><span>${CHAR[id].name}</span><b>${i === 10 ? '……있어' : '✓'}</b></div>`).join('');
     const save = loadProgress();
     if (save && save.ch > 0) { $('btnContinue').classList.remove('hidden'); $('btnContinue').textContent = `이어하기 — ${CHAPTERS[save.ch].title.split('—')[0].trim()}`; }
     $('btnStart').onclick = () => this.show('modeSel');
@@ -109,7 +109,7 @@ const UI = {
         (ch ? `<image href="${PORTRAIT[id]}" x="-26" y="-26" width="52" height="52" clip-path="url(#cc)"/>` : `<text class="num" y="6">${n.name.split(' ')[0]}</text>`) +
         `<text class="lab" y="${ch ? 46 : 40}">${ch ? ch.name : n.name}</text></g>`; });
     svg += '</svg>';
-    this.modal(`<h2>인물 관계도</h2><p class="sub">인물이나 선을 누르면 관계가 보여요</p><div class="relwrap">${svg}<div id="relInfo" class="relinfo">《아자스: 마지막 출석》 — 대구대학교 문헌정보학과 열한 명과 K-13</div></div>`);
+    this.modal(`<h2>인물 관계도</h2><p class="sub">인물이나 선을 누르면 관계가 보여요</p><div class="relwrap">${svg}<div id="relInfo" class="relinfo">《마지막 출석》 — 대구대학교 문헌정보학과 열한 명과 K-13</div></div>`);
     const info = $('relInfo');
     $('modalBody').querySelectorAll('.edge').forEach(el => el.onclick = () => { const [a, b, t] = RELATIONS[+el.dataset.i]; info.innerHTML = `<b>${node(a).name} ↔ ${node(b).name}</b><br>${esc(t)}`;
       $('modalBody').querySelectorAll('.edge').forEach(e => e.classList.remove('on')); el.classList.add('on'); });
@@ -217,7 +217,7 @@ const UI = {
     const bubble = m => m.sys ? `<div class="sysmsg" style="border-color:${(SPECIAL[m.from] || {}).color}">${esc(whoName(m.from))}<br>${esc(m.text)}</div>`
       : m.from === me ? `<div class="msg mine"><div class="bb">${esc(m.text)}</div><small>${m.time}</small></div>`
         : `<div class="msg">${avatarHTML(m.from)}<div><b>${whoName(m.from)}</b><div class="bb">${esc(m.text)}</div></div><small>${m.time}</small></div>`;
-    if (this.phoneView === 'group') { $('phoneTitle').textContent = '대구대 문정과 (11)'; body.innerHTML = this.chat.group.map(bubble).join(''); }
+    if (this.phoneView === 'group') { $('phoneTitle').textContent = '공구방 (11)'; body.innerHTML = this.chat.group.map(bubble).join(''); }
     else if (this.phoneView === 'dmlist') {
       $('phoneTitle').textContent = '1:1 메시지';
       body.innerHTML = CHARS.filter(c => c.id !== me).map(c => { const l = (this.chat.dm[c.id] || []).slice(-1)[0];
