@@ -102,8 +102,8 @@ const CHARS = [
     skill:'골든타임', shout:'괜찮아? 잠깐만 있어봐', desc:'동료부터 챙긴다. 주변 팀원을 붕대로 치료하고, 근처에 쓰러진 동기는 바로 일으켜 세운다.', quote:'야르합니다' },
   { id:'junhee', name:'이준희', short:'준희', color:'#ffb35c', hp:1.35, spd:0.9,  dmg:1.05, cd:8, tag:'#느긋함 #유쾌함 #듬직함',
     skill:'풀스윙 홈런', shout:'날려버린다!!', desc:'과방에 굴러다니던 야구배트로 풀스윙. 앞쪽 넓은 범위의 좀비에게 큰 피해를 주고 멀리 날려버리며 1초간 기절시킨다. 처치하면 홈런!', quote:'배가 너무 고파ㅛ' },
-  { id:'yujun',  name:'박유준', short:'유준', color:'#7dd87d', hp:1.1,  spd:0.95, dmg:1.0,  cd:13, tag:'#책임감 #계획형 #현실적',
-    skill:'긴급 봉쇄선', shout:'책상 이쪽으로 옮겨!', desc:'강의실 책상과 의자로 순식간에 바리케이드 3개를 세워 좀비의 길을 막는다.', quote:'과방 5:00-6:30 빌림' },
+  { id:'yujun',  name:'박유준', short:'유준', color:'#7dd87d', hp:1.1,  spd:0.95, dmg:1.0,  cd:10, tag:'#책임감 #계획형 #현실적',
+    skill:'부탄가스 트랩', shout:'여기로 들어와라.', desc:'편의점 부탄가스로 만든 폭발 트랩 2개를 앞쪽에 설치한다. 좀비가 다가오면 터져 넓은 범위에 큰 피해를 주고 날려버린다. 계획대로 유인할수록 강력하다.', quote:'과방 5:00-6:30 빌림' },
   { id:'eunbit', name:'장은빛', short:'은빛', color:'#ffe066', hp:0.95, spd:1.12, dmg:1.0,  cd:9,  tag:'#즉흥적 #명랑함 #호기심',
     skill:'돌파 러시', shout:'일단 뛰어!!', desc:'생각보다 몸이 먼저 나간다. 3초간 이동속도 2배, 앞을 막는 좀비는 몸통 박치기로 밀쳐낸다.', quote:'비상' },
   { id:'jihu',   name:'이지후', short:'지후', color:'#b9a3ff', hp:0.95, spd:1.0,  dmg:1.15, cd:8,  tag:'#차분함 #꼼꼼함 #신중함',
@@ -296,7 +296,7 @@ function newGame(charIdx) {
       revive: 0, lastHit: 0, hurtFlash: 0, slot: 0 })),
     zombies: [], bullets: [], eshots: [], pickups: [], parts: [], texts: [], barricades: [], zones: [], grenades: [], rings: [], flashes: [],
     spawnT: 2, pickT: 3, hordeT: 40, teamBuff: 0, boss: null, bossSpawned: false, busArrived: false,
-    banners: [], won: false, turrets: [], swings: [], decoys: [], beams: [], slashes: [], delayed: [], trails: [], regen: 0, cutin: null,
+    banners: [], won: false, turrets: [], traps: [], swings: [], decoys: [], beams: [], slashes: [], delayed: [], trails: [], regen: 0, cutin: null,
   };
   for (const f of G.friends) f.say = { txt: '살려줘!!', t: 1e9 };
   for (let i = 0; i < 10; i++) spawnPickup();
@@ -438,11 +438,12 @@ function castSkill(c, isPlayer) {
     if (hit) { sfx('boom'); G.shake = Math.max(G.shake, 6 + hit); }
     if (hr) G.texts.push({ x: c.x + Math.cos(a) * 60, y: c.y - 40, txt: hr >= 3 ? '만루 홈런!!' : '홈런!', color: '#ffe066', size: 26, t: 1, vy: -50 });
   } else if (id === 'yujun') {
-    for (const o of [-.7, 0, .7]) {
-      const bx = c.x + Math.cos(a + o) * 62, by = c.y + Math.sin(a + o) * 62;
-      if (!solidAt(bx, by)) { G.barricades.push({ x: bx, y: by, r: 26, hp: 420, max: 420 }); burst(bx, by, '#c9a46a', 10, 140); }
+    for (const o of [-.45, .45]) {
+      let d = 90, x, y;
+      do { x = c.x + Math.cos(a + o) * d; y = c.y + Math.sin(a + o) * d; d -= 15; } while (d > 20 && !freeSpot(x, y, 10));
+      G.traps.push({ x, y, t: 20, arm: .6, dm });
     }
-    while (G.barricades.length > 9) G.barricades.shift();
+    while (G.traps.length > 6) G.traps.shift();
   } else if (id === 'eunbit') {
     c.sprint = 3; c.trample = 3;
     G.rings.push({ x: c.x, y: c.y, r: 10, max: 120, t: .35, dur: .35, color: '#ffe066', txt: '' });
@@ -766,6 +767,14 @@ function update(dt) {
   }
   G.decoys = G.decoys.filter(d => !d.gone);
   for (const bm of G.beams) bm.t -= dt; G.beams = G.beams.filter(b => b.t > 0);
+  for (const tp of G.traps) {
+    tp.t -= dt; tp.arm -= dt;
+    if (tp.arm <= 0 && (tp.t <= 0 || G.zombies.some(z => !z.dead && Math.hypot(z.x - tp.x, z.y - tp.y) < z.r + 40))) {
+      tp.done = true; aoe(tp.x, tp.y, 135, 80 * tp.dm, 90, .5, '#ff9a3a', '펑!');
+      burst(tp.x, tp.y, '#ff9a3a', 22, 300); burst(tp.x, tp.y, '#555', 12, 200); sfx('boom'); G.shake = Math.max(G.shake, 10);
+    }
+  }
+  G.traps = G.traps.filter(t => !t.done);
   for (const sw of G.swings) sw.t -= dt; G.swings = G.swings.filter(s => s.t > 0);
   for (const sl of G.slashes) sl.t -= dt; G.slashes = G.slashes.filter(s => s.t > 0);
   G.zombies = G.zombies.filter(z => !z.dead);
@@ -845,6 +854,14 @@ function draw() {
       ctx.fillStyle = i % 2 ? '#ffb030' : '#ff5a1a'; ctx.beginPath(); ctx.moveTo(fx - 6, fy); ctx.quadraticCurveTo(fx, fy - h * 2, fx + 6, fy); ctx.fill(); }
     ctx.restore();
     if (Math.random() < .3) G.parts.push({ x: zn.x + rand(-zn.r, zn.r) * .7, y: zn.y + rand(-zn.r, zn.r) * .7, vx: 0, vy: -60, t: .5, color: '#ff8a2a', r: 4 });
+  }
+  // 부탄가스 트랩
+  for (const tp of G.traps) {
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(tp.x + 2, tp.y + 9, 12, 4, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#d23a2a'; rr(ctx, tp.x - 7, tp.y - 13, 14, 24, 4); ctx.fill();
+    ctx.fillStyle = '#eee'; ctx.fillRect(tp.x - 7, tp.y - 4, 14, 6); ctx.fillStyle = '#999'; ctx.fillRect(tp.x - 3, tp.y - 17, 6, 5);
+    if (tp.arm <= 0 && Math.sin(T * 12) > 0) { ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(tp.x, tp.y - 20, 3, 0, 7); ctx.fill(); }
+    if (tp.arm <= 0) { ctx.strokeStyle = 'rgba(255,80,40,.25)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tp.x, tp.y, 40, 0, 7); ctx.stroke(); }
   }
   // 포탑
   for (const tu of G.turrets) {
