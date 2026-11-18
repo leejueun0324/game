@@ -73,8 +73,7 @@ const UI = {
       <div class="cbody"><div class="cname">${ch.name}</div><div class="ctags">${ch.tags}</div>
       <div class="stats"><span>체력</span><b>${bar(ch.hp)}</b><em>${ch.hp}/10</em><span>공격력</span><b>${bar(ch.atk)}</b><em>${ch.atk}/10</em><span>스피드</span><b>${bar(ch.spd)}</b><em>${ch.spd}/10</em></div>
       <div class="cskill">★ ${ch.skill.name} <small>쿨타임 ${ch.skill.cd}초</small></div>
-      ${small ? '' : `<div class="cdesc"><b>스킬</b> ${ch.skill.intro}</div><div class="cdesc"><b>효과</b> ${ch.skill.effect}</div>
-      <div class="cprof"><span>${ch.gender} · ${ch.birth} (2026년 ${ch.age}살) · ${ch.height}cm</span><span>앞머리 ${ch.bangs ? (ch.bangs >= 2 ? '有 (숱 많음)' : ch.bangs < 1 ? '有 (숱 적음)' : '有') : '無'}${ch.hair === 'long' ? ', 긴머리' : ch.hair === 'bob' ? ', 단발' : ''}${ch.glasses ? ' · 안경 有' : ''}</span><span>착장: ${ch.outfit}</span></div>`}
+      ${small ? '' : `<div class="cdesc"><b>스킬</b> ${ch.skill.intro}</div><div class="cdesc"><b>효과</b> ${ch.skill.effect}</div>`}
       </div></div>`;
   },
   openCards(pick) {
