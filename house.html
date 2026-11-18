@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>우리 집</title>
+<style>
+  :root { --bg:#fff4e4; --ink:#4a3b30; --accent:#ff8a65; --card:#ffffff; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif; }
+  #app { display:flex; gap:12px; padding:10px; height:100vh; }
+  #left { flex:1; display:flex; flex-direction:column; gap:8px; min-width:0; }
+  #topbar { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; justify-content:space-between;
+    background:var(--card); border-radius:12px; padding:8px 12px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .needs { display:flex; flex-wrap:wrap; gap:6px 14px; }
+  .need { display:flex; align-items:center; gap:5px; font-size:13px; }
+  .bar { width:72px; height:10px; background:#f0e6da; border-radius:6px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:80%; background:#7bd389; transition:width .3s, background .3s; }
+  #houseinfo { display:flex; gap:12px; font-size:14px; font-weight:700; }
+  #stage { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; position:relative; }
+  #cv { border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,.18); touch-action:none; display:block; background:#7a6656; }
+  #toast { position:absolute; left:50%; top:14px; transform:translateX(-50%); background:rgba(60,45,35,.88); color:#fff;
+    padding:8px 16px; border-radius:999px; font-size:14px; font-weight:700; opacity:0; transition:opacity .3s; pointer-events:none; white-space:nowrap; }
+  #toast.show { opacity:1; }
+  #controls { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  button { font-family:inherit; border:none; border-radius:10px; padding:8px 12px; background:#ffe0b2; color:var(--ink);
+    font-weight:700; font-size:14px; cursor:pointer; }
+  button:hover { filter:brightness(1.05); }
+  button:disabled { opacity:.45; cursor:default; }
+  #actBtn { background:var(--accent); color:#fff; min-width:170px; }
+  .emo { font-size:18px; padding:6px 10px; background:#fff; }
+  #side { width:300px; display:flex; flex-direction:column; gap:8px; min-height:0; }
+  .card { background:var(--card); border-radius:12px; padding:10px 12px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .card h3 { margin:0 0 6px; font-size:14px; }
+  #invite .row { display:flex; gap:6px; }
+  #link { flex:1; min-width:0; font-size:12px; padding:6px; border:1px solid #eadbc8; border-radius:8px; background:#fffaf3; color:var(--ink); }
+  #status { font-size:12px; margin-top:6px; color:#8a7464; }
+  #plist { list-style:none; margin:0; padding:0; font-size:13px; }
+  #plist li { display:flex; align-items:center; gap:6px; padding:2px 0; }
+  .dot { width:12px; height:12px; border-radius:50%; flex:none; }
+  .doing { color:#9a8574; font-size:12px; margin-left:auto; text-align:right; }
+  #chores { font-size:13px; line-height:1.6; margin-bottom:8px; }
+  .chat { flex:1; display:flex; flex-direction:column; min-height:200px; }
+  #log { flex:1; overflow-y:auto; font-size:13px; line-height:1.5; margin-bottom:6px; word-break:break-all; }
+  #log .sys { color:#9a7b62; font-style:italic; }
+  #chatForm { display:flex; gap:6px; }
+  #chatIn { flex:1; min-width:0; padding:8px; border:1px solid #eadbc8; border-radius:8px; font-family:inherit; font-size:14px; }
+  .modal { position:fixed; inset:0; background:rgba(74,59,48,.55); display:flex; align-items:center; justify-content:center; z-index:10; padding:16px; }
+  .modal.hidden { display:none; }
+  .panel { background:#fff; border-radius:18px; padding:22px; width:min(420px,100%); max-height:100%; overflow:auto; box-shadow:0 10px 40px rgba(0,0,0,.25); }
+  .panel h1 { margin:0 0 4px; font-size:32px; }
+  .panel p { margin:0 0 14px; color:#8a7464; }
+  .panel label { display:block; font-weight:700; margin:10px 0 4px; }
+  .panel input { width:100%; padding:10px; font-size:16px; border:1px solid #eadbc8; border-radius:10px; font-family:inherit; }
+  #colorPick { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 14px; }
+  #colorPick span { width:30px; height:30px; border-radius:50%; cursor:pointer; border:3px solid transparent; }
+  #colorPick span.on { border-color:#4a3b30; }
+  #goBtn { width:100%; padding:14px; font-size:18px; background:var(--accent); color:#fff; }
+  #joinInfo { font-size:14px; margin-bottom:8px; color:#c0603f; font-weight:700; }
+  details { margin-top:12px; font-size:14px; }
+  details .row { display:flex; gap:6px; margin-top:6px; }
+  .help { margin-top:14px; font-size:13px; line-height:1.7; background:#fff7ec; border-radius:10px; padding:10px 12px; }
+  .shopItem { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f3e7d8; }
+  .shopItem .e { font-size:30px; }
+  .shopItem .t { flex:1; font-size:14px; }
+  .shopItem .t small { color:#9a8574; }
+  @media (max-width: 900px) {
+    #app { flex-direction:column; height:auto; min-height:100vh; }
+    #side { width:auto; }
+    #stage { flex:none; }
+    .bar { width:52px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="left">
+    <div id="topbar">
+      <div class="needs">
+        <div class="need" title="배고픔">🍚<div class="bar"><i id="nb-hunger"></i></div></div>
+        <div class="need" title="에너지">⚡<div class="bar"><i id="nb-energy"></i></div></div>
+        <div class="need" title="청결">🫧<div class="bar"><i id="nb-hygiene"></i></div></div>
+        <div class="need" title="재미">🎈<div class="bar"><i id="nb-fun"></i></div></div>
+      </div>
+      <div id="houseinfo"><span id="clock">1일차 08:00</span><span id="coins">💰 0</span><span id="food">🍲 0</span></div>
+    </div>
+    <div id="stage"><canvas id="cv"></canvas><div id="toast"></div></div>
+    <div id="controls">
+      <button id="actBtn" disabled>가까이 가서 행동하기</button>
+      <button class="emo" data-e="👋">👋</button><button class="emo" data-e="❤️">❤️</button>
+      <button class="emo" data-e="😂">😂</button><button class="emo" data-e="😮">😮</button><button class="emo" data-e="👍">👍</button>
+    </div>
+  </div>
+  <div id="side">
+    <div class="card" id="invite">
+      <h3>💌 친구 초대 링크</h3>
+      <div class="row"><input id="link" readonly><button id="copyBtn">복사</button></div>
+      <div id="status">연결 전</div>
+    </div>
+    <div class="card"><h3>🏠 같이 사는 사람</h3><ul id="plist"></ul></div>
+    <div class="card"><h3>🧹 우리 집 상태</h3><div id="chores"></div><button id="shopBtn">🛒 가구·친구 사기</button></div>
+    <div class="card chat">
+      <div id="log"></div>
+      <form id="chatForm"><input id="chatIn" maxlength="60" placeholder="메시지 입력 (Enter)" autocomplete="off"><button>전송</button></form>
+    </div>
+  </div>
+</div>
+
+<div id="lobby" class="modal">
+  <div class="panel">
+    <h1>🏠 우리 집</h1>
+    <p>친구들과 한 집에서 같이 사는 일상생활 게임</p>
+    <div id="joinInfo"></div>
+    <label for="nameIn">내 이름</label>
+    <input id="nameIn" maxlength="8" placeholder="이름 (8자까지)">
+    <label>내 색깔</label>
+    <div id="colorPick"></div>
+    <button id="goBtn">새 집 만들기</button>
+    <details id="codeBox">
+      <summary>친구 집 코드로 들어가기</summary>
+      <div class="row"><input id="codeIn" placeholder="집 코드 (예: ab3k9x)"><button id="codeBtn">들어가기</button></div>
+    </details>
+    <div class="help">
+      <b>조작법</b><br>
+      🖱️ 바닥·가구를 <b>클릭(터치)</b>하면 그곳으로 가서 행동해요<br>
+      ⌨️ <b>WASD / 방향키</b> 이동, <b>E / 스페이스</b> 행동, <b>Enter</b> 채팅, <b>1~5</b> 이모티콘<br><br>
+      <b>하는 일</b><br>
+      🍚 배고픔 · ⚡ 에너지 · 🫧 청결 · 🎈 재미를 채워요<br>
+      💻 컴퓨터로 일해서 <b>우리 집 돈</b>을 벌고, 🍳 요리하면 식탁에 3인분이 생겨요<br>
+      🧹 먼지·설거지·쓰레기·빨래 같은 집안일도 같이 나눠서 해요<br>
+      🛋️ 소파에서 같이 TV를 보거나 같이 밥을 먹으면 더 즐거워요!
+    </div>
+  </div>
+</div>
+
+<div id="shop" class="modal hidden">
+  <div class="panel">
+    <h1>🛒 가구 가게</h1>
+    <p>우리 집 돈(<span id="shopCoins">0</span>💰)으로 함께 사요</p>
+    <div id="shopList"></div>
+    <button id="shopClose" style="width:100%;margin-top:12px">닫기</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+// =====================================================================
+//  우리 집 — 링크로 친구와 실시간으로 함께하는 일상생활 게임
+//  네트워크: PeerJS(WebRTC). 집을 만든 사람이 "집주인(호스트)"이 되어
+//  집 상태를 관리하고, 집주인이 나가면 남은 사람 중 한 명이 이어받아요.
+// =====================================================================
+const $ = id => document.getElementById(id);
+const rand = n => Math.floor(Math.random() * n);
+const clamp = v => Math.max(0, Math.min(100, v));
+const now = () => Date.now();
+
+const T = 32, COLS = 30, ROWS = 20, W = COLS * T, H = ROWS * T;
+const cv = $('cv'), ctx = cv.getContext('2d');
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+cv.width = W * DPR; cv.height = H * DPR; ctx.scale(DPR, DPR);
+const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+const COLORS = ['#ff7b9c', '#ffb347', '#f5d33f', '#7bd389', '#5bc0eb', '#9b8cff', '#d98ce8', '#a1887f'];
+const PREFIX = 'urijip-house-v1-';
+
+// ===== 집 지도 =====
+// '#' 벽, b 침실, t 욕실, k 주방, l 거실, g 마당, d 문
+const grid = [];
+for (let y = 0; y < ROWS; y++) grid.push(Array(COLS).fill('#'));
+function fillG(x1, y1, x2, y2, c) { for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) grid[y][x] = c; }
+fillG(1, 1, 8, 8, 'b'); fillG(10, 1, 14, 8, 't'); fillG(16, 1, 28, 8, 'k');
+fillG(1, 10, 19, 18, 'l'); fillG(21, 10, 28, 18, 'g');
+for (const [x, y] of [[2, 9], [12, 9], [18, 9], [25, 9], [20, 14]]) grid[y][x] = 'd';
+const ROOMS = [
+  { n: '침실', x: 1, y: 1, w: 8, h: 8 }, { n: '욕실', x: 10, y: 1, w: 5, h: 8 },
+  { n: '주방', x: 16, y: 1, w: 13, h: 8 }, { n: '거실', x: 1, y: 10, w: 19, h: 9 }, { n: '마당', x: 21, y: 10, w: 8, h: 9 },
+];
+
+const BASE = [
+  { id: 'bed1', type: 'bed', x: 1, y: 1, w: 2, h: 3, e: '🛏️', n: '침대' },
+  { id: 'bed2', type: 'bed', x: 4, y: 1, w: 2, h: 3, e: '🛏️', n: '침대' },
+  { id: 'closet', type: 'closet', x: 7, y: 1, w: 2, h: 1, e: '👕', n: '옷장' },
+  { id: 'desk', type: 'desk', x: 1, y: 7, w: 2, h: 1, e: '💻', n: '컴퓨터' },
+  { id: 'tub', type: 'tub', x: 10, y: 1, w: 2, h: 2, e: '🛁', n: '욕조' },
+  { id: 'toilet', type: 'toilet', x: 14, y: 1, w: 1, h: 1, e: '🚽', n: '변기' },
+  { id: 'basin', type: 'basin', x: 14, y: 4, w: 1, h: 1, e: '🪥', n: '세면대' },
+  { id: 'washer', type: 'washer', x: 10, y: 7, w: 1, h: 1, e: '🧺', n: '세탁기' },
+  { id: 'fridge', type: 'fridge', x: 16, y: 1, w: 1, h: 2, e: '🧊', n: '냉장고' },
+  { id: 'stove', type: 'stove', x: 18, y: 1, w: 2, h: 1, e: '🍳', n: '가스레인지' },
+  { id: 'sink', type: 'sink', x: 21, y: 1, w: 2, h: 1, e: '🚰', n: '싱크대' },
+  { id: 'trash', type: 'trash', x: 28, y: 1, w: 1, h: 1, e: '🗑️', n: '쓰레기통' },
+  { id: 'table', type: 'table', x: 21, y: 5, w: 4, h: 2, e: '🍽️', n: '식탁' },
+  { id: 'tv', type: 'tv', x: 4, y: 10, w: 4, h: 1, e: '📺', n: 'TV' },
+  { id: 'sofa', type: 'sofa', x: 4, y: 14, w: 4, h: 1, e: '🛋️', n: '소파' },
+  { id: 'books', type: 'books', x: 9, y: 10, w: 2, h: 1, e: '📚', n: '책장' },
+  { id: 'plant0', type: 'plant', x: 22, y: 11, w: 1, h: 1, idx: 0, n: '텃밭' },
+  { id: 'plant1', type: 'plant', x: 24, y: 11, w: 1, h: 1, idx: 1, n: '텃밭' },
+  { id: 'plant2', type: 'plant', x: 26, y: 11, w: 1, h: 1, idx: 2, n: '텃밭' },
+  { id: 'hammock', type: 'hammock', x: 23, y: 16, w: 3, h: 1, e: '🏕️', n: '해먹' },
+];
+const SHOP = [
+  { id: 'piano', type: 'piano', x: 14, y: 10, w: 2, h: 1, e: '🎹', n: '피아노', price: 80, d: '같이 치면 소리가 다 들려요' },
+  { id: 'tree', type: 'tree', x: 18, y: 16, w: 1, h: 2, e: '🎄', n: '크리스마스 트리', price: 50, d: '꾸미면 기분이 좋아져요' },
+  { id: 'fish', type: 'fish', x: 10, y: 17, w: 2, h: 1, e: '🐠', n: '수족관', price: 100, d: '물고기 구경은 언제나 재밌어요' },
+  { id: 'cat', type: 'cat', e: '🐈', n: '고양이', price: 150, d: '거실을 돌아다니는 우리 집 고양이' },
+];
+const FCOL = { bed: '#a9c9ff', closet: '#b48a63', desk: '#a07a55', tub: '#f7fbff', toilet: '#f7fbff', basin: '#f7fbff',
+  washer: '#e3e7ea', fridge: '#e3eef5', stove: '#5d5d5d', sink: '#cfd8dc', trash: '#9fb0b8', table: '#b5835a', tv: '#3a3a3a',
+  sofa: '#e57373', books: '#8d6e63', plant: '#7b5a44', hammock: '#ffd54f', piano: '#2b2b2b', tree: null, fish: '#8fd8f7' };
+
+// ===== 게임 상태 =====
+let world = newWorld();
+let gotWorld = false;
+const players = {};           // 다른 사람들 (id -> 정보)
+const uid = Math.random().toString(36).slice(2, 10);
+const me = { id: uid, name: '', color: COLORS[0], x: 11.5 * T, y: 13.5 * T, dir: 1, act: null, prev: null,
+  sayText: '', sayId: 0, bubbleT: 0, emote: '', emoteId: 0, emoteT: 0 };
+const need = { hunger: 80, energy: 80, hygiene: 80, fun: 80 };
+let started = false, path = null, pendingTarget = null, solid = [], solidKey = '';
+let pianoT = 0, warnT = 0;
+
+function newWorld() {
+  return { min: 8 * 60, day: 1, coins: 30, food: 0, dishes: 0, trash: 0.2, laundry: 0.2, dust: [], dustN: 0,
+    plants: [{ water: 0.2, grow: 0 }, { water: 0.2, grow: 0 }, { water: 0.2, grow: 0 }], bought: [], cat: null };
+}
+function furniture() { return BASE.concat(SHOP.filter(s => s.type !== 'cat' && world.bought.includes(s.id))); }
+function rebuildSolid() {
+  const k = world.bought.join(',');
+  if (k === solidKey && solid.length) return;
+  solidKey = k;
+  solid = grid.map(r => r.map(c => c === '#'));
+  for (const o of furniture()) for (let y = o.y; y < o.y + o.h; y++) for (let x = o.x; x < o.x + o.w; x++) solid[y][x] = true;
+}
+rebuildSolid();
+
+function getObjects() {
+  const list = furniture().slice();
+  for (const d of world.dust) list.push({ id: 'dust' + d.id, type: 'dust', did: d.id, x: d.x, y: d.y, w: 1, h: 1, e: '💨', n: '먼지' });
+  if (world.cat) {
+    const c = world.cat;
+    list.push({ id: 'cat', type: 'cat', x: (c.x - 14) / T, y: (c.y - 14) / T, w: 28 / T, h: 28 / T, e: '🐈', n: '고양이', dyn: true });
+  }
+  return list;
+}
+function objById(id) { return getObjects().find(o => o.id === id); }
+function isNight() { const h = world.min / 60; return h >= 21 || h < 6; }
+function darkness() {
+  const h = world.min / 60;
+  if (h >= 21 || h < 5) return 1;
+  if (h >= 19) return (h - 19) / 2;
+  if (h < 7) return 1 - (h - 5) / 2;
+  return 0;
+}
+function houseDirty() { return world.dust.length >= 4 || world.trash >= 1 || world.dishes >= 4; }
+function othersDoing(...types) { return Object.values(players).some(p => p.act && types.includes(p.act.type)); }
+
+// ===== 행동 =====
+function N(k, v) { need[k] = clamp(need[k] + v); }
+function actionFor(o) {
+  const w = world;
+  switch (o.type) {
+    case 'bed': return { label: '잠자기', icon: '💤', cont: true, sit: true, tick: dt => N('energy', (isNight() ? 7 : 4) * dt) };
+    case 'closet': return { label: '옷 갈아입기', icon: '👕', dur: 0.8, done: () => { me.color = COLORS[(COLORS.indexOf(me.color) + 1) % COLORS.length]; saveProfile(); } };
+    case 'desk': return { label: '일하기 (+25💰)', icon: '💻', dur: 5, can: () => need.energy > 15 || '너무 피곤해서 일할 수 없어요 😴',
+      done: () => { N('energy', -10); N('fun', -6); op('work'); toast('💰 25원을 벌었어요!'); } };
+    case 'tub': return { label: '목욕하기', icon: '🛁', dur: 4, done: () => N('hygiene', 60) };
+    case 'toilet': return { label: '화장실 가기', icon: '🚽', dur: 2, done: () => { N('hygiene', 5); N('fun', 3); } };
+    case 'basin': return { label: '양치하기', icon: '🪥', dur: 2, done: () => N('hygiene', 20) };
+    case 'washer': return w.laundry >= 0.3 ? { label: '빨래하기 (+6💰)', icon: '🧺', dur: 3, done: () => op('laundry') }
+      : { off: true, label: '아직 빨래가 별로 없어요' };
+    case 'fridge': return { label: '간식 먹기 (-5💰)', icon: '🍪', dur: 1.5, can: () => world.coins >= 5 || '돈이 부족해요 (컴퓨터로 일해서 벌어요)',
+      done: () => { N('hunger', 20); op('snack'); } };
+    case 'stove': return { label: '요리하기 (-15💰, 3인분)', icon: '🍳', dur: 4, can: () => world.coins >= 15 || '돈이 부족해요 (컴퓨터로 일해서 벌어요)',
+      done: () => op('cook') };
+    case 'sink': return w.dishes > 0 ? { label: '설거지하기 (+4💰)', icon: '🧽', dur: 3, done: () => op('dish') }
+      : { label: '손 씻기', icon: '🫧', dur: 1, done: () => N('hygiene', 5) };
+    case 'trash': return w.trash >= 0.5 ? { label: '쓰레기 버리기 (+5💰)', icon: '🗑️', dur: 2, done: () => op('trash') }
+      : { off: true, label: '쓰레기통이 아직 괜찮아요' };
+    case 'table': return w.food > 0 ? { label: `밥 먹기 (남은 음식 ${w.food})`, icon: '🍚', dur: 3, can: () => world.food > 0 || '음식이 다 떨어졌어요',
+      done: () => { N('hunger', 45); op('eat'); if (othersDoing('table')) { N('fun', 12); toast('😋 같이 먹으니까 더 맛있어요!'); } } }
+      : { off: true, label: '음식이 없어요. 가스레인지에서 요리해요 🍳' };
+    case 'tv': case 'sofa': return { label: 'TV 보기', icon: '📺', cont: true, sit: o.type === 'sofa',
+      tick: dt => N('fun', (othersDoing('sofa', 'tv') ? 5 : 3) * dt) };
+    case 'books': return { label: '책 읽기', icon: '📖', cont: true, tick: dt => N('fun', 1.8 * dt) };
+    case 'plant': {
+      const p = w.plants[o.idx];
+      if (p.grow >= 1) return { label: '토마토 수확하기 (+2인분)', icon: '🍅', dur: 1.5, done: () => op('harvest', o.idx) };
+      if (p.water < 0.5) return { label: '물 주기', icon: '💧', dur: 1.5, done: () => op('water', o.idx) };
+      return { off: true, label: `쑥쑥 자라는 중 (${Math.floor(p.grow * 100)}%)` };
+    }
+    case 'hammock': return { label: '해먹에서 쉬기', icon: '😌', cont: true, sit: true, tick: dt => { N('energy', 2.5 * dt); N('fun', 1.5 * dt); } };
+    case 'piano': return { label: '피아노 치기', icon: '🎵', cont: true, tick: dt => {
+      N('fun', 3.5 * dt); pianoT -= dt;
+      if (pianoT <= 0) { pianoT = 0.3 + Math.random() * 0.2; const n = rand(8); playNote(n, 0.12); net({ t: 'note', n }); }
+    } };
+    case 'tree': return { label: '트리 꾸미기', icon: '✨', dur: 2, done: () => N('fun', 15) };
+    case 'fish': return { label: '물고기 구경하기', icon: '🐠', dur: 3, done: () => N('fun', 18) };
+    case 'cat': return { label: '고양이 쓰다듬기', icon: '❤️', dur: 1.5, done: () => { N('fun', 20); toast('🐈 냐옹~'); } };
+    case 'dust': return { label: '먼지 청소하기 (+3💰)', icon: '🧹', dur: 2, done: () => op('dust', o.did) };
+  }
+  return null;
+}
+
+function seat(o) {
+  let h = 0; for (const ch of me.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return { x: (o.x + (h % o.w) + 0.5) * T, y: (o.y + o.h / 2) * T + ((h >> 4) % 3 - 1) * 4 };
+}
+function startAction(o) {
+  const a = actionFor(o);
+  if (!a) return;
+  if (a.off) { toast(a.label); return; }
+  if (a.can) { const r = a.can(); if (r !== true) { toast(r); return; } }
+  if (me.act) endAct();
+  me.act = { type: o.type, oid: o.id, label: a.label, icon: a.icon || o.e || '✨', t: 0, dur: a.dur || 0, cont: !!a.cont, a };
+  if (a.sit) { me.prev = { x: me.x, y: me.y }; const s = seat(o); me.x = s.x; me.y = s.y; }
+  path = null; pendingTarget = null;
+}
+function endAct() {
+  if (me.act && me.act.a.sit && me.prev) { me.x = me.prev.x; me.y = me.prev.y; }
+  me.act = null; me.prev = null;
+}
+function updateAct(dt) {
+  const A = me.act;
+  if (!A) return;
+  A.t += dt;
+  if (A.cont) A.a.tick(dt);
+  else if (A.t >= A.dur) { endAct(); A.a.done && A.a.done(); }
+}
+
+// ===== 이동 =====
+function collides(x, y) {
+  const r = 10;
+  for (const [cx, cy] of [[x - r, y - r], [x + r, y - r], [x - r, y + r], [x + r, y + r]]) {
+    const tx = Math.floor(cx / T), ty = Math.floor(cy / T);
+    if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS || solid[ty][tx]) return true;
+  }
+  return false;
+}
+function move(mx, my) {
+  const inside = collides(me.x, me.y);
+  if (inside || !collides(me.x + mx, me.y)) me.x += mx;
+  if (inside || !collides(me.x, me.y + my)) me.y += my;
+  me.x = Math.max(12, Math.min(W - 12, me.x)); me.y = Math.max(12, Math.min(H - 12, me.y));
+}
+function bfs(sx, sy, goal) {
+  const key = (x, y) => y * COLS + x;
+  const prev = new Map([[key(sx, sy), -1]]);
+  const q = [[sx, sy]];
+  while (q.length) {
+    const [x, y] = q.shift();
+    if (goal(x, y)) {
+      const p = []; let k = key(x, y);
+      while (k !== -1) { p.push([k % COLS, Math.floor(k / COLS)]); k = prev.get(k); }
+      return p.reverse().slice(1);
+    }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS || solid[ny][nx] || prev.has(key(nx, ny))) continue;
+      prev.set(key(nx, ny), key(x, y)); q.push([nx, ny]);
+    }
+  }
+  return null;
+}
+function goalFor(o) {
+  const ox = Math.floor(o.x), oy = Math.floor(o.y), ow = Math.max(1, Math.round(o.w)), oh = Math.max(1, Math.round(o.h));
+  return (x, y) => (x >= ox - 1 && x <= ox + ow && y >= oy && y < oy + oh) || (y >= oy - 1 && y <= oy + oh && x >= ox && x < ox + ow);
+}
+function rectDist(o, px, py) {
+  const x1 = o.x * T, y1 = o.y * T, x2 = x1 + o.w * T, y2 = y1 + o.h * T;
+  const dx = Math.max(x1 - px, 0, px - x2), dy = Math.max(y1 - py, 0, py - y2);
+  return Math.hypot(dx, dy);
+}
+function inRange(o) { return rectDist(o, me.x, me.y) <= 26; }
+function nearest() {
+  let best = null, bd = 27;
+  for (const o of getObjects()) { const d = rectDist(o, me.x, me.y); if (d < bd) { bd = d; best = o; } }
+  return best;
+}
+function hitObject(x, y) {
+  const objs = getObjects();
+  const cat = objs.find(o => o.type === 'cat');
+  if (cat && Math.hypot(x - (cat.x + cat.w / 2) * T, y - (cat.y + cat.h / 2) * T) < 22) return cat;
+  return objs.find(o => o.type === 'dust' && rectDist(o, x, y) < 4) || objs.find(o => !o.dyn && rectDist(o, x, y) === 0) || null;
+}
+function walkTo(o, tx, ty) {
+  if (me.act) endAct();
+  const sx = Math.floor(me.x / T), sy = Math.floor(me.y / T);
+  if (o) {
+    if (inRange(o)) { startAction(o); return; }
+    const p = bfs(sx, sy, goalFor(o));
+    if (p) { path = p; pendingTarget = o.id; } else toast('거기는 갈 수 없어요');
+  } else if (solid[ty] && !solid[ty][tx]) {
+    path = bfs(sx, sy, (a, b) => a === tx && b === ty); pendingTarget = null;
+  }
+}
+
+// ===== 입력 =====
+const keys = {};
+addEventListener('keydown', e => {
+  if (!started) return;
+  if (document.activeElement === $('chatIn')) { if (e.key === 'Escape') $('chatIn').blur(); return; }
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  if (e.key === 'Enter') { e.preventDefault(); $('chatIn').focus(); return; }
+  if ((e.key === 'e' || e.key === 'E' || e.key === ' ') && !e.repeat) { e.preventDefault(); doNearest(); return; }
+  if (e.key >= '1' && e.key <= '5') { sendEmote(['👋', '❤️', '😂', '😮', '👍'][+e.key - 1]); return; }
+  keys[e.key.toLowerCase()] = true;
+  if (e.key.startsWith('Arrow')) e.preventDefault();
+});
+addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+function doNearest() {
+  if (me.act) { endAct(); return; }
+  const o = nearest();
+  if (o) startAction(o);
+}
+cv.addEventListener('pointerdown', e => {
+  if (!started) return;
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+  walkTo(hitObject(x, y), Math.floor(x / T), Math.floor(y / T));
+});
+$('actBtn').onclick = doNearest;
+document.querySelectorAll('.emo').forEach(b => b.onclick = () => sendEmote(b.dataset.e));
+function sendEmote(e) { me.emote = e; me.emoteId++; me.emoteT = 3; }
+$('chatForm').onsubmit = e => {
+  e.preventDefault();
+  const text = $('chatIn').value.trim().slice(0, 60);
+  $('chatIn').value = ''; $('chatIn').blur();
+  if (!text || !started) return;
+  me.sayText = text; me.sayId++; me.bubbleT = 5;
+  if (isHost) hostChat(me, text); else net({ t: 'chat', text });
+};
+
+// ===== 업데이트 =====
+const SPD = 140;
+let sendT = 0, lastSent = '', lastSentAt = 0;
+function update(dt) {
+  rebuildSolid();
+  let dx = 0, dy = 0;
+  if (keys['a'] || keys['arrowleft']) dx--;
+  if (keys['d'] || keys['arrowright']) dx++;
+  if (keys['w'] || keys['arrowup']) dy--;
+  if (keys['s'] || keys['arrowdown']) dy++;
+  if (dx || dy) {
+    path = null; pendingTarget = null;
+    if (me.act) endAct();
+    const l = Math.hypot(dx, dy);
+    move(dx / l * SPD * dt, dy / l * SPD * dt);
+    if (dx) me.dir = dx;
+  } else if (path) {
+    if (!path.length) {
+      path = null;
+      if (pendingTarget) { const o = objById(pendingTarget); pendingTarget = null; if (o && inRange(o)) startAction(o); }
+    } else {
+      const [tx, ty] = path[0];
+      const gx = (tx + 0.5) * T, gy = (ty + 0.5) * T;
+      const ddx = gx - me.x, ddy = gy - me.y, d = Math.hypot(ddx, ddy);
+      const s = SPD * dt;
+      if (d <= s) { me.x = gx; me.y = gy; path.shift(); }
+      else { move(ddx / d * s, ddy / d * s); if (Math.abs(ddx) > 1) me.dir = Math.sign(ddx); }
+      if (pendingTarget) { const o = objById(pendingTarget); if (o && inRange(o)) { path = null; pendingTarget = null; startAction(o); } }
+    }
+  }
+  updateAct(dt);
+
+  // 욕구 감소
+  const sleeping = me.act && me.act.type === 'bed';
+  N('hunger', -(sleeping ? 0.15 : 0.3) * dt);
+  if (!sleeping) N('energy', -0.2 * dt);
+  N('hygiene', -0.2 * dt);
+  N('fun', -(0.35 + (houseDirty() ? 0.25 : 0)) * dt);
+  if (need.hunger <= 0) N('energy', -0.5 * dt);
+  warnT -= dt;
+  if (warnT <= 0) {
+    const low = Object.entries(need).find(([, v]) => v < 15);
+    if (low) {
+      toast({ hunger: '🍚 배고파요! 식탁이나 냉장고로 가요', energy: '⚡ 너무 졸려요... 침대에서 자요', hygiene: '🫧 씻고 싶어요! 욕조로 가요', fun: '🎈 심심해요! TV를 보거나 친구랑 놀아요' }[low[0]]);
+      warnT = 25;
+    }
+  }
+  me.bubbleT = Math.max(0, me.bubbleT - dt);
+  me.emoteT = Math.max(0, me.emoteT - dt);
+
+  // 다른 사람 부드럽게 움직이기
+  for (const p of Object.values(players)) {
+    const k = Math.min(1, dt * 12);
+    p.rx += (p.x - p.rx) * k; p.ry += (p.y - p.ry) * k;
+    p.bubbleT = Math.max(0, (p.bubbleT || 0) - dt);
+    p.emoteT = Math.max(0, (p.emoteT || 0) - dt);
+  }
+  if (world.cat) {
+    const c = world.cat;
+    if (c.rx === undefined) { c.rx = c.x; c.ry = c.y; }
+    const k = isHost ? 1 : Math.min(1, dt * 6);
+    c.rx += (c.x - c.rx) * k; c.ry += (c.y - c.ry) * k;
+  }
+
+  // 내 위치 보내기
+  sendT += dt;
+  if (sendT >= 0.1) {
+    sendT = 0;
+    const pub = pubMe(), s = JSON.stringify(pub);
+    if (s !== lastSent || now() - lastSentAt > 1000) {
+      lastSent = s; lastSentAt = now();
+      if (isHost) broadcast({ t: 'p', p: pub }); else net({ t: 'p', p: pub });
+    }
+  }
+  if (!isHost && hostConn && now() - lastHostMsg > 7000) {
+    const c = hostConn; hostConn = null;
+    try { c.close(); } catch (e) {}
+    hostLost();
+  }
+}
+function pubMe() {
+  return { id: me.id, name: me.name, color: me.color, x: Math.round(me.x), y: Math.round(me.y), dir: me.dir,
+    act: me.act ? { type: me.act.type, label: me.act.label, icon: me.act.icon } : null,
+    say: me.sayText, sayId: me.sayId, emote: me.emote, emoteId: me.emoteId, mood: moodEmoji() };
+}
+function moodEmoji() {
+  const v = (need.hunger + need.energy + need.hygiene + need.fun) / 4;
+  return v > 70 ? '😄' : v > 45 ? '🙂' : v > 25 ? '😐' : '😫';
+}
+
+// ===== 그리기 =====
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); }
+function emoji(e, x, y, s) { ctx.font = `${s}px ${EMOJI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(e, x, y); }
+function floorColor(c, x, y) {
+  switch (c) {
+    case 'b': return y % 2 ? '#f3dcc0' : '#ecd2b3';
+    case 'l': return y % 2 ? '#d9b68c' : '#d0ab80';
+    case 't': return (x + y) % 2 ? '#e6f2f7' : '#d3e6ee';
+    case 'k': return (x + y) % 2 ? '#fbf3e3' : '#efe3c9';
+    case 'g': return ((x * 7 + y * 13) % 5) ? '#9bd472' : '#91cb67';
+    case 'd': return '#c79f73';
+  }
+  return '#000';
+}
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const c = grid[y][x];
+    if (c === '#') {
+      const yard = (x >= 20 && y >= 9 && (y === 19 || x === 29 || (x === 20 && y > 9) || (y === 9 && x >= 21)));
+      ctx.fillStyle = yard ? '#c9a06b' : '#7a6656';
+      ctx.fillRect(x * T, y * T, T, T);
+      ctx.fillStyle = yard ? '#e0bb85' : '#937c69';
+      ctx.fillRect(x * T, y * T, T, 6);
+    } else { ctx.fillStyle = floorColor(c, x, y); ctx.fillRect(x * T, y * T, T, T); }
+  }
+  // 거실 러그
+  ctx.fillStyle = 'rgba(180,90,90,.25)'; rr(3 * T + 8, 12 * T, 6 * T - 16, 4 * T, 14); ctx.fill();
+  // 방 이름
+  ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(80,60,45,.35)';
+  for (const r of ROOMS) ctx.fillText(r.n, (r.x + r.w) * T - 34, (r.y + r.h) * T - 8);
+
+  for (const o of furniture()) drawFurn(o);
+  for (const d of world.dust) {
+    ctx.fillStyle = 'rgba(120,110,100,.35)';
+    ctx.beginPath(); ctx.ellipse((d.x + .5) * T, (d.y + .6) * T, 12, 7, 0, 0, 7); ctx.fill();
+    emoji('💨', (d.x + .5) * T, (d.y + .45) * T, 16);
+  }
+  if (world.cat) {
+    const c = world.cat;
+    ctx.save(); ctx.translate(c.rx ?? c.x, c.ry ?? c.y); if ((c.dir || 1) > 0) ctx.scale(-1, 1);
+    emoji('🐈', 0, 0, 24); ctx.restore();
+  }
+
+  const all = Object.values(players).map(p => ({ ...p, x: p.rx, y: p.ry, me: false }));
+  if (started) all.push({ ...pubMe(), me: true, bubbleT: me.bubbleT, emoteT: me.emoteT });
+  all.sort((a, b) => a.y - b.y);
+  for (const p of all) drawPlayer(p);
+
+  // 밤
+  const dk = darkness();
+  if (dk > 0) {
+    ctx.fillStyle = `rgba(20,25,70,${0.28 * dk})`; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = `rgba(10,15,50,${0.3 * dk})`; ctx.fillRect(21 * T, 10 * T, 8 * T, 9 * T);
+  }
+  // 행동 안내
+  if (started && !me.act) {
+    const o = nearest();
+    if (o) {
+      const a = actionFor(o);
+      ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = '#ff8a65'; ctx.lineWidth = 2;
+      rr(o.x * T, o.y * T, o.w * T, o.h * T, 6); ctx.stroke(); ctx.restore();
+      if (a) label((o.x + o.w / 2) * T, o.y * T - 6, (a.off ? '' : 'E · ') + a.label, a.off);
+    }
+  }
+}
+function label(x, y, text, off) {
+  ctx.font = 'bold 12px sans-serif';
+  const w = ctx.measureText(text).width + 14;
+  x = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, x)); y = Math.max(22, y);
+  ctx.fillStyle = off ? 'rgba(90,75,65,.85)' : 'rgba(255,138,101,.95)';
+  rr(x - w / 2, y - 18, w, 20, 10); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y - 8);
+}
+function drawFurn(o) {
+  const x = o.x * T, y = o.y * T, w = o.w * T, h = o.h * T;
+  const col = FCOL[o.type];
+  if (col) {
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; rr(x + 3, y + 5, w - 4, h - 4, 7); ctx.fill();
+    ctx.fillStyle = col; rr(x + 2, y + 2, w - 4, h - 4, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  const cx = x + w / 2, cy = y + h / 2;
+  const w0 = world;
+  switch (o.type) {
+    case 'bed':
+      ctx.fillStyle = '#fff'; rr(x + 8, y + 6, w - 16, 18, 6); ctx.fill();
+      ctx.fillStyle = '#7fa8ef'; rr(x + 4, y + 30, w - 8, h - 36, 6); ctx.fill();
+      break;
+    case 'sofa':
+      ctx.fillStyle = '#c95b5b'; rr(x + 2, y + 2, w - 4, 10, 5); ctx.fill();
+      emoji('🛋️', cx, cy + 2, 22); break;
+    case 'table': {
+      emoji('🍽️', cx, cy, 26);
+      for (let i = 0; i < Math.min(6, w0.food); i++) emoji('🍲', x + 14 + (i % 3) * 22 + (i > 2 ? 10 : 0), y + 14 + (i > 2 ? 30 : 0), 16);
+      break;
+    }
+    case 'plant': {
+      const p = w0.plants[o.idx];
+      ctx.fillStyle = p.water > 0 ? '#5e4232' : '#9b7a5d'; rr(x + 3, y + 3, w - 6, h - 6, 5); ctx.fill();
+      emoji(p.grow >= 1 ? '🍅' : p.grow > 0.5 ? '🌿' : '🌱', cx, cy, 22);
+      if (p.grow >= 1 || p.water < 0.5) badge(x + w - 4, y + 2, p.grow >= 1 ? '!' : '💧');
+      break;
+    }
+    case 'trash':
+      emoji('🗑️', cx, cy, 22);
+      ctx.fillStyle = '#ddd'; ctx.fillRect(x + 4, y + h - 5, w - 8, 3);
+      ctx.fillStyle = w0.trash >= 1 ? '#e53935' : w0.trash >= .5 ? '#fb8c00' : '#66bb6a';
+      ctx.fillRect(x + 4, y + h - 5, (w - 8) * w0.trash, 3);
+      if (w0.trash >= .5) badge(x + w - 2, y, '!');
+      break;
+    case 'sink':
+      emoji('🚰', cx, cy, 22);
+      if (w0.dishes > 0) { emoji('🍽️', x + w - 8, y + 6, 14); badge(x + w - 2, y, '' + w0.dishes); }
+      break;
+    case 'washer':
+      emoji('🧺', cx, cy, 22);
+      if (w0.laundry >= .3) badge(x + w - 2, y, '🧦');
+      break;
+    case 'tree': emoji('🎄', cx, cy, 44); break;
+    case 'tv':
+      ctx.fillStyle = othersDoing('sofa', 'tv') || (me.act && (me.act.type === 'sofa' || me.act.type === 'tv')) ? '#6ec6ff' : '#222';
+      ctx.fillRect(x + 8, y + 6, w - 16, h - 12);
+      break;
+    default:
+      emoji(o.e, cx, cy, Math.min(26, Math.min(w, h) * 0.75));
+  }
+}
+function badge(x, y, t) {
+  ctx.fillStyle = '#ff5252'; ctx.beginPath(); ctx.arc(x, y + 4, 8, 0, 7); ctx.fill();
+  if (/^[0-9!]+$/.test(t)) { ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y + 5); }
+  else emoji(t, x, y + 4, 11);
+}
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * f)));
+  return `rgb(${c(16)},${c(8)},${c(0)})`;
+}
+function drawPlayer(p) {
+  const x = p.x, y = p.y, col = /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : '#999';
+  const sleeping = p.act && p.act.type === 'bed';
+  ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(x, y + 12, 12, 5, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.fill();
+  ctx.strokeStyle = shade(col, 0.7); ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = shade(col, 1.15); ctx.beginPath(); ctx.arc(x - 4, y - 5, 5, 0, 7); ctx.fill();
+  const ex = (p.dir || 1) * 3;
+  if (sleeping) {
+    ctx.strokeStyle = '#3a2a20'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x - 6 + ex, y - 1); ctx.lineTo(x - 2 + ex, y - 1); ctx.moveTo(x + 2 + ex, y - 1); ctx.lineTo(x + 6 + ex, y - 1); ctx.stroke();
+  } else {
+    ctx.fillStyle = '#3a2a20';
+    ctx.beginPath(); ctx.arc(x - 4 + ex, y - 1, 2, 0, 7); ctx.arc(x + 4 + ex, y - 1, 2, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,120,120,.5)';
+  ctx.beginPath(); ctx.arc(x - 7 + ex, y + 4, 2.5, 0, 7); ctx.arc(x + 7 + ex, y + 4, 2.5, 0, 7); ctx.fill();
+  // 이름
+  const nm = (p.me ? '⭐ ' : '') + (p.name || '???');
+  ctx.font = 'bold 11px sans-serif';
+  const nw = ctx.measureText(nm).width + 10;
+  ctx.fillStyle = p.me ? 'rgba(255,138,101,.95)' : 'rgba(255,255,255,.9)';
+  rr(x - nw / 2, y + 16, nw, 15, 7); ctx.fill();
+  ctx.fillStyle = p.me ? '#fff' : '#4a3b30'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(nm, x, y + 24);
+  // 행동 아이콘
+  if (p.act) {
+    emoji(sleeping ? '💤' : p.act.icon, x + 14, y - 16, 15);
+    if (p.me && me.act && !me.act.cont) {
+      ctx.strokeStyle = '#ff8a65'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, 17, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, me.act.t / me.act.dur)); ctx.stroke();
+    }
+  }
+  if (p.emoteT > 0) emoji(p.emote, x, y - 30 - (3 - p.emoteT) * 4, 22);
+  if (p.bubbleT > 0 && p.say) bubble(x, y - (p.emoteT > 0 ? 50 : 22), p.say);
+}
+function bubble(x, y, text) {
+  ctx.font = '13px sans-serif';
+  const lines = []; let cur = '';
+  for (const ch of text) { if (ctx.measureText(cur + ch).width > 150) { lines.push(cur); cur = ''; } cur += ch; }
+  lines.push(cur);
+  const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 16, h = lines.length * 16 + 10;
+  const bx = Math.max(4, Math.min(W - w - 4, x - w / 2)), by = Math.max(4, y - h - 8);
+  ctx.fillStyle = 'rgba(255,255,255,.96)'; rr(bx, by, w, h, 9); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.15)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x - 5, by + h); ctx.lineTo(x, by + h + 7); ctx.lineTo(x + 5, by + h); ctx.fill();
+  ctx.fillStyle = '#333'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  lines.forEach((l, i) => ctx.fillText(l, bx + 8, by + 6 + i * 16));
+}
+
+// ===== 화면 UI =====
+let toastTimer = 0;
+function toast(t) {
+  const el = $('toast'); el.textContent = t; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function addChat(name, color, text, sys) {
+  const log = $('log'), div = document.createElement('div');
+  if (sys) { div.className = 'sys'; div.textContent = text; }
+  else {
+    const b = document.createElement('b'); b.textContent = name + ': ';
+    b.style.color = /^#[0-9a-f]{6}$/i.test(color) ? shade(color, 0.75) : '#555';
+    div.appendChild(b); div.appendChild(document.createTextNode(text));
+  }
+  log.appendChild(div);
+  while (log.children.length > 80) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+function updateUI() {
+  for (const k in need) {
+    const el = $('nb-' + k);
+    el.style.width = need[k] + '%';
+    el.style.background = need[k] > 50 ? '#7bd389' : need[k] > 25 ? '#ffb347' : '#ef5350';
+  }
+  const hh = Math.floor(world.min / 60), mm = Math.floor(world.min % 60);
+  $('clock').textContent = `${isNight() ? '🌙' : '☀️'} ${world.day}일차 ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  $('coins').textContent = '💰 ' + world.coins;
+  $('food').textContent = '🍲 ' + world.food;
+
+  const pl = $('plist'); pl.innerHTML = '';
+  const list = [{ ...pubMe(), me: true }, ...Object.values(players)];
+  for (const p of list) {
+    const li = document.createElement('li');
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = p.color;
+    const nm = document.createElement('span'); nm.textContent = `${p.mood || ''} ${p.name}${p.me ? ' (나)' : ''}`;
+    const doing = document.createElement('span'); doing.className = 'doing'; doing.textContent = p.act ? p.act.label.replace(/\s*\(.*\)$/, '') : '';
+    li.append(dot, nm, doing); pl.appendChild(li);
+  }
+  const w = world, pc = w.plants.filter(p => p.grow >= 1).length, pw = w.plants.filter(p => p.grow < 1 && p.water < 0.5).length;
+  $('chores').innerHTML = '';
+  const lines = [
+    houseDirty() ? '😣 집이 지저분해서 기분이 빨리 나빠져요!' : '✨ 집이 깨끗해요',
+    `💨 먼지 ${w.dust.length}곳 · 🍽️ 설거지 ${w.dishes}개`,
+    `🗑️ 쓰레기통 ${Math.round(w.trash * 100)}% · 🧺 빨래 ${Math.round(w.laundry * 100)}%`,
+    `🌱 텃밭: ${pc ? `수확 가능 ${pc}개 ` : ''}${pw ? `물 필요 ${pw}개` : pc ? '' : '잘 자라는 중'}`,
+  ];
+  for (const l of lines) { const d = document.createElement('div'); d.textContent = l; $('chores').appendChild(d); }
+
+  const btn = $('actBtn');
+  if (me.act) { btn.disabled = false; btn.textContent = me.act.cont ? `그만하기 (${me.act.label})` : `${me.act.label}...`; }
+  else {
+    const o = started && nearest(), a = o && actionFor(o);
+    btn.disabled = !a || !!a.off;
+    btn.textContent = a ? a.label : '가까이 가서 행동하기';
+  }
+  if (!$('shop').classList.contains('hidden')) renderShop();
+}
+function renderShop() {
+  $('shopCoins').textContent = world.coins;
+  const box = $('shopList'); box.innerHTML = '';
+  for (const it of SHOP) {
+    const row = document.createElement('div'); row.className = 'shopItem';
+    const e = document.createElement('span'); e.className = 'e'; e.textContent = it.e;
+    const t = document.createElement('span'); t.className = 't';
+    t.innerHTML = `<b></b><br><small></small>`; t.querySelector('b').textContent = `${it.n} · ${it.price}💰`; t.querySelector('small').textContent = it.d;
+    const b = document.createElement('button');
+    const owned = world.bought.includes(it.id);
+    b.textContent = owned ? '있어요' : '사기';
+    b.disabled = owned || world.coins < it.price;
+    b.onclick = () => { op('buy', it.id); b.disabled = true; };
+    row.append(e, t, b); box.appendChild(row);
+  }
+}
+$('shopBtn').onclick = () => { $('shop').classList.remove('hidden'); renderShop(); };
+$('shopClose').onclick = () => $('shop').classList.add('hidden');
+$('copyBtn').onclick = async () => {
+  const v = $('link').value;
+  try { await navigator.clipboard.writeText(v); toast('📋 링크를 복사했어요! 친구에게 보내 주세요'); }
+  catch (e) { $('link').select(); document.execCommand && document.execCommand('copy'); toast('링크를 복사해 주세요'); }
+};
+function fit() {
+  const st = $('stage'), narrow = innerWidth <= 900;
+  const aw = st.clientWidth || innerWidth - 20, ah = narrow ? innerHeight * 0.62 : st.clientHeight;
+  const s = Math.min(aw / W, ah / H);
+  cv.style.width = W * s + 'px'; cv.style.height = H * s + 'px';
+}
+addEventListener('resize', fit);
+
+// ===== 소리 =====
+let actx = null;
+const NOTES = [262, 294, 330, 392, 440, 523, 587, 659];
+function playNote(n, vol) {
+  if (!actx || !(n >= 0 && n < NOTES.length)) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'triangle'; o.frequency.value = NOTES[n];
+  g.gain.setValueAtTime(vol, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.6);
+  o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.6);
+}
+
+// ===== 네트워크 =====
+let peer = null, peerGen = 0, isHost = false, hostConn = null, code = null, attempts = 0, reconnecting = false, lastHostMsg = 0;
+const conns = new Map();   // 집주인일 때: 연결 -> { id, seen }
+const params = new URLSearchParams(location.search);
+function peerOpts() {
+  // 테스트용: ?peerhost=localhost&peerport=9000 로 직접 띄운 PeerJS 서버 사용 가능
+  const o = { debug: 0 };
+  if (params.get('peerhost')) { o.host = params.get('peerhost'); o.port = +params.get('peerport') || 9000; o.path = '/'; o.secure = false; }
+  return o;
+}
+function setStatus(t) { $('status').textContent = t; }
+function cleanupPeer() {
+  peerGen++;
+  for (const [c] of conns) { try { c.close(); } catch (e) {} }
+  conns.clear();
+  if (peer) { try { peer.destroy(); } catch (e) {} }
+  peer = null; hostConn = null;
+}
+function goOffline(reason) {
+  cleanupPeer(); isHost = true;
+  if (!gotWorld) { world = loadWorld() || world; gotWorld = true; }
+  setStatus('⚪ 혼자 플레이 중 (연결 실패: ' + reason + ') · 새로고침하면 다시 시도해요');
+}
+function net(msg) {
+  if (isHost) broadcast(msg);
+  else if (hostConn && hostConn.open) { try { hostConn.send(msg); } catch (e) {} }
+}
+function broadcast(msg, except) {
+  for (const [c] of conns) if (c !== except && c.open) { try { c.send(msg); } catch (e) {} }
+}
+function joinHouse(c) {
+  code = c;
+  if (typeof Peer === 'undefined') { goOffline('네트워크 라이브러리를 불러오지 못했어요'); return; }
+  tryGuest();
+}
+function tryGuest() {
+  cleanupPeer(); isHost = false;
+  if (++attempts > 8) { goOffline('집에 연결할 수 없어요'); return; }
+  setStatus('🟡 집에 연결하는 중...');
+  const gen = peerGen;
+  peer = new Peer(undefined, peerOpts());
+  let opened = false;
+  peer.on('open', () => {
+    if (gen !== peerGen) return;
+    const c = peer.connect(PREFIX + code, { reliable: true, serialization: 'json' });
+    c.on('open', () => {
+      if (gen !== peerGen) return;
+      opened = true; attempts = 0; hostConn = c; lastHostMsg = now();
+      c.send({ t: 'hello', p: pubMe() });
+      setStatus('🟢 연결됨 · 친구 집에 놀러 왔어요');
+    });
+    c.on('data', d => { if (gen === peerGen) { lastHostMsg = now(); guestHandle(d); } });
+    c.on('close', () => { if (gen === peerGen && hostConn === c) { hostConn = null; hostLost(); } });
+    setTimeout(() => { if (gen === peerGen && !opened) becomeHost(); }, 9000);
+  });
+  peer.on('error', e => {
+    if (gen !== peerGen) return;
+    if (e.type === 'peer-unavailable') becomeHost();
+    else if (['network', 'server-error', 'socket-error', 'browser-incompatible', 'ssl-unavailable'].includes(e.type)) goOffline(e.type);
+  });
+}
+function becomeHost() {
+  cleanupPeer(); isHost = true;
+  if (!gotWorld) { world = loadWorld() || newWorld(); gotWorld = true; }
+  setStatus('🟡 집 문을 여는 중...');
+  const gen = peerGen;
+  peer = new Peer(PREFIX + code, peerOpts());
+  peer.on('open', () => { if (gen !== peerGen) return; attempts = 0; setStatus('🟢 연결됨 · 내가 집주인이에요 (내가 나가도 친구가 이어받아요)'); });
+  peer.on('connection', c => {
+    if (gen !== peerGen) return;
+    c.on('data', d => { if (gen === peerGen) hostRecv(c, d); });
+    c.on('close', () => { if (gen === peerGen) dropConn(c); });
+    c.on('error', () => { if (gen === peerGen) dropConn(c); });
+  });
+  peer.on('disconnected', () => { if (gen === peerGen && peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1000); });
+  peer.on('error', e => {
+    if (gen !== peerGen) return;
+    if (e.type === 'unavailable-id') { isHost = false; setTimeout(() => { if (gen === peerGen) tryGuest(); }, 500 + Math.random() * 1000 * attempts); }
+    else if (['network', 'server-error', 'socket-error', 'browser-incompatible', 'ssl-unavailable'].includes(e.type)) goOffline(e.type);
+  });
+}
+function hostLost() {
+  if (reconnecting) return;
+  reconnecting = true;
+  for (const k in players) delete players[k];
+  addChat('', '', '🔄 집주인과 연결이 끊겼어요. 다시 연결하는 중...', true);
+  setStatus('🟡 다시 연결하는 중...');
+  setTimeout(() => { reconnecting = false; becomeHost(); }, 300 + Math.random() * 1500);
+}
+function cleanP(p) {
+  if (!p || typeof p !== 'object') return null;
+  const s = (v, n) => String(v ?? '').slice(0, n);
+  const num = v => (typeof v === 'number' && isFinite(v) ? v : 0);
+  return { id: s(p.id, 20), name: s(p.name, 8) || '친구', color: s(p.color, 7), x: num(p.x), y: num(p.y), dir: p.dir < 0 ? -1 : 1,
+    act: p.act ? { type: s(p.act.type, 12), label: s(p.act.label, 40), icon: s(p.act.icon, 4) } : null,
+    say: s(p.say, 60), sayId: num(p.sayId), emote: s(p.emote, 4), emoteId: num(p.emoteId), mood: s(p.mood, 4) };
+}
+function upsert(raw) {
+  const p = cleanP(raw);
+  if (!p || !p.id || p.id === me.id) return;
+  const r = players[p.id];
+  if (!r) { players[p.id] = { ...p, rx: p.x, ry: p.y, bubbleT: 0, emoteT: 0 }; return; }
+  if (p.sayId !== r.sayId) r.bubbleT = 5;
+  if (p.emoteId !== r.emoteId) r.emoteT = 3;
+  Object.assign(r, p);
+}
+// --- 집주인 쪽 ---
+function hostRecv(c, d) {
+  if (!d || typeof d !== 'object') return;
+  let info = conns.get(c);
+  if (d.t === 'hello') {
+    const p = cleanP(d.p); if (!p) return;
+    conns.set(c, { id: p.id, seen: now() });
+    upsert(p);
+    c.send({ t: 'welcome', world, players: [pubMe(), ...Object.values(players).filter(x => x.id !== p.id).map(x => cleanP(x))] });
+    broadcast({ t: 'p', p }, c);
+    sys(`🏠 ${p.name}님이 집에 들어왔어요!`);
+    return;
+  }
+  if (!info) return;
+  info.seen = now();
+  switch (d.t) {
+    case 'p': { const p = cleanP(d.p); if (!p || p.id !== info.id) return; upsert(p); broadcast({ t: 'p', p }, c); break; }
+    case 'do': hostOp(String(d.op), d.arg, players[info.id]); break;
+    case 'chat': { const p = players[info.id]; if (p) hostChat(p, String(d.text || '').slice(0, 60)); break; }
+    case 'note': playNote(d.n | 0, 0.06); broadcast({ t: 'note', n: d.n | 0 }, c); break;
+    case 'leave': dropConn(c); break;
+  }
+}
+function dropConn(c) {
+  const info = conns.get(c);
+  if (!info) return;
+  conns.delete(c);
+  const p = players[info.id];
+  delete players[info.id];
+  broadcast({ t: 'bye', id: info.id });
+  if (p) sys(`👋 ${p.name}님이 외출했어요`);
+}
+function sys(text) { addChat('', '', text, true); broadcast({ t: 'chat', sys: true, text }); }
+function hostChat(p, text) {
+  if (!text) return;
+  addChat(p.name, p.color, text);
+  broadcast({ t: 'chat', name: p.name, color: p.color, text });
+}
+function hostOp(name, arg, who) {
+  const w = world, nm = who ? who.name : '누군가';
+  switch (name) {
+    case 'work': w.coins += 25; break;
+    case 'snack': w.coins = Math.max(0, w.coins - 5); break;
+    case 'cook': if (w.coins >= 15) { w.coins -= 15; w.food += 3; w.dishes += 1; sys(`🍳 ${nm}님이 요리를 했어요! 식탁에서 같이 먹어요`); } break;
+    case 'eat': if (w.food > 0) { w.food--; w.dishes++; } break;
+    case 'dish': if (w.dishes > 0) { w.dishes = Math.max(0, w.dishes - 2); w.coins += 4; } break;
+    case 'trash': if (w.trash >= 0.5) { w.trash = 0; w.coins += 5; } break;
+    case 'laundry': if (w.laundry >= 0.3) { w.laundry = 0; w.coins += 6; } break;
+    case 'dust': { const i = w.dust.findIndex(d => d.id === arg); if (i >= 0) { w.dust.splice(i, 1); w.coins += 3; } break; }
+    case 'water': { const p = w.plants[arg | 0]; if (p) p.water = 1; break; }
+    case 'harvest': { const p = w.plants[arg | 0]; if (p && p.grow >= 1) { p.grow = 0; w.food += 2; sys(`🍅 ${nm}님이 토마토를 수확했어요!`); } break; }
+    case 'buy': {
+      const it = SHOP.find(s => s.id === arg);
+      if (it && !w.bought.includes(it.id) && w.coins >= it.price) {
+        w.coins -= it.price; w.bought.push(it.id);
+        if (it.type === 'cat') w.cat = { x: 10 * T, y: 13 * T, tx: 10 * T, ty: 13 * T, wait: 1, dir: 1 };
+        sys(`🎉 ${nm}님이 ${it.e} ${it.n}을(를) 샀어요!`);
+      }
+      break;
+    }
+    default: return;
+  }
+  broadcast({ t: 'world', world: w });
+}
+let dustT = 0, worldT = 0, saveT = 0;
+function hostTick(dt) {
+  const w = world;
+  w.min += dt * 3;
+  if (w.min >= 1440) { w.min -= 1440; w.day++; sys(`🌅 ${w.day}일차 아침이 밝았어요!`); }
+  w.trash = Math.min(1, w.trash + dt / 150);
+  w.laundry = Math.min(1, w.laundry + dt / 180);
+  dustT += dt;
+  if (dustT > 20) { dustT = 0; if (w.dust.length < 6) spawnDust(); }
+  for (const p of w.plants) { if (p.grow < 1 && p.water > 0) p.grow = Math.min(1, p.grow + dt / 50); p.water = Math.max(0, p.water - dt / 70); }
+  if (w.cat) {
+    const c = w.cat, dx = c.tx - c.x, dy = c.ty - c.y, d = Math.hypot(dx, dy);
+    if (d < 2) { c.wait -= dt; if (c.wait <= 0) { c.tx = (1.5 + Math.random() * 18) * T; c.ty = (10.5 + Math.random() * 8) * T; c.wait = 2 + Math.random() * 5; } }
+    else { const s = Math.min(d, 40 * dt); c.x += dx / d * s; c.y += dy / d * s; c.dir = dx < 0 ? -1 : 1; }
+  }
+  worldT += dt;
+  if (worldT > 0.3) {
+    worldT = 0;
+    const out = { ...w, cat: w.cat ? { x: Math.round(w.cat.x), y: Math.round(w.cat.y), dir: w.cat.dir } : null };
+    broadcast({ t: 'world', world: out });
+  }
+  saveT += dt;
+  if (saveT > 5) { saveT = 0; saveWorld(); }
+  for (const [c, info] of conns) if (now() - info.seen > 15000) { try { c.close(); } catch (e) {} dropConn(c); }
+}
+function spawnDust() {
+  for (let i = 0; i < 40; i++) {
+    const x = 1 + rand(28), y = 1 + rand(18), c = grid[y][x];
+    if (c === '#' || c === 'd' || c === 'g' || solid[y][x]) continue;
+    if (world.dust.some(d => d.x === x && d.y === y)) continue;
+    world.dust.push({ id: ++world.dustN, x, y });
+    return;
+  }
+}
+// --- 손님 쪽 ---
+function setWorld(nw) {
+  if (!nw || typeof nw !== 'object' || !Array.isArray(nw.plants) || !Array.isArray(nw.dust) || !Array.isArray(nw.bought)) return;
+  const oldCat = world.cat;
+  world = nw; gotWorld = true;
+  if (world.cat) {
+    world.cat.rx = oldCat ? (oldCat.rx ?? oldCat.x) : world.cat.x;
+    world.cat.ry = oldCat ? (oldCat.ry ?? oldCat.y) : world.cat.y;
+    world.cat.tx = world.cat.x; world.cat.ty = world.cat.y; world.cat.wait = 1;
+  }
+}
+function guestHandle(d) {
+  if (!d || typeof d !== 'object') return;
+  switch (d.t) {
+    case 'welcome':
+      setWorld(d.world);
+      for (const p of d.players || []) upsert(p);
+      break;
+    case 'world': setWorld(d.world); break;
+    case 'p': upsert(d.p); break;
+    case 'bye': delete players[d.id]; break;
+    case 'chat': addChat(String(d.name || ''), String(d.color || ''), String(d.text || '').slice(0, 80), !!d.sys); break;
+    case 'note': playNote(d.n | 0, 0.06); break;
+    case 'hostleave': if (hostConn) { const c = hostConn; hostConn = null; try { c.close(); } catch (e) {} hostLost(); } break;
+  }
+}
+function op(name, arg) { if (isHost) hostOp(name, arg, me); else net({ t: 'do', op: name, arg }); }
+
+// 창을 닫을 때 바로 알려서 다른 사람이 집주인을 빨리 이어받게 해요
+addEventListener('pagehide', () => {
+  if (!started) return;
+  if (isHost) { saveWorld(); broadcast({ t: 'hostleave' }); } else net({ t: 'leave' });
+});
+
+// ===== 저장 =====
+function saveWorld() { try { localStorage.setItem('urijip-world-' + code, JSON.stringify(world)); } catch (e) {} }
+function loadWorld() {
+  try { const w = JSON.parse(localStorage.getItem('urijip-world-' + code)); if (w && Array.isArray(w.plants)) return w; } catch (e) {}
+  return null;
+}
+function saveProfile() { try { localStorage.setItem('urijip-profile', JSON.stringify({ name: me.name, color: me.color })); } catch (e) {} }
+
+// ===== 로비 =====
+const urlCode = (params.get('house') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+try { const pr = JSON.parse(localStorage.getItem('urijip-profile')); if (pr) { $('nameIn').value = pr.name || ''; if (COLORS.includes(pr.color)) me.color = pr.color; } } catch (e) {}
+function renderColors() {
+  const box = $('colorPick'); box.innerHTML = '';
+  for (const c of COLORS) {
+    const s = document.createElement('span'); s.style.background = c; if (c === me.color) s.className = 'on';
+    s.onclick = () => { me.color = c; renderColors(); }; box.appendChild(s);
+  }
+}
+renderColors();
+if (urlCode) {
+  $('joinInfo').textContent = `💌 친구가 집에 초대했어요! (집 코드: ${urlCode})`;
+  $('goBtn').textContent = '집에 들어가기';
+  $('codeBox').style.display = 'none';
+}
+function genCode() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let s = ''; for (let i = 0; i < 6; i++) s += a[rand(a.length)]; return s; }
+function start(c) {
+  me.name = $('nameIn').value.trim().slice(0, 8) || '집사' + (1 + rand(99));
+  saveProfile();
+  try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  $('lobby').classList.add('hidden');
+  started = true;
+  me.x = (10 + rand(4) + 0.5) * T; me.y = (12 + rand(4) + 0.5) * T;
+  const isNew = !c;
+  code = c || genCode();
+  params.set('house', code);
+  history.replaceState(null, '', location.pathname + '?' + params.toString());
+  const lp = new URLSearchParams(params);
+  $('link').value = location.origin + location.pathname + '?' + lp.toString();
+  addChat('', '', `🏠 집 코드 [${code}] · 위의 링크를 친구에게 보내면 같이 살 수 있어요!`, true);
+  fit();
+  if (isNew) { if (typeof Peer === 'undefined') goOffline('네트워크 라이브러리를 불러오지 못했어요'); else becomeHost(); }
+  else joinHouse(code);
+}
+$('goBtn').onclick = () => start(urlCode || null);
+$('codeBtn').onclick = () => {
+  const c = $('codeIn').value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+  if (c) start(c);
+};
+$('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('goBtn').click(); });
+
+// ===== 메인 루프 =====
+let last = performance.now(), uiT = 0;
+function frame(t) {
+  const dt = Math.min(0.05, (t - last) / 1000); last = t;
+  if (started) {
+    update(dt);
+    if (isHost) hostTick(dt);
+    uiT += dt;
+    if (uiT > 0.2) { uiT = 0; updateUI(); }
+  }
+  draw();
+  requestAnimationFrame(frame);
+}
+fit();
+updateUI();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
