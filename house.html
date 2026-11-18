@@ -73,6 +73,8 @@
   .who { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; }
   .who canvas { width: 32px; height: 32px; image-rendering: pixelated; background: #e9f6ff; border: 2px solid var(--ink); border-radius: 6px; }
   .who .coins { margin-left: auto; font-weight: 700; }
+  #saveMark { font-size: 12px; opacity: .25; transition: opacity .4s; }
+  #saveMark.on { opacity: 1; }
   .needs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
   .need { display: flex; align-items: center; gap: 5px; font-size: 12px; }
   .bar { flex: 1; height: 9px; min-width: 50px; background: #e8d9c2; border: 2px solid var(--ink); border-radius: 4px; overflow: hidden; }
@@ -190,6 +192,8 @@
   <div class="subtitle">친구와 함께 사는 픽셀 마을 라이프</div>
   <div id="inviteNote" class="hidden"></div>
   <button id="startBtn" class="btn primary">▶ 시작하기</button>
+  <button id="altStart" class="btn hidden">🎨 캐릭터 바꾸기 · 다른 마을</button>
+  <div id="savedNote" class="foot"></div>
   <div class="foot">링크 하나로 친구와 같은 마을에 · 집 꾸미기 · 놀러 가기 · 수다 떨기</div>
 </div>
 
@@ -215,6 +219,7 @@
     </div>
     <div class="actions">
       <button class="btn primary" id="goBtn">마을로 가기 ▶</button>
+      <button class="btn mint hidden" id="newVillageBtn">🆕 새 마을 만들기</button>
       <details id="codeBox" style="width:100%"><summary style="cursor:pointer;font-size:13px">친구 마을 코드로 들어가기</summary>
         <div id="codeRow" style="margin-top:6px"><input id="codeIn" class="txt" placeholder="마을 코드 (예: ab3k9x)" style="flex:1"><button class="btn mint" id="codeBtn">들어가기</button></div>
       </details>
@@ -225,7 +230,7 @@
 <!-- 게임 HUD -->
 <div id="hud" class="hidden">
   <div id="hudTL" class="pix">
-    <div class="who"><canvas id="faceCv" width="16" height="16"></canvas><b id="hudName"></b><span class="coins" id="hudCoins">💰 0</span></div>
+    <div class="who"><canvas id="faceCv" width="16" height="16"></canvas><b id="hudName"></b><span id="saveMark" title="자동 저장">💾</span><span class="coins" id="hudCoins">💰 0</span></div>
     <div class="needs">
       <div class="need" title="배고픔">🍚<div class="bar"><i id="nb-hunger"></i></div></div>
       <div class="need" title="에너지">⚡<div class="bar"><i id="nb-energy"></i></div></div>
@@ -952,11 +957,26 @@ function loadSave() {
     coins: Number.isFinite(s.coins) ? Math.max(0, Math.min(99999, s.coins | 0)) : 300,
     house: s.house ? sanitizeHouse(s.house) : defaultHouse(),
     need: s.need && typeof s.need === 'object' ? { hunger: clamp(+s.need.hunger || 80), energy: clamp(+s.need.energy || 80), hygiene: clamp(+s.need.hygiene || 80), fun: clamp(+s.need.fun || 80) } : null,
+    lastCode: typeof s.lastCode === 'string' && ID_RE.test(s.lastCode) ? s.lastCode.slice(0, 12) : '',
+    pos: s.pos && typeof s.pos === 'object' && (s.pos.map === 'v' || /^h:[a-z0-9]{1,16}$/.test(s.pos.map)) && Number.isFinite(s.pos.x) && Number.isFinite(s.pos.y)
+      ? { map: s.pos.map, x: s.pos.x, y: s.pos.y, dir: clampInt(s.pos.dir, 0, 3) } : null,
+    savedAt: Number.isFinite(s.savedAt) ? s.savedAt : 0,
   };
 }
 function saveMe() {
-  try { localStorage.setItem('urijip2-save', JSON.stringify({ id: me.id, name: me.name, look: me.look, coins: save.coins, house: myHouse, need })); } catch (e) {}
+  // 앉아 있거나 자는 중이면 일어선 자리로 저장해요
+  const pos = started ? { map: me.map, x: Math.round(me.prev ? me.prev.x : me.x), y: Math.round(me.prev ? me.prev.y : me.y), dir: me.dir } : save.pos;
+  const lastCode = started ? code : save.lastCode;
+  try {
+    localStorage.setItem('urijip2-save', JSON.stringify({ id: me.id, name: me.name, look: me.look, coins: save.coins, house: myHouse, need, lastCode, pos, savedAt: now() }));
+    lastSavedAt = now();
+  } catch (e) {}
 }
+let lastSavedAt = 0;
+// 창을 닫거나, 다른 앱으로 가거나, 화면을 끌 때 바로 저장해요
+function saveAll() { if (!started) return; saveMe(); saveVillage(); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveAll(); });
+addEventListener('beforeunload', saveAll);
 function getHouse(id) { return id === me.id ? myHouse : houses[id] || null; }
 function lotOf(id) { const l = world.lots[id]; return Number.isInteger(l) && l >= 0 && l < LOTS.length ? l : -1; }
 function lotOwner(i) { for (const id in world.lots) if (world.lots[id] === i) return id; return null; }
@@ -1396,7 +1416,8 @@ function update(dt) {
     if (s !== lastSent || now() - lastSentAt > 1000) { lastSent = s; lastSentAt = now(); net({ t: 'p', p: pub }); }
   }
   saveT += dt;
-  if (saveT > 4) { saveT = 0; saveMe(); }
+  if (saveT > 3) { saveT = 0; saveMe(); saveVillage(); }
+  if (resumeTo) tryResume();
   if (!isHost && hostConn && now() - lastHostMsg > 7000) { const c = hostConn; hostConn = null; try { c.close(); } catch (e) {} hostLost(); }
 }
 function faceTo(x, y) { const dx = x - me.x, dy = y - me.y; me.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 3) : (dy > 0 ? 0 : 1); }
@@ -1681,6 +1702,7 @@ function updateUI() {
     e.style.background = need[k] > 50 ? '#6fcf7f' : need[k] > 25 ? '#ffb347' : '#ef5350';
   }
   $('hudCoins').textContent = '💰 ' + save.coins;
+  $('saveMark').classList.toggle('on', now() - lastSavedAt < 1200);
   $('hudName').textContent = me.name;
   const fk = lookKey(me.look); if (fk !== faceKey) { faceKey = fk; faceCanvas($('faceCv'), me.look); }
   const hh = Math.floor(world.min / 60), mm = Math.floor(world.min % 60);
@@ -2125,7 +2147,8 @@ function openCreator(outfit) {
   creatorLook = { ...me.look };
   $('nameIn').value = me.name;
   $('creatorTitle').textContent = outfit ? '👕 옷장 — 모습 바꾸기' : '내 캐릭터 만들기';
-  $('goBtn').textContent = outfit ? '✔ 이걸로 갈아입기' : (urlCode ? '💌 친구 마을로 가기 ▶' : '🏡 새 마을 만들기 ▶');
+  $('goBtn').textContent = outfit ? '✔ 이걸로 갈아입기' : (urlCode ? '💌 친구 마을로 가기 ▶' : save.lastCode ? '🏡 내 마을로 가기 ▶' : '🏡 새 마을 만들기 ▶');
+  $('newVillageBtn').classList.toggle('hidden', outfit || !!urlCode || !save.lastCode);
   $('codeBox').classList.toggle('hidden', outfit || !!urlCode);
   renderCreator();
   $('creator').classList.remove('hidden');
@@ -2140,8 +2163,9 @@ $('goBtn').onclick = () => {
   initAudio(); SFX.click();
   if (creatorOutfit) { finishCreator(); toast('👕 옷을 갈아입었어요!'); return; }
   finishCreator();
-  beginGame(urlCode || null);
+  beginGame(urlCode || save.lastCode || null, !!(save.lastCode && (urlCode || save.lastCode) === save.lastCode));
 };
+$('newVillageBtn').onclick = () => { initAudio(); SFX.click(); finishCreator(); beginGame(null); };
 $('codeBtn').onclick = () => {
   const c = $('codeIn').value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
   if (!c) return;
@@ -2342,8 +2366,6 @@ function hostTick(dt) {
   if (world.min >= 1440) { world.min -= 1440; world.day++; sys(`🌅 ${world.day}일차 아침이 밝았어요!`); }
   worldT += dt;
   if (worldT > 1) { worldT = 0; broadcast({ t: 'world', world }); }
-  villT += dt;
-  if (villT > 5) { villT = 0; saveVillage(); }
   for (const [c, info] of conns) if (now() - info.seen > 12000) { try { c.close(); } catch (e) {} dropConn(c); }
 }
 // --- 손님 ---
@@ -2378,10 +2400,11 @@ function guestHandle(d) {
 }
 addEventListener('pagehide', () => {
   if (!started) return;
-  saveMe();
-  if (isHost) { saveVillage(); broadcast({ t: 'hostleave' }); } else net({ t: 'leave' });
+  saveAll();
+  if (isHost) broadcast({ t: 'hostleave' }); else net({ t: 'leave' });
 });
 function saveVillage() {
+  if (!code || !gotWorld) return;
   try { localStorage.setItem('urimaeul-village-' + code, JSON.stringify({ world, houses })); } catch (e) {}
 }
 function loadVillage() {
@@ -2393,10 +2416,39 @@ function loadVillage() {
 
 // ===== 게임 시작 =====
 const urlCode = (params.get('v') || params.get('house') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
-if (urlCode) { $('inviteNote').textContent = '💌 친구의 마을에 초대받았어요!'; $('inviteNote').classList.remove('hidden'); $('startBtn').textContent = '▶ 놀러 가기'; }
-$('startBtn').onclick = () => { initAudio(); SFX.greet(); $('title').classList.add('hidden'); openCreator(false); };
+const canResume = !!save.name && !!(urlCode || save.lastCode);
+if (urlCode) { $('inviteNote').textContent = urlCode === save.lastCode ? '🏡 지난번에 놀던 마을이에요!' : '💌 친구의 마을에 초대받았어요!'; $('inviteNote').classList.remove('hidden'); }
+if (canResume) {
+  $('startBtn').textContent = urlCode && urlCode !== save.lastCode ? `▶ ${save.name}(으)로 놀러 가기` : `▶ 이어하기 · ${save.name}`;
+  $('altStart').classList.remove('hidden');
+  if (save.savedAt) $('savedNote').textContent = '💾 마지막 저장: ' + timeAgo(save.savedAt);
+} else if (urlCode) $('startBtn').textContent = '▶ 놀러 가기';
+function timeAgo(t) {
+  const m = Math.floor((now() - t) / 60000);
+  if (m < 1) return '방금 전'; if (m < 60) return m + '분 전';
+  const h = Math.floor(m / 60); if (h < 24) return h + '시간 전';
+  return Math.floor(h / 24) + '일 전';
+}
+$('startBtn').onclick = () => {
+  initAudio(); SFX.greet(); $('title').classList.add('hidden');
+  if (canResume) beginGame(urlCode || save.lastCode, true);
+  else openCreator(false);
+};
+$('altStart').onclick = () => { initAudio(); SFX.click(); $('title').classList.add('hidden'); openCreator(false); };
 function genCode() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let s = ''; for (let i = 0; i < 6; i++) s += a[rand(a.length)]; return s; }
-function beginGame(c) {
+let resumeTo = null;
+function tryResume() {
+  const r = resumeTo;
+  if (now() > r.until) { resumeTo = null; return; }
+  if (r.pos.map === 'v') { resumeTo = null; return; }
+  const owner = r.pos.map.slice(2);
+  if (lotOf(owner) < 0 || (owner !== me.id && !houses[owner])) return;
+  resumeTo = null;
+  enterHouse(owner, owner === me.id ? '🏠 우리 집에서 이어서 시작해요' : `🏠 ${ownerName(owner)}의 집에서 이어서 시작해요`);
+  me.x = Math.max(TS + 6, Math.min((HW - 1) * TS - 6, r.pos.x)); me.y = Math.max(2 * TS + 6, Math.min((HH - 1) * TS - 2, r.pos.y)); me.dir = r.pos.dir;
+  lastTile = '';
+}
+function beginGame(c, resume) {
   inTitle = false; started = true;
   $('hud').classList.remove('hidden');
   code = c || genCode();
@@ -2404,13 +2456,19 @@ function beginGame(c) {
   history.replaceState(null, '', location.pathname + '?' + q.toString());
   curMap = me.map = 'v';
   me.x = (26 + rand(4)) * TS + 8; me.y = 22 * TS + 10; me.dir = 0;
+  if (c) { loadVillage(); rebuildLotSolid(); }   // 연결되기 전에도 저장해 둔 마을을 바로 보여줘요
+  const pos = resume && save.lastCode === code ? save.pos : null;
+  if (pos && pos.map === 'v') { me.x = Math.max(TS, Math.min((VW - 1) * TS, pos.x)); me.y = Math.max(TS, Math.min((VH - 1) * TS, pos.y)); me.dir = pos.dir; }
+  if (pos && pos.map !== 'v') resumeTo = { pos, until: now() + 10000 };
+  lastTile = curMap + ':' + Math.floor(me.x / TS) + ',' + Math.floor(me.y / TS);
   saveMe();
+  if (resume) setTimeout(() => toast('💾 저장된 곳에서 이어서 시작해요'), 400);
   logSys(`🏡 마을 코드 [${code}] · 💌 초대 버튼으로 친구에게 링크를 보내요!`);
   logSys('🖱️ 바닥·물건·친구를 누르면 그곳으로 가요 · ⌨️ WASD 이동, E 행동, Enter 채팅');
   if (c) joinVillage(c);
   else if (typeof Peer === 'undefined') goOffline('네트워크 라이브러리를 못 불러왔어요');
   else { gotWorld = true; world = newWorld(); becomeHost(); }
-  setTimeout(() => { if (lotOf(me.id) >= 0 && curMap === 'v') notify('🏠 마을에 내 집이 생겼어요! 꾸며 볼까요?', [['🔨 꾸미러 가기', () => openEdit(), 'primary'], ['🚪 집에 가기', () => goHome(), 'mint']], 10000); }, 2500);
+  if (!resume) setTimeout(() => { if (lotOf(me.id) >= 0 && curMap === 'v') notify('🏠 마을에 내 집이 생겼어요! 꾸며 볼까요?', [['🔨 꾸미러 가기', () => openEdit(), 'primary'], ['🚪 집에 가기', () => goHome(), 'mint']], 10000); }, 2500);
 }
 
 // ===== 메인 루프 =====
