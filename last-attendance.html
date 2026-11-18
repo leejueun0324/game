@@ -38,7 +38,7 @@ button.mini { font-size:12px; padding:3px 8px; }
 .sh-head b { font-size:22px; letter-spacing:.4em; } .sh-head span { font-size:11px; color:#6a6258; }
 .sh-rows div { display:grid; grid-template-columns:24px 1fr auto; align-items:center; border-bottom:1px dashed #b9ad98; padding:3px 0; font-size:15px; opacity:0; animation:fadeIn .4s forwards; }
 .sh-rows i { font-style:normal; font-size:11px; color:#8a8070; } .sh-rows b { color:#1f5fbf; font-size:16px; }
-.sh-rows div:last-child b { color:#c2241b; font-style:italic; font-size:14px; }
+.sh-rows div.zero b { color:#c2241b; font-style:italic; font-size:14px; }
 .sh-foot { margin-top:8px; font-size:13px; text-align:right; } .sh-foot em { font-style:normal; font-weight:900; }
 .sh-blood { position:absolute; right:-30px; bottom:-46px; width:90px; height:90px; background:radial-gradient(circle at 40% 40%,rgba(140,10,10,.85) 0 22%,rgba(140,10,10,.0) 23%),radial-gradient(circle at 70% 65%,rgba(120,8,8,.8) 0 12%,transparent 13%),radial-gradient(circle at 25% 75%,rgba(120,8,8,.7) 0 7%,transparent 8%); pointer-events:none; }
 .coverMain { position:relative; text-align:center; display:flex; flex-direction:column; align-items:center; }
@@ -383,6 +383,8 @@ const CHARS = [
     skill:{ id:'ambush', name:'매복', cd:15, intro:'숨죽인 채 기다리다 좀비가 가장 가까이 오면 팀원들에게 알림.',
       effect:'알림 후 4초 동안 팀원 전원이 표식이 붙은 좀비에게 2배 피해를 줌.' } },
 ];
+CHARS.sort((a, b) => a.name.localeCompare(b.name, 'ko'));   // 가나다 순
+const NAME_ORDER = CHARS.map(c => c.id);
 const CHAR = Object.fromEntries(CHARS.map(c => [c.id, c]));
 const ROLL_ORDER = ['hyoseo','suyeon','seolwoo','eunbit','chaeyun','jihu','junhee','bonwoo','juwon','yujun','jueun'];
 
@@ -1971,7 +1973,7 @@ const UI = {
   init() {
     renderPortraits();
     // 표지
-    const roll = $('coverRoll'); roll.innerHTML = ROLL_ORDER.map((id, i) => `<div style="animation-delay:${0.5 + i * 0.16}s"><i>${String(i + 1).padStart(2, '0')}</i><span>${CHAR[id].name}</span><b>${i === 10 ? '……있어' : '✓'}</b></div>`).join('');
+    const roll = $('coverRoll'); roll.innerHTML = NAME_ORDER.map((id, i) => `<div class="${id === 'jueun' ? 'zero' : ''}" style="animation-delay:${0.5 + i * 0.16}s"><i>${String(i + 1).padStart(2, '0')}</i><span>${CHAR[id].name}</span><b>${id === 'jueun' ? '……있어' : '✓'}</b></div>`).join('');
     const save = loadProgress();
     if (save && save.ch > 0) { $('btnContinue').classList.remove('hidden'); $('btnContinue').textContent = `이어하기 — ${CHAPTERS[save.ch].title.split('—')[0].trim()}`; }
     $('btnStart').onclick = () => this.show('modeSel');
@@ -2035,7 +2037,7 @@ const UI = {
   openRelations() {
     const W = 760, H = 640, cx = W / 2, cy = H / 2 + 10, R = 215;
     const pos = {};
-    ROLL_ORDER.forEach((id, i) => { const a = -Math.PI / 2 + i / 11 * Math.PI * 2; pos[id] = [cx + Math.cos(a) * R, cy + Math.sin(a) * R]; });
+    NAME_ORDER.forEach((id, i) => { const a = -Math.PI / 2 + i / 11 * Math.PI * 2; pos[id] = [cx + Math.cos(a) * R, cy + Math.sin(a) * R]; });
     pos.n1 = [cx - 70, cy - 30]; pos.n12 = [cx + 70, cy - 30]; pos.n13 = [cx, cy + 70]; pos.k13 = [cx, cy - 110];
     const node = id => CHAR[id] || EXTRA_NODES.find(n => n.id === id);
     let svg = `<svg viewBox="0 0 ${W} ${H}" class="rel"><defs><clipPath id="cc"><circle r="26"/></clipPath></defs>`;

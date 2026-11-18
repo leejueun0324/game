@@ -31,7 +31,7 @@ button.mini { font-size:12px; padding:3px 8px; }
 .sh-head b { font-size:22px; letter-spacing:.4em; } .sh-head span { font-size:11px; color:#6a6258; }
 .sh-rows div { display:grid; grid-template-columns:24px 1fr auto; align-items:center; border-bottom:1px dashed #b9ad98; padding:3px 0; font-size:15px; opacity:0; animation:fadeIn .4s forwards; }
 .sh-rows i { font-style:normal; font-size:11px; color:#8a8070; } .sh-rows b { color:#1f5fbf; font-size:16px; }
-.sh-rows div:last-child b { color:#c2241b; font-style:italic; font-size:14px; }
+.sh-rows div.zero b { color:#c2241b; font-style:italic; font-size:14px; }
 .sh-foot { margin-top:8px; font-size:13px; text-align:right; } .sh-foot em { font-style:normal; font-weight:900; }
 .sh-blood { position:absolute; right:-30px; bottom:-46px; width:90px; height:90px; background:radial-gradient(circle at 40% 40%,rgba(140,10,10,.85) 0 22%,rgba(140,10,10,.0) 23%),radial-gradient(circle at 70% 65%,rgba(120,8,8,.8) 0 12%,transparent 13%),radial-gradient(circle at 25% 75%,rgba(120,8,8,.7) 0 7%,transparent 8%); pointer-events:none; }
 .coverMain { position:relative; text-align:center; display:flex; flex-direction:column; align-items:center; }

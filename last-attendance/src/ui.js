@@ -34,7 +34,7 @@ const UI = {
   init() {
     renderPortraits();
     // 표지
-    const roll = $('coverRoll'); roll.innerHTML = ROLL_ORDER.map((id, i) => `<div style="animation-delay:${0.5 + i * 0.16}s"><i>${String(i + 1).padStart(2, '0')}</i><span>${CHAR[id].name}</span><b>${i === 10 ? '……있어' : '✓'}</b></div>`).join('');
+    const roll = $('coverRoll'); roll.innerHTML = NAME_ORDER.map((id, i) => `<div class="${id === 'jueun' ? 'zero' : ''}" style="animation-delay:${0.5 + i * 0.16}s"><i>${String(i + 1).padStart(2, '0')}</i><span>${CHAR[id].name}</span><b>${id === 'jueun' ? '……있어' : '✓'}</b></div>`).join('');
     const save = loadProgress();
     if (save && save.ch > 0) { $('btnContinue').classList.remove('hidden'); $('btnContinue').textContent = `이어하기 — ${CHAPTERS[save.ch].title.split('—')[0].trim()}`; }
     $('btnStart').onclick = () => this.show('modeSel');
@@ -98,7 +98,7 @@ const UI = {
   openRelations() {
     const W = 760, H = 640, cx = W / 2, cy = H / 2 + 10, R = 215;
     const pos = {};
-    ROLL_ORDER.forEach((id, i) => { const a = -Math.PI / 2 + i / 11 * Math.PI * 2; pos[id] = [cx + Math.cos(a) * R, cy + Math.sin(a) * R]; });
+    NAME_ORDER.forEach((id, i) => { const a = -Math.PI / 2 + i / 11 * Math.PI * 2; pos[id] = [cx + Math.cos(a) * R, cy + Math.sin(a) * R]; });
     pos.n1 = [cx - 70, cy - 30]; pos.n12 = [cx + 70, cy - 30]; pos.n13 = [cx, cy + 70]; pos.k13 = [cx, cy - 110];
     const node = id => CHAR[id] || EXTRA_NODES.find(n => n.id === id);
     let svg = `<svg viewBox="0 0 ${W} ${H}" class="rel"><defs><clipPath id="cc"><circle r="26"/></clipPath></defs>`;

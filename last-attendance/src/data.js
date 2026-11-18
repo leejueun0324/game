@@ -61,6 +61,8 @@ const CHARS = [
     skill:{ id:'ambush', name:'매복', cd:15, intro:'숨죽인 채 기다리다 좀비가 가장 가까이 오면 팀원들에게 알림.',
       effect:'알림 후 4초 동안 팀원 전원이 표식이 붙은 좀비에게 2배 피해를 줌.' } },
 ];
+CHARS.sort((a, b) => a.name.localeCompare(b.name, 'ko'));   // 가나다 순
+const NAME_ORDER = CHARS.map(c => c.id);
 const CHAR = Object.fromEntries(CHARS.map(c => [c.id, c]));
 const ROLL_ORDER = ['hyoseo','suyeon','seolwoo','eunbit','chaeyun','jihu','junhee','bonwoo','juwon','yujun','jueun'];
 
