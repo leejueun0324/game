@@ -775,6 +775,8 @@ const vg = [], vsolid = [];
 const vprops = [];
 const vinter = [];
 const vlights = [];
+const cherries = [];
+const playSand = new Set();
 let vground = null;
 function buildVillage() {
   for (let y = 0; y < VH; y++) { vg.push(Array(VW).fill(0)); vsolid.push(Array(VW).fill(false)); }
@@ -791,12 +793,13 @@ function buildVillage() {
     solidRect(x, y, 2, 2);
     const seed = x * 31 + y * 17;
     vprops.push({ y: (y + 2) * TS, x: x * TS, w: 32, h: 48, draw: () => drawTree(x * TS, y * TS, apple, seed, idx) });
-    if (apple) vinter.push({ id: 'apple' + idx, type: 'apple', idx, x, y, w: 2, h: 2 });
+    if (apple === true) vinter.push({ id: 'apple' + idx, type: 'apple', idx, x, y, w: 2, h: 2 });
+    if (apple === 'cherry') cherries.push([x * TS + 16, y * TS]);
   };
   for (let x = 0; x < VW; x += 2) { addTree(x, 0); addTree(x, 38); }
   for (let y = 2; y < 38; y += 2) { addTree(0, y); addTree(54, y); }
   [[6, 12], [10, 12], [14, 12], [6, 16], [10, 16], [14, 16]].forEach(([x, y], i) => addTree(x, y, true, i));
-  addTree(45, 13); addTree(51, 12); addTree(38, 15);
+  addTree(45, 13, 'cherry'); addTree(51, 12, 'cherry'); addTree(38, 15, 'cherry');
   const bench = (x, y) => {
     solidRect(x, y, 2, 1);
     vprops.push({ y: (y + 1) * TS, x: x * TS, w: 32, h: 16, draw: () => drawBench(x * TS, y * TS) });
@@ -813,6 +816,32 @@ function buildVillage() {
   };
   [[22, 12], [33, 12], [22, 21], [33, 21], [10, 10], [18, 10], [37, 10], [45, 10], [24, 29], [31, 29], [8, 29], [47, 29]].forEach(([x, y]) => lamp(x, y));
   // 모든 사람에게 똑같이 나오도록 고정된 씨앗으로 나무·덤불 배치
+  // ----- 마을 꾸미기 -----
+  const prop = (x, y, w, h, solid, draw, upH, inter, label) => {
+    if (solid) solidRect(x, y, w, h);
+    vprops.push({ y: (y + h) * TS, x: x * TS, w: w * TS, h: h * TS + (upH || 16), draw: () => { draw(x * TS, y * TS); if (label && !inTitle) overlay.push({ label: true, x: (x + w / 2) * TS, y: y * TS - (upH || 16) + 2, text: label }); } });
+    if (inter) vinter.push({ id: inter + x + '_' + y, type: inter, x, y, w, h });
+  };
+  prop(25, 10, 1, 1, true, drawSign, 20, 'sign', '🏡 우리 마을');
+  prop(19, 19, 2, 1, true, drawBoard, 18, 'board', '📋 게시판');
+  prop(30, 23, 3, 2, true, (px, py) => drawStall(px, py, '#ff8fb1', 'ice'), 26, 'icecream', '🍦 간식 가게');
+  prop(35, 23, 3, 2, true, (px, py) => drawStall(px, py, '#7bc96f', 'flower'), 26, 'flowershop', '💐 꽃가게');
+  prop(20, 23, 4, 3, false, drawPicnic, 2, 'picnic');
+  // 놀이터 (울타리 + 그네·미끄럼틀·모래놀이·시소)
+  for (let x = 3; x <= 14; x++) for (const y of [30, 36]) if (!(y === 30 && (x === 9 || x === 10))) prop(x, y, 1, 1, true, (px, py) => drawFence(px, py, 'h'), 6);
+  for (let y = 31; y <= 35; y++) for (const x of [3, 14]) prop(x, y, 1, 1, true, (px, py) => drawFence(px, py, 'v'), 6);
+  for (let y = 31; y <= 35; y++) for (let x = 4; x <= 13; x++) playSand.add(y * VW + x);
+  prop(5, 31, 3, 1, true, drawSwing, 22, 'swing', '🛝 놀이터');
+  prop(11, 31, 2, 2, true, drawSlide, 14, 'slide');
+  prop(5, 33, 3, 2, false, drawSandbox, 2, 'sandbox');
+  prop(10, 34, 3, 1, true, drawSeesaw, 8, 'seesaw');
+  // 모닥불
+  prop(46, 31, 1, 1, true, drawCampfire, 10, 'campfire', '🔥 모닥불');
+  prop(44, 31, 1, 1, true, drawLog, 4, 'log');
+  prop(48, 31, 1, 1, true, drawLog, 4, 'log');
+  vlights.push({ x: 46 * TS + 8, y: 31 * TS + 6, r: 58 });
+  // 연못 배
+  vprops.push({ y: 35 * TS, x: 36 * TS, w: 32, h: 16, draw: () => drawBoat(36 * TS, 34 * TS) });
   const rng = mulberry(20261118);
   const free = (x, y, w, h) => {
     for (let j = y - 1; j <= y + h; j++) for (let i = x - 1; i <= x + w; i++) {
@@ -822,7 +851,7 @@ function buildVillage() {
     return true;
   };
   for (let n = 0; n < 140; n++) {
-    const zone = rng() < 0.5 ? [2, 29, 14, 36] : [40, 29, 53, 36];
+    rng(); const zone = [40, 29, 53, 36];
     const x = zone[0] + Math.floor(rng() * (zone[2] - zone[0])), y = zone[1] + Math.floor(rng() * (zone[3] - zone[1]));
     if (rng() < 0.55) { if (free(x, y, 2, 2)) addTree(x, y); }
     else if (free(x, y, 1, 1)) {
@@ -868,6 +897,13 @@ function buildVillage() {
         R(px + 1, py, 1, 16, '#7d5634');
       }
     }
+    for (const k of playSand) { const x = k % VW, y = Math.floor(k / VW); R(x * TS, y * TS, 16, 16, (x + y) % 2 ? '#ecd9a6' : '#e6d29c'); R(x * TS + ((x * 7) % 13), y * TS + ((y * 5) % 13), 2, 1, '#d8c286'); }
+    for (const [x, y, f] of [[20, 33, 1], [23, 35, 0], [34, 33, 1], [32, 36, 0], [19, 35, 0], [37, 32, 0], [25, 33, 0]]) {
+      if (vg[y][x] !== 3) continue;
+      const px = x * TS + 3, py = y * TS + 4;
+      R(px, py + 1, 10, 6, '#4f9d4f'); R(px + 1, py, 8, 8, '#4f9d4f'); R(px + 5, py + 3, 3, 2, '#5aaedb'); R(px + 2, py + 1, 3, 2, '#6cc272');
+      if (f) { R(px + 3, py - 1, 3, 3, '#ffb3c7'); R(px + 4, py, 1, 1, '#ffe08a'); }
+    }
     const FC = ['#ff7a8a', '#f5d33f', '#ffffff', '#c58be0'];
     for (const [x, y, c] of flowers) {
       const px = x * TS, py = y * TS;
@@ -884,11 +920,12 @@ function buildVillage() {
 function drawTree(px, py, apple, seed, idx) {
   R(px + 6, py + 26, 20, 5, 'rgba(0,0,0,.18)');
   R(px + 12, py + 14, 8, 16, '#7a5232'); R(px + 12, py + 14, 3, 16, '#946640');
-  const c1 = '#3f8f4a', c2 = '#4fa85a', c3 = '#6cc272';
+  const ch = apple === 'cherry';
+  const c1 = ch ? '#e88aa8' : '#3f8f4a', c2 = ch ? '#f5a9c0' : '#4fa85a', c3 = ch ? '#ffd0de' : '#6cc272';
   R(px + 2, py - 6, 28, 22, c1); R(px + 4, py - 10, 24, 4, c1); R(px + 6, py - 12, 20, 2, c1); R(px, py - 2, 32, 14, c1);
   R(px + 4, py - 8, 20, 16, c2); R(px + 2, py - 2, 8, 10, c2); R(px + 8, py - 10, 8, 4, c3); R(px + 6, py - 6, 4, 4, c3);
-  R(px + 2, py + 12, 28, 3, '#357a3f');
-  if (apple && appleReady(idx)) for (const [ax, ay] of [[6, -2], [20, -6], [24, 4], [12, 6], [16, -10]]) { R(px + ax, py + ay, 3, 3, '#e04848'); R(px + ax, py + ay, 1, 1, '#ff9a9a'); }
+  R(px + 2, py + 12, 28, 3, ch ? '#d0708f' : '#357a3f');
+  if (apple === true && appleReady(idx)) for (const [ax, ay] of [[6, -2], [20, -6], [24, 4], [12, 6], [16, -10]]) { R(px + ax, py + ay, 3, 3, '#e04848'); R(px + ax, py + ay, 1, 1, '#ff9a9a'); }
   if (!apple && seed % 5 === 0) { R(px + 10, py - 4, 2, 2, '#ffd0e0'); R(px + 22, py + 2, 2, 2, '#ffd0e0'); }
 }
 function drawBush(px, py) { R(px + 1, py + 4, 14, 11, '#3f8f4a'); R(px + 3, py + 2, 10, 4, '#4fa85a'); R(px + 4, py + 4, 4, 3, '#6cc272'); R(px + 2, py + 13, 12, 2, '#357a3f'); }
@@ -911,7 +948,7 @@ function drawFountain(px, py) {
   R(px + 30, py - 14 - h, 4, 9, '#bfe8ff'); R(px + 24, py - 10 + h, 2, 6, '#a8dcf5'); R(px + 38, py - 10 + h, 2, 6, '#a8dcf5');
   R(px + 20, py - 6, 2, 4, '#bfe8ff'); R(px + 42, py - 6, 2, 4, '#bfe8ff');
 }
-function drawHouseExt(lx, ly, roofI, lit) {
+function drawHouseExt(lx, ly, roofI, lit, flag) {
   const px = lx * TS, py = ly * TS, roof = ROOFS[roofI] || ROOFS[0], rd = shade(roof, 0.72);
   R(px + 2, py + 76, 92, 6, 'rgba(0,0,0,.16)');
   R(px + 6, py + 40, 84, 40, '#f6e8cf'); R(px + 6, py + 40, 84, 3, '#e5d2b1');
@@ -927,6 +964,140 @@ function drawHouseExt(lx, ly, roofI, lit) {
   for (let i = 0; i < 6; i++) R(px + 18 - i * 3, py + 2 + i * 7, 60 + i * 6, 7, i % 2 ? roof : shade(roof, 1.06));
   for (let i = 0; i < 6; i++) for (let k = 0; k < 10; k++) R(px + 20 - i * 3 + k * 6 + (i % 2) * 3, py + 2 + i * 7, 1, 7, rd);
   R(px, py + 42, 96, 4, rd); R(px + 18, py, 60, 3, shade(roof, 1.25));
+  // 화단 · 우편함 · 발판
+  R(px + 1, py + 70, 12, 10, '#3f8f4a'); R(px + 2, py + 68, 10, 4, '#4fa85a'); R(px + 3, py + 69, 2, 2, '#ff7a8a'); R(px + 8, py + 70, 2, 2, '#f5d33f');
+  R(px + 89, py + 66, 2, 14, '#6b4a33'); R(px + 85, py + 60, 10, 7, '#d9534f'); R(px + 85, py + 60, 10, 2, '#e8736f'); R(px + 86, py + 63, 8, 1, '#a33');
+  if (flag) { R(px + 94, py + 56, 1, 7, '#555'); R(px + 95, py + 56, 3, 3, '#ffd36e'); }
+  R(px + 34, py + 80, 12, 2, '#a5714c');
+}
+function drawSign(px, py) {
+  R(px + 7, py - 2, 2, 16, '#7a5232'); R(px - 4, py - 16, 24, 14, '#a5714c'); R(px - 3, py - 15, 22, 12, '#c9955f');
+  R(px - 1, py - 12, 18, 1, '#7a5232'); R(px - 1, py - 9, 12, 1, '#7a5232'); R(px - 1, py - 6, 15, 1, '#7a5232');
+  R(px - 5, py + 12, 26, 3, 'rgba(0,0,0,.15)'); R(px - 4, py + 10, 3, 3, '#ff7a8a'); R(px + 17, py + 10, 3, 3, '#f5d33f');
+}
+function drawBoard(px, py) {
+  R(px + 3, py - 2, 3, 16, '#6b4a33'); R(px + 26, py - 2, 3, 16, '#6b4a33');
+  R(px, py - 16, 32, 18, '#7a5232'); R(px + 2, py - 14, 28, 14, '#c9955f');
+  R(px + 4, py - 12, 8, 9, '#fff8ec'); R(px + 14, py - 13, 7, 6, '#bde0ff'); R(px + 22, py - 11, 6, 8, '#ffd6e0');
+  R(px + 5, py - 10, 6, 1, '#999'); R(px + 5, py - 8, 5, 1, '#999'); R(px + 7, py - 13, 2, 2, '#e04848'); R(px + 16, py - 14, 2, 2, '#4a7fc1');
+}
+function drawStall(px, py, col, kind) {
+  R(px + 2, py + 28, 44, 4, 'rgba(0,0,0,.15)');
+  R(px + 3, py - 20, 2, 46, '#8a6a5a'); R(px + 43, py - 20, 2, 46, '#8a6a5a');
+  for (let i = 0; i < 8; i++) R(px + i * 6, py - 24, 6, 10, i % 2 ? '#fff8ec' : col);
+  for (let i = 0; i < 8; i++) R(px + i * 6 + 1, py - 14, 4, 3, i % 2 ? '#fff8ec' : col);
+  R(px, py - 25, 48, 2, shade(col, 0.8));
+  R(px + 2, py + 6, 44, 22, '#c9955f'); R(px + 2, py + 6, 44, 3, '#e0b07a'); R(px + 2, py + 25, 44, 3, '#a5714c');
+  for (let i = 0; i < 4; i++) R(px + 6 + i * 10, py + 12, 6, 10, '#b5814f');
+  if (kind === 'ice') {
+    for (let i = 0; i < 5; i++) { const x = px + 6 + i * 8; R(x + 1, py + 2, 3, 4, '#e3b26b'); R(x, py - 2, 5, 4, ['#ffb3c7', '#fff1c1', '#bde0ff', '#c8f0c0', '#d9b3ff'][i]); }
+    R(px + 18, py - 10, 12, 5, '#fff'); R(px + 20, py - 9, 8, 3, '#ff8fb1');
+  } else {
+    for (let i = 0; i < 5; i++) { const x = px + 5 + i * 8; R(x, py + 1, 6, 5, '#c46a3a'); R(x, py - 4, 6, 5, '#4f9d4f'); R(x + 1, py - 6, 4, 3, ['#ff7a8a', '#f5d33f', '#c58be0', '#fff', '#ffb347'][i]); }
+  }
+}
+function drawPicnic(px, py) {
+  for (let y = 0; y < 5; y++) for (let x = 0; x < 7; x++) R(px + 4 + x * 8, py + 6 + y * 7, 8, 7, (x + y) % 2 ? '#fff8ec' : '#ef6f6f');
+  R(px + 40, py + 10, 12, 9, '#b5814f'); R(px + 40, py + 10, 12, 2, '#d09a63'); R(px + 42, py + 5, 8, 2, '#8a5a3b'); R(px + 41, py + 6, 1, 4, '#8a5a3b'); R(px + 50, py + 6, 1, 4, '#8a5a3b');
+  R(px + 12, py + 14, 6, 4, '#fff'); R(px + 13, py + 12, 4, 2, '#ffd36e'); R(px + 24, py + 22, 5, 5, '#e04848'); R(px + 25, py + 21, 1, 2, '#4f8f3f');
+}
+function drawFence(px, py, d) {
+  const c = '#f3ead8', cd = '#c9b99a';
+  if (d === 'h') { R(px, py + 3, 16, 2, c); R(px, py + 9, 16, 2, c); R(px, py + 11, 16, 1, cd); R(px + 1, py - 1, 3, 14, c); R(px + 1, py - 2, 3, 1, cd); R(px + 9, py - 1, 3, 14, c); }
+  else { R(px + 6, py - 2, 3, 18, c); R(px + 6, py + 15, 3, 1, cd); R(px + 5, py + 4, 5, 2, c); }
+}
+function drawSwing(px, py) {
+  R(px + 1, py - 22, 3, 36, '#d9534f'); R(px + 44, py - 22, 3, 36, '#d9534f'); R(px, py - 24, 48, 4, '#4a7fc1');
+  const busy = anyoneDoing('swing');
+  for (const sx of [12, 32]) {
+    const sw = busy ? Math.round(Math.sin(animT * 3 + sx) * 3) : 0;
+    R(px + sx, py - 20, 1, 26 + 0, '#888'); R(px + sx + 6, py - 20, 1, 26, '#888');
+    R(px + sx - 1 + sw, py + 6, 9, 3, '#f5d33f');
+  }
+}
+function drawSlide(px, py) {
+  R(px + 2, py - 12, 3, 40, '#4a7fc1'); R(px + 10, py - 12, 3, 40, '#4a7fc1');
+  for (let i = 0; i < 6; i++) R(px + 2, py - 8 + i * 6, 11, 2, '#4a7fc1');
+  R(px, py - 14, 15, 4, '#f5d33f');
+  for (let i = 0; i < 9; i++) R(px + 13 + i * 2, py - 12 + i * 4, 6, 5, i % 2 ? '#ff7a59' : '#ff9a7a');
+  R(px + 28, py + 22, 4, 4, '#ff7a59');
+}
+function drawSandbox(px, py) {
+  R(px, py, 48, 32, '#a5714c'); R(px + 3, py + 3, 42, 26, '#f0d9a0'); R(px + 3, py + 3, 42, 2, '#e3c98a');
+  R(px + 10, py + 12, 8, 6, '#e3c98a'); R(px + 11, py + 10, 6, 3, '#e8cf94');
+  R(px + 30, py + 14, 6, 7, '#4a9fe0'); R(px + 30, py + 13, 6, 2, '#2f7fc0'); R(px + 37, py + 18, 2, 8, '#d9534f'); R(px + 36, py + 25, 4, 3, '#d9534f');
+}
+function drawSeesaw(px, py) {
+  R(px + 20, py + 4, 8, 10, '#8a6a5a'); R(px + 22, py + 2, 4, 3, '#6b5045');
+  const t = anyoneDoing('seesaw') ? Math.round(Math.sin(animT * 2.5) * 4) : 2;
+  for (let i = 0; i < 12; i++) R(px + 2 + i * 4, py + 3 + Math.round(t * (i - 5.5) / 6), 4, 3, '#4fb39f');
+  R(px + 2, py - 1 - t, 2, 4, '#3d8f7f'); R(px + 44, py - 1 + t, 2, 4, '#3d8f7f');
+}
+function drawCampfire(px, py) {
+  for (const [x, y] of [[1, 9], [5, 11], [10, 11], [13, 8], [3, 5], [11, 4]]) R(px + x, py + y, 4, 3, '#8a8a94');
+  R(px + 3, py + 7, 10, 3, '#6b3a1f'); R(px + 5, py + 5, 6, 3, '#7a4524');
+  const f = Math.floor(animT * 9);
+  R(px + 5 + (f % 2), py - 2, 3, 8, '#ff8a2a'); R(px + 8 - (f % 2), py - 4, 3, 10, '#ffb347'); R(px + 6, py + 1 - (f % 3), 4, 4, '#ffe08a');
+  if (f % 4 === 0) R(px + 7, py - 8 - (f % 3) * 2, 1, 1, '#ffd36e');
+}
+function drawLog(px, py) { R(px + 1, py + 4, 14, 9, '#8a5a3b'); R(px + 1, py + 4, 14, 2, '#a5714c'); R(px + 12, py + 5, 3, 7, '#d6b887'); R(px + 13, py + 7, 1, 3, '#a5714c'); }
+function drawBoat(px, py) {
+  const b = Math.round(Math.sin(animT * 1.6) * 1);
+  R(px + 2, py + 8 + b, 28, 6, '#8a5a3b'); R(px, py + 6 + b, 32, 3, '#a5714c'); R(px + 4, py + 13 + b, 24, 2, '#6b4a33');
+  R(px + 14, py - 8 + b, 2, 15, '#6b4a33'); R(px + 16, py - 7 + b, 9, 10, '#fff8ec'); R(px + 16, py - 7 + b, 9, 2, '#ff8fb1');
+}
+// ----- 살아 있는 마을: 오리·나비·반딧불·꽃잎·구름 -----
+const ducks = [], bugs = [], petals = [];
+for (let i = 0; i < 4; i++) ducks.push({ x: (22 + i * 4) * TS, y: (33 + (i % 3)) * TS, tx: 0, ty: 0, wait: 0, dir: 1, baby: i === 3 });
+for (let i = 0; i < 10; i++) bugs.push({ ax: [[44, 16], [40, 13], [49, 16], [8, 33], [12, 33], [21, 24], [36, 18], [30, 31], [24, 31], [47, 33]][i][0] * TS, ay: [[44, 16], [40, 13], [49, 16], [8, 33], [12, 33], [21, 24], [36, 18], [30, 31], [24, 31], [47, 33]][i][1] * TS, ph: i * 1.7, col: ['#ffd36e', '#ffffff', '#ff9ac0', '#bde0ff'][i % 4] });
+function isWater(px, py) { const x = Math.floor(px / TS), y = Math.floor(py / TS); return vg[y] && vg[y][x] === 3; }
+function updateNature(dt) {
+  for (const d of ducks) {
+    const dx = d.tx - d.x, dy = d.ty - d.y, dist = Math.hypot(dx, dy);
+    if (dist < 2 || !d.tx) {
+      d.wait -= dt;
+      if (d.wait <= 0) {
+        for (let k = 0; k < 10; k++) { const tx = d.x + (Math.random() - 0.5) * 120, ty = d.y + (Math.random() - 0.5) * 50; if (isWater(tx, ty) && isWater(tx + 8, ty + 6) && isWater(tx - 8, ty - 4)) { d.tx = tx; d.ty = ty; break; } }
+        d.wait = 1 + Math.random() * 4;
+      }
+    } else { const s = Math.min(dist, 12 * dt); d.x += dx / dist * s; d.y += dy / dist * s; if (Math.abs(dx) > 0.5) d.dir = dx > 0 ? 1 : -1; }
+  }
+  if (!isNight()) for (const [cx, cy] of cherries) if (Math.random() < dt * 1.2 && petals.length < 40) petals.push({ x: cx + (Math.random() - 0.5) * 28, y: cy - 6, vx: 6 + Math.random() * 6, vy: 8 + Math.random() * 6, life: 4 });
+  for (let i = petals.length - 1; i >= 0; i--) { const p = petals[i]; p.x += (p.vx + Math.sin(animT * 3 + i) * 6) * dt; p.y += p.vy * dt; p.life -= dt; if (p.life <= 0) petals.splice(i, 1); }
+}
+function drawNature(ents) {
+  for (const d of ducks) {
+    if (!inView(d.x, d.y, 16, 16)) continue;
+    ents.push({ y: d.y, draw: () => {
+      const x = Math.round(d.x), y = Math.round(d.y), s = d.baby ? 0.6 : 1, f = d.dir;
+      R(x - 5 * s, y - 2, 10 * s, 1, '#a8dcf5');
+      R(x - 4 * s, y - 5 * s, 8 * s, 4 * s, d.baby ? '#ffe08a' : '#ffffff');
+      R(x + (f > 0 ? 2 : -5) * s, y - 8 * s, 3 * s, 4 * s, d.baby ? '#ffe08a' : '#4f9d4f');
+      R(x + (f > 0 ? 5 : -7) * s, y - 7 * s, 2 * s, 1 * s + 1, '#ff9a2a');
+      R(x + (f > 0 ? 3 : -4) * s, y - 7 * s, 1, 1, '#222');
+    } });
+  }
+  for (const p of petals) if (inView(p.x, p.y, 4, 4)) ents.push({ y: p.y + 30, draw: () => R(Math.round(p.x), Math.round(p.y), 2, 1, '#ffc0d4') });
+}
+function drawNatureTop() {
+  // 해 질 녘 전에는 나비, 밤에는 반딧불
+  const night = darkness() > 0.5;
+  for (const b of bugs) {
+    const x = Math.round(b.ax + Math.sin(animT * 0.7 + b.ph) * 26 + Math.sin(animT * 1.9 + b.ph * 2) * 8);
+    const y = Math.round(b.ay + Math.cos(animT * 0.9 + b.ph) * 14 - 10);
+    if (!inView(x, y, 4, 4)) continue;
+    if (night) { if (Math.sin(animT * 3 + b.ph * 5) > -0.2) { R(x, y, 1, 1, '#fff7a8'); g.globalAlpha = 0.35; R(x - 1, y - 1, 3, 3, '#ffe95c'); g.globalAlpha = 1; } }
+    else if (darkness() < 0.2) { const w = Math.floor(animT * 10 + b.ph) % 2; R(x - 1 - w, y, 1 + w, 2, b.col); R(x + 1, y, 1 + w, 2, b.col); R(x, y, 1, 2, '#3b2e2a'); }
+  }
+  if (darkness() < 0.4) {
+    g.globalAlpha = 0.07 * (1 - darkness());
+    for (let i = 0; i < 4; i++) {
+      const cx = ((animT * 6 + i * 260) % (VW * TS + 300)) - 150, cy = (i * 157 % (VH * TS - 100)) + 40;
+      if (!inView(cx - 60, cy + 30, 160, 80)) continue;
+      R(cx - 50, cy, 110, 34, '#000'); R(cx - 30, cy - 12, 70, 58, '#000'); R(cx - 70, cy + 8, 30, 20, '#000');
+    }
+    g.globalAlpha = 1;
+  }
 }
 function drawEmptyLot(lx, ly) {
   const px = lx * TS, py = ly * TS;
@@ -1022,7 +1193,7 @@ function solidAt(x, y) {
 function mapSize() { return curMap === 'v' ? [VW, VH] : [HW, HH]; }
 function surfaceAt(x, y) {
   const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
-  if (curMap === 'v') { const t = vg[ty] && vg[ty][tx]; return ['grass', 'sand', 'stone', 'grass', 'wood'][t] || 'grass'; }
+  if (curMap === 'v') { if (playSand.has(ty * VW + tx)) return 'sand'; const t = vg[ty] && vg[ty][tx]; return ['grass', 'sand', 'stone', 'grass', 'wood'][t] || 'grass'; }
   const h = getHouse(curMap.slice(2)); if (!h) return 'wood';
   if (ty >= HH - 1) return 'stone';
   for (const it of h.items) { const d = CAT[it.k]; if (d.rug && tx >= it.x && tx < it.x + d.w && ty >= it.y && ty < it.y + d.h) return 'carpet'; }
@@ -1031,7 +1202,11 @@ function surfaceAt(x, y) {
 
 // ===== 행동 =====
 function getObjects() {
-  if (curMap === 'v') return vinter;
+  if (curMap === 'v') {
+    const list = vinter.slice();
+    if (!inTitle) for (let i = 0; i < LOTS.length; i++) if (!lotOwner(i)) { const [lx, ly] = LOTS[i]; list.push({ id: 'lot' + i, type: 'lot', idx: i, x: lx + 2, y: ly + 3, w: 2, h: 1 }); }
+    return list;
+  }
   const h = getHouse(curMap.slice(2));
   if (!h) return [];
   return h.items.filter(it => CAT[it.k].act).map(it => ({ id: 'it_' + it.k + '_' + it.x + '_' + it.y, type: it.k, item: it, x: it.x, y: it.y, w: CAT[it.k].w, h: CAT[it.k].h }));
@@ -1056,6 +1231,21 @@ function actionFor(o) {
     case 'bench': return { label: '벤치에 앉기', icon: '🪑', cont: true, sit: true, tick: dt => N('fun', (othersDoing('bench') ? 3 : 1.5) * dt) };
     case 'fountain': return { label: '동전 던지기 (-1💰)', icon: '🪙', dur: 1.5, can: () => save.coins >= 1 || '돈이 없어요',
       done: () => { addCoins(-1); N('fun', 10); SFX.splash(); toast('✨ 소원: ' + WISHES[rand(WISHES.length)]); } };
+    case 'lot':
+      if (lotOf(me.id) < 0) return { label: '여기에 내 집 짓기 (무료)', icon: '🏗️', dur: 1, done: () => requestMove(o.idx, 0) };
+      return { label: '이 집터로 이사하기 (100💰)', icon: '🚚', dur: 0.3, can: () => save.coins >= 100 || '이사하려면 100💰이 필요해요', done: () => confirmMove(o.idx) };
+    case 'sign': return { label: '표지판 읽기', icon: '🪧', dur: 0.4, done: () => toast('🏡 우리 마을에 오신 걸 환영해요! 💌 초대로 친구를 불러요') };
+    case 'board': return { label: '게시판 보기', icon: '📋', dur: 0.3, done: openBoard };
+    case 'icecream': return { label: '아이스크림 사 먹기 (-8💰)', icon: '🍦', dur: 2, can: () => save.coins >= 8 || '돈이 부족해요',
+      done: () => { addCoins(-8); N('hunger', 12); N('fun', 12); toast(['🍦 바닐라', '🍓 딸기', '🍫 초코', '🍵 녹차'][rand(4)] + ' 아이스크림 맛있다!'); SFX.pop(); } };
+    case 'flowershop': return { label: '꽃다발 사기 (-10💰)', icon: '💐', dur: 1.5, can: () => save.coins >= 10 || '돈이 부족해요',
+      done: () => { addCoins(-10); N('fun', 15); sendEmote('💐'); toast('💐 향기로운 꽃다발! 기분이 좋아져요'); } };
+    case 'picnic': return { label: '소풍 즐기기', icon: '🧺', cont: true, tick: dt => { N('fun', (othersDoing('picnic') ? 4 : 2) * dt); N('hunger', 0.3 * dt); } };
+    case 'swing': return { label: '그네 타기', icon: '🎠', cont: true, sit: true, tick: dt => N('fun', (othersDoing('swing') ? 6 : 4) * dt) };
+    case 'slide': return { label: '미끄럼틀 타기', icon: '🛝', dur: 1.6, start: () => tone(300, 1.2, 'triangle', 0.05, 0.2, 500), done: () => { N('fun', 12); N('energy', -2); toast('🛝 슈우웅~!'); } };
+    case 'sandbox': return { label: '모래성 쌓기', icon: '🏰', cont: true, tick: dt => N('fun', (othersDoing('sandbox') ? 4.5 : 2.5) * dt) };
+    case 'seesaw': return { label: '시소 타기', icon: '⚖️', cont: true, sit: true, tick: dt => N('fun', (othersDoing('seesaw') ? 7 : 1) * dt) };
+    case 'campfire': case 'log': return { label: '모닥불 쬐기', icon: '🔥', cont: true, sit: o.type === 'log', tick: dt => { N('fun', (othersDoing('campfire', 'log') ? 3.5 : 1.8) * dt); N('energy', 1 * dt); } };
     case 'fish': return { label: '낚시하기', icon: '🎣', dur: 3, start: () => SFX.splash(), done: () => {
       SFX.splash();
       if (Math.random() < 0.7) { const f = FISH[rand(FISH.length)], c = f[2] + rand(10); addCoins(c); N('fun', 6); toast(`${f[0]} ${f[1]}를 낚았어요! +${c}💰`); }
@@ -1418,6 +1608,7 @@ function update(dt) {
   saveT += dt;
   if (saveT > 3) { saveT = 0; saveMe(); saveVillage(); }
   if (resumeTo) tryResume();
+  checkPendingMove();
   if (!isHost && hostConn && now() - lastHostMsg > 7000) { const c = hostConn; hostConn = null; try { c.close(); } catch (e) {} hostLost(); }
 }
 function faceTo(x, y) { const dx = x - me.x, dy = y - me.y; me.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 3) : (dy > 0 ? 0 : 1); }
@@ -1486,6 +1677,7 @@ function draw() {
   if (curMap !== 'v' && edit) drawEditOverlay();
   g.restore();
   drawLighting();
+  if (curMap === 'v') { g.save(); g.translate(-cam.x, -cam.y); drawNatureTop(); g.restore(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(buf, 0, 0, BW, BH, 0, 0, BW * S * DPR, BH * S * DPR);
@@ -1502,16 +1694,17 @@ function drawVillage(ents) {
     if (k < 3) R(x * TS + 4 + k * 2, y * TS + 6 + (ph % 5), 5, 1, '#a8dcf5');
   }
   for (const p of vprops) if (inView(p.x, p.y, p.w, p.h + 32)) ents.push(p);
+  drawNature(ents);
   for (let i = 0; i < LOTS.length; i++) {
     const [lx, ly] = LOTS[i], owner = inTitle ? (i % 3 === 1 ? null : 'demo') : lotOwner(i);
     if (!inView(lx * TS, (ly + 5) * TS, 96, 100)) continue;
     if (owner) {
       const h = inTitle ? { roof: i % ROOFS.length } : getHouse(owner) || { roof: 0 };
       ents.push({ y: (ly + 5) * TS - 2, draw: () => {
-        drawHouseExt(lx, ly, h.roof, darkness() > 0.3);
+        drawHouseExt(lx, ly, h.roof, darkness() > 0.3, inTitle || owner === me.id || !!players[owner]);
         if (!inTitle) overlay.push({ house: true, x: (lx + 3) * TS, y: ly * TS - 4, name: (owner === me.id ? '⭐ ' : '') + ownerName(owner) + '의 집', online: owner === me.id || !!players[owner] });
       } });
-    } else ents.push({ y: (ly + 4) * TS, draw: () => { drawEmptyLot(lx, ly); if (!inTitle) overlay.push({ house: true, x: (lx + 3) * TS, y: (ly + 2) * TS + 8, name: '빈 집터', empty: true }); } });
+    } else ents.push({ y: (ly + 4) * TS, draw: () => { drawEmptyLot(lx, ly); if (!inTitle) overlay.push({ house: true, x: (lx + 3) * TS, y: (ly + 2) * TS + 8, name: '🏗️ 빈 집터 · 이사 가능', empty: true }); } });
   }
 }
 function drawInterior(ents) {
@@ -1588,6 +1781,13 @@ function drawOverlayText() {
   const c = ctx;
   c.textAlign = 'center'; c.textBaseline = 'middle';
   for (const o of overlay) {
+    if (o.label) {
+      c.font = `700 11px ${FONT}`;
+      const w = c.measureText(o.text).width + 12, x = sx(o.x), y = sy(o.y);
+      c.fillStyle = 'rgba(29,26,43,.62)'; rrect(c, x - w / 2, y - 9, w, 18, 6); c.fill();
+      c.fillStyle = '#fff8ec'; c.fillText(o.text, x, y);
+      continue;
+    }
     if (o.house) {
       c.font = `700 12px ${FONT}`;
       const t = o.name, w = c.measureText(t).width + 18, x = sx(o.x), y = sy(o.y);
@@ -2332,6 +2532,7 @@ function hostRecv(c, d) {
     }
     case 'fx': if (d.k === 'note') { const n = clampInt(d.n, 0, 8), map = String(d.map || ''); if (map === curMap) SFX.note(n, 0.06); broadcast({ t: 'fx', k: 'note', n, map }, c); } break;
     case 'leave': dropConn(c); break;
+    case 'move': hostMove(info.id, clampInt(d.lot, 0, LOTS.length - 1)); break;
   }
 }
 function dropConn(c) {
@@ -2436,6 +2637,60 @@ $('startBtn').onclick = () => {
 };
 $('altStart').onclick = () => { initAudio(); SFX.click(); $('title').classList.add('hidden'); openCreator(false); };
 function genCode() { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let s = ''; for (let i = 0; i < 6; i++) s += a[rand(a.length)]; return s; }
+// ===== 집 사기 · 이사 =====
+let pendingMove = null;
+function confirmMove(i) {
+  openModal(b => {
+    b.append(el('h3', { textContent: '🚚 이사할까요?' }));
+    b.append(el('p', { textContent: '이 집터로 이사하면 지금 집은 그대로 들고 가요. (가구·바닥·벽지 모두 그대로!)' }));
+    b.append(el('p', { textContent: `이사 비용: 100💰 · 내 돈: ${save.coins}💰` }));
+    const row = el('div', { className: 'row' });
+    const ok = el('button', { className: 'btn primary', textContent: '🚚 이사하기' }); ok.onclick = () => { closeModal(); requestMove(i, 100); };
+    row.append(ok, closeBtn());
+    b.append(row);
+  });
+}
+function requestMove(i, cost) {
+  if (lotOwner(i)) { toast('이미 다른 이웃이 살고 있어요'); return; }
+  if (save.coins < cost) { toast('돈이 부족해요'); return; }
+  if (isHost) { if (hostMove(me.id, i)) moveDone(cost); }
+  else { pendingMove = { lot: i, cost, until: now() + 6000 }; net({ t: 'move', lot: i }); toast('🚚 이사 준비 중...'); }
+}
+function moveDone(cost) {
+  if (cost) addCoins(-cost);
+  SFX.coin(); toast(cost ? '🏡 이사 완료! 새 집으로 왔어요' : '🏗️ 집을 지었어요! 🏠 버튼으로 가 보세요');
+  rebuildLotSolid();
+}
+function hostMove(id, i) {
+  if (!(i >= 0 && i < LOTS.length) || lotOwner(i)) return false;
+  const had = lotOf(id) >= 0;
+  world.lots[id] = i;
+  broadcast({ t: 'world', world });
+  const nm = id === me.id ? me.name : players[id] ? players[id].name : '이웃';
+  sys(had ? `🚚 ${nm}님이 새 집으로 이사했어요!` : `🏗️ ${nm}님이 마을에 집을 지었어요!`);
+  return true;
+}
+function checkPendingMove() {
+  if (!pendingMove) return;
+  if (lotOf(me.id) === pendingMove.lot) { const c = pendingMove.cost; pendingMove = null; moveDone(c); }
+  else if (now() > pendingMove.until) { pendingMove = null; toast('이사하지 못했어요. 다시 시도해 주세요'); }
+}
+function openBoard() {
+  openModal(b => {
+    b.append(el('h3', { textContent: '📋 우리 마을 게시판' }));
+    b.append(el('p', { textContent: `📅 오늘은 ${world.day}일차 · 마을 코드 ${code}` }));
+    const ul = el('ul', { className: 'plist' });
+    for (const id in world.lots) {
+      const online = id === me.id || !!players[id];
+      ul.append(el('li', {}, el('span', { textContent: `🏠 ${ownerName(id)}${id === me.id ? ' (나)' : ''}` }), el('span', { className: 'where', textContent: online ? '🟢 접속 중' : '외출 중' })));
+    }
+    const empty = LOTS.length - Object.keys(world.lots).length;
+    b.append(ul);
+    b.append(el('p', { textContent: `🏗️ 빈 집터 ${empty}곳 — 표지판 앞에서 이사(100💰)할 수 있어요` }));
+    b.append(el('p', { textContent: '💡 컴퓨터로 일하거나 연못에서 낚시하면 돈을 벌어요. 놀이터·모닥불·소풍은 친구랑 같이 하면 더 즐거워요!' }));
+    b.append(closeBtn());
+  });
+}
 let resumeTo = null;
 function tryResume() {
   const r = resumeTo;
@@ -2478,6 +2733,7 @@ let last = performance.now(), uiT = 0;
 function frame(t) {
   const dt = Math.min(0.05, (t - last) / 1000); last = t;
   animT += dt;
+  updateNature(dt);
   if (started) {
     update(dt);
     if (isHost) hostTick(dt);
