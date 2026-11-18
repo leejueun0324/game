@@ -100,8 +100,8 @@ const CHARS = [
     skill:'폭주 본능', shout:'정신 차려, 버텨!!', desc:'위기일수록 몸이 먼저 반응한다. 6초간 연사속도 2배, 이동속도 증가.', quote:'ㅋㅋㅋㅋㅋㅋㅋㅋ' },
   { id:'juwon',  name:'이주원', short:'주원', color:'#6ec3ff', hp:1.0,  spd:1.05, dmg:0.9,  cd:14, tag:'#감성풍부 #리액션장인 #다정함',
     skill:'골든타임', shout:'괜찮아? 잠깐만 있어봐', desc:'동료부터 챙긴다. 주변 팀원을 붕대로 치료하고, 근처에 쓰러진 동기는 바로 일으켜 세운다.', quote:'야르합니다' },
-  { id:'junhee', name:'이준희', short:'준희', color:'#ffb35c', hp:1.35, spd:0.9,  dmg:1.05, cd:14, tag:'#느긋함 #먹부림 #든든함',
-    skill:'인간 방벽', shout:'이쪽이다 이것들아!', desc:'뜯어낸 사물함 문짝을 방패 삼아 버틴다. 6초간 받는 피해 70% 감소, 소리를 질러 주변 좀비를 자신에게 끌어들인다.', quote:'배가 너무 고파ㅛ' },
+  { id:'junhee', name:'이준희', short:'준희', color:'#ffb35c', hp:1.35, spd:0.9,  dmg:1.05, cd:8, tag:'#느긋함 #먹부림 #든든함',
+    skill:'풀스윙 홈런', shout:'날려버린다!!', desc:'과방에 굴러다니던 야구배트로 풀스윙. 앞쪽 넓은 범위의 좀비에게 큰 피해를 주고 멀리 날려버리며 1초간 기절시킨다. 처치하면 홈런!', quote:'배가 너무 고파ㅛ' },
   { id:'yujun',  name:'박유준', short:'유준', color:'#7dd87d', hp:1.1,  spd:0.95, dmg:1.0,  cd:13, tag:'#학생회 #실무형 #판짜는사람',
     skill:'긴급 봉쇄선', shout:'책상 이쪽으로 옮겨!', desc:'강의실 책상과 의자로 순식간에 바리케이드 3개를 세워 좀비의 길을 막는다.', quote:'과방 5:00-6:30 빌림' },
   { id:'eunbit', name:'장은빛', short:'은빛', color:'#ffe066', hp:0.95, spd:1.12, dmg:1.0,  cd:9,  tag:'#텐션최고 #즉흥파 #호기심',
@@ -296,7 +296,7 @@ function newGame(charIdx) {
       revive: 0, lastHit: 0, hurtFlash: 0, slot: 0 })),
     zombies: [], bullets: [], eshots: [], pickups: [], parts: [], texts: [], barricades: [], zones: [], grenades: [], rings: [], flashes: [],
     spawnT: 2, pickT: 3, hordeT: 40, teamBuff: 0, boss: null, bossSpawned: false, busArrived: false,
-    banners: [], won: false, turrets: [], decoys: [], beams: [], slashes: [], delayed: [], trails: [], regen: 0, cutin: null,
+    banners: [], won: false, turrets: [], swings: [], decoys: [], beams: [], slashes: [], delayed: [], trails: [], regen: 0, cutin: null,
   };
   for (const f of G.friends) f.say = { txt: '살려줘!!', t: 1e9 };
   for (let i = 0; i < 10; i++) spawnPickup();
@@ -425,10 +425,18 @@ function castSkill(c, isPlayer) {
     for (const f of G.friends) if (f.state === 'down' && dist(f, c) < 220) { f.state = 'follow'; f.hp = f.maxHp * .5; say(f, '고마워...!', 2); floatText(f.x, f.y - 30, '부활', '#7dff7d', 18); }
     G.rings.push({ x: c.x, y: c.y, r: 10, max: 260, t: .5, dur: .5, color: '#ffffff', txt: '✚ 응급처치' });
   } else if (id === 'junhee') {
-    c.iron = 6; c.taunt = 6;
-    for (const z of G.zombies) if (dist(z, c) < 380) { z.target = c; z.retarget = 6; }
-    G.rings.push({ x: c.x, y: c.y, r: 380, max: 20, t: .45, dur: .45, color: '#ffb35c', txt: '도발!' });
-    G.shake = Math.max(G.shake, 5);
+    G.swings.push({ o: c, a, t: .28 });
+    let hit = 0, hr = 0;
+    for (const z of G.zombies) {
+      if (z.dead) continue; const d = dist(z, c); if (d > 140 + z.r) continue;
+      let da = Math.atan2(z.y - c.y, z.x - c.x) - a; da = Math.atan2(Math.sin(da), Math.cos(da));
+      if (Math.abs(da) > 1.35) continue;
+      const kb = z.type === 'boss' ? 15 : z.type === 'tank' ? 90 : 190, nx = (z.x - c.x) / (d || 1), ny = (z.y - c.y) / (d || 1);
+      hurtZombie(z, 65 * dm, nx * kb, ny * kb); z.stun = Math.max(z.stun, z.type === 'boss' ? .3 : 1); collideWorld(z); hit++;
+      if (z.dead) hr++;
+    }
+    if (hit) { sfx('boom'); G.shake = Math.max(G.shake, 6 + hit); }
+    if (hr) G.texts.push({ x: c.x + Math.cos(a) * 60, y: c.y - 40, txt: hr >= 3 ? '만루 홈런!!' : '홈런!', color: '#ffe066', size: 26, t: 1, vy: -50 });
   } else if (id === 'yujun') {
     for (const o of [-.7, 0, .7]) {
       const bx = c.x + Math.cos(a + o) * 62, by = c.y + Math.sin(a + o) * 62;
@@ -608,7 +616,7 @@ function update(dt) {
       const near = r => countNear(f, r);
       if (id === 'jueun') use = near(300) >= 3;
       else if (id === 'juwon') use = [P, ...G.friends].some(u => ((u.player || u.state === 'follow') && u.hp < u.maxHp * .6 || u.state === 'down') && dist(u, f) < 240);
-      else if (id === 'junhee') use = near(220) >= 4;
+      else if (id === 'junhee') use = near(150) >= 2;
       else if (id === 'yujun') use = near(380) >= 3;
       else if (id === 'eunbit' || id === 'chaeyun') use = f.hp < f.maxHp * .5 && near(120) > 0;
       else if (id === 'jihu') use = z && near(500) >= 2;
@@ -758,6 +766,7 @@ function update(dt) {
   }
   G.decoys = G.decoys.filter(d => !d.gone);
   for (const bm of G.beams) bm.t -= dt; G.beams = G.beams.filter(b => b.t > 0);
+  for (const sw of G.swings) sw.t -= dt; G.swings = G.swings.filter(s => s.t > 0);
   for (const sl of G.slashes) sl.t -= dt; G.slashes = G.slashes.filter(s => s.t > 0);
   G.zombies = G.zombies.filter(z => !z.dead);
 
@@ -899,6 +908,17 @@ function draw() {
   for (const bm of G.beams) { const k = bm.t / .25; ctx.lineCap = 'round';
     ctx.globalAlpha = k; ctx.strokeStyle = 'rgba(255,230,160,.7)'; ctx.lineWidth = 8 * k + 1; ctx.beginPath(); ctx.moveTo(bm.x1, bm.y1); ctx.lineTo(bm.x2, bm.y2); ctx.stroke();
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke(); }
+  for (const sw of G.swings) {
+    const k = 1 - sw.t / .28, o = sw.o, start = sw.a - 1.35, cur = start + 2.7 * Math.min(1, k * 1.4);
+    ctx.globalAlpha = Math.min(1, sw.t / .1); ctx.fillStyle = 'rgba(255,224,150,.35)';
+    ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.arc(o.x, o.y, 140, start, cur); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#fff3c4'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(o.x, o.y, 140, Math.max(start, cur - .6), cur); ctx.stroke();
+    ctx.save(); ctx.translate(o.x, o.y); ctx.rotate(cur); ctx.lineCap = 'round';
+    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(70, 0); ctx.stroke();
+    ctx.strokeStyle = '#b07a3e'; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(60, 0); ctx.lineTo(110, 0); ctx.stroke();
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
   for (const sl of G.slashes) { const k = sl.t / .3; ctx.globalAlpha = k; ctx.strokeStyle = '#d8ffb0'; ctx.lineWidth = 4;
     ctx.beginPath(); ctx.moveTo(sl.x - Math.cos(sl.a) * 28, sl.y - Math.sin(sl.a) * 28); ctx.lineTo(sl.x + Math.cos(sl.a) * 28, sl.y + Math.sin(sl.a) * 28); ctx.stroke(); }
   ctx.globalAlpha = 1;
