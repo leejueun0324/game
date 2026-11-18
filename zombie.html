@@ -103,7 +103,7 @@ const CHARS = [
   { id:'junhee', name:'이준희', short:'준희', color:'#ffb35c', hp:1.35, spd:0.9,  dmg:1.05, cd:8, tag:'#느긋함 #유쾌함 #듬직함',
     skill:'풀스윙 홈런', shout:'날려버린다!!', desc:'과방에 굴러다니던 야구배트로 풀스윙. 앞쪽 넓은 범위의 좀비에게 큰 피해를 주고 멀리 날려버리며 1초간 기절시킨다. 처치하면 홈런!', quote:'배가 너무 고파ㅛ' },
   { id:'yujun',  name:'박유준', short:'유준', color:'#7dd87d', hp:1.1,  spd:0.95, dmg:1.0,  cd:10, tag:'#책임감 #계획형 #현실적',
-    skill:'부탄가스 트랩', shout:'여기로 들어와라.', desc:'편의점 부탄가스로 만든 폭발 트랩 2개를 앞쪽에 설치한다. 좀비가 다가오면 터져 넓은 범위에 큰 피해를 주고 날려버린다. 계획대로 유인할수록 강력하다.', quote:'과방 5:00-6:30 빌림' },
+    skill:'감전 트랩', shout:'전원 켠다. 들어와 봐.', desc:'강의실 멀티탭과 연장선을 정수기 물웅덩이에 담가 감전 트랩 2개를 깐다. 12초 동안 다가오는 좀비를 감전시키고, 전기가 주변 좀비에게 최대 4번까지 튀며 기절시킨다.', quote:'과방 5:00-6:30 빌림' },
   { id:'eunbit', name:'장은빛', short:'은빛', color:'#ffe066', hp:0.95, spd:1.12, dmg:1.0,  cd:9,  tag:'#즉흥적 #명랑함 #호기심',
     skill:'돌파 러시', shout:'일단 뛰어!!', desc:'생각보다 몸이 먼저 나간다. 3초간 이동속도 2배, 앞을 막는 좀비는 몸통 박치기로 밀쳐낸다.', quote:'비상' },
   { id:'jihu',   name:'이지후', short:'지후', color:'#b9a3ff', hp:0.95, spd:1.0,  dmg:1.15, cd:8,  tag:'#차분함 #꼼꼼함 #신중함',
@@ -441,7 +441,7 @@ function castSkill(c, isPlayer) {
     for (const o of [-.45, .45]) {
       let d = 90, x, y;
       do { x = c.x + Math.cos(a + o) * d; y = c.y + Math.sin(a + o) * d; d -= 15; } while (d > 20 && !freeSpot(x, y, 10));
-      G.traps.push({ x, y, t: 20, arm: .6, dm });
+      G.traps.push({ x, y, t: 12, arm: .5, zap: 0, dm, bolts: [] });
     }
     while (G.traps.length > 6) G.traps.shift();
   } else if (id === 'eunbit') {
@@ -768,10 +768,22 @@ function update(dt) {
   G.decoys = G.decoys.filter(d => !d.gone);
   for (const bm of G.beams) bm.t -= dt; G.beams = G.beams.filter(b => b.t > 0);
   for (const tp of G.traps) {
-    tp.t -= dt; tp.arm -= dt;
-    if (tp.arm <= 0 && (tp.t <= 0 || G.zombies.some(z => !z.dead && Math.hypot(z.x - tp.x, z.y - tp.y) < z.r + 40))) {
-      tp.done = true; aoe(tp.x, tp.y, 135, 80 * tp.dm, 90, .5, '#ff9a3a', '펑!');
-      burst(tp.x, tp.y, '#ff9a3a', 22, 300); burst(tp.x, tp.y, '#555', 12, 200); sfx('boom'); G.shake = Math.max(G.shake, 10);
+    tp.t -= dt; tp.arm -= dt; tp.zap -= dt;
+    for (const bo of tp.bolts) bo.t -= dt; tp.bolts = tp.bolts.filter(b => b.t > 0);
+    if (tp.t <= 0) { tp.done = true; burst(tp.x, tp.y, '#888', 8, 100); continue; }
+    if (tp.arm > 0 || tp.zap > 0) continue;
+    let first = null, bd = 85;
+    for (const z of G.zombies) { if (z.dead) continue; const d = Math.hypot(z.x - tp.x, z.y - tp.y) - z.r; if (d < bd) { bd = d; first = z; } }
+    if (!first) continue;
+    tp.zap = .8; sfx('hit'); G.shake = Math.max(G.shake, 3);
+    const hit = new Set(); let from = { x: tp.x, y: tp.y }, cur = first;
+    for (let k = 0; k < 5 && cur; k++) {
+      tp.bolts.push({ x1: from.x, y1: from.y, x2: cur.x, y2: cur.y, t: .22, seed: Math.random() * 99 });
+      hit.add(cur); hurtZombie(cur, 40 * tp.dm * (1 - k * .12)); cur.stun = Math.max(cur.stun, cur.type === 'boss' ? .3 : 1.2);
+      burst(cur.x, cur.y, '#bfe8ff', 5, 120);
+      from = cur; let nx = null, nd = 130;
+      for (const z of G.zombies) { if (z.dead || hit.has(z)) continue; const d = dist(z, from); if (d < nd) { nd = d; nx = z; } }
+      cur = nx;
     }
   }
   G.traps = G.traps.filter(t => !t.done);
@@ -855,13 +867,26 @@ function draw() {
     ctx.restore();
     if (Math.random() < .3) G.parts.push({ x: zn.x + rand(-zn.r, zn.r) * .7, y: zn.y + rand(-zn.r, zn.r) * .7, vx: 0, vy: -60, t: .5, color: '#ff8a2a', r: 4 });
   }
-  // 부탄가스 트랩
+  // 감전 트랩
   for (const tp of G.traps) {
-    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(tp.x + 2, tp.y + 9, 12, 4, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = '#d23a2a'; rr(ctx, tp.x - 7, tp.y - 13, 14, 24, 4); ctx.fill();
-    ctx.fillStyle = '#eee'; ctx.fillRect(tp.x - 7, tp.y - 4, 14, 6); ctx.fillStyle = '#999'; ctx.fillRect(tp.x - 3, tp.y - 17, 6, 5);
-    if (tp.arm <= 0 && Math.sin(T * 12) > 0) { ctx.fillStyle = '#ff3030'; ctx.beginPath(); ctx.arc(tp.x, tp.y - 20, 3, 0, 7); ctx.fill(); }
-    if (tp.arm <= 0) { ctx.strokeStyle = 'rgba(255,80,40,.25)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tp.x, tp.y, 40, 0, 7); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(90,150,220,.35)'; ctx.beginPath(); ctx.ellipse(tp.x, tp.y, 46, 30, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#222'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(tp.x - 30, tp.y + 14); ctx.quadraticCurveTo(tp.x - 10, tp.y - 20, tp.x + 6, tp.y); ctx.stroke();
+    ctx.fillStyle = '#f2f2f2'; rr(ctx, tp.x - 2, tp.y - 6, 26, 12, 3); ctx.fill(); ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#555'; for (let i = 0; i < 3; i++) ctx.fillRect(tp.x + 2 + i * 7, tp.y - 2, 4, 4);
+    ctx.fillStyle = tp.arm <= 0 && Math.sin(T * 14) > 0 ? '#ff3030' : '#661010'; ctx.beginPath(); ctx.arc(tp.x + 20, tp.y - 3, 2, 0, 7); ctx.fill();
+    if (tp.arm <= 0 && Math.random() < .3) { const aa = rand(0, 6.28), r1 = rand(10, 40);
+      ctx.strokeStyle = 'rgba(190,232,255,.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(tp.x, tp.y); ctx.lineTo(tp.x + Math.cos(aa) * r1, tp.y + Math.sin(aa) * r1 * .6); ctx.stroke(); }
+    for (const bo of tp.bolts) {
+      ctx.globalAlpha = bo.t / .22; ctx.lineCap = 'round';
+      for (const [w, col] of [[7, 'rgba(110,190,255,.5)'], [2.5, '#ffffff']]) {
+        ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(bo.x1, bo.y1);
+        for (let i = 1; i < 6; i++) { const k = i / 6, j = Math.sin(bo.seed + i * 7.3 + T * 40) * 12;
+          const dx = bo.x2 - bo.x1, dy = bo.y2 - bo.y1, l = Math.hypot(dx, dy) || 1;
+          ctx.lineTo(bo.x1 + dx * k - dy / l * j, bo.y1 + dy * k + dx / l * j); }
+        ctx.lineTo(bo.x2, bo.y2); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
   }
   // 포탑
   for (const tu of G.turrets) {
