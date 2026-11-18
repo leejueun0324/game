@@ -46,14 +46,14 @@ function makeHuman(ch, opt) {
   part(head, -0.08, 0.14, 0.175, 0.05, 0.05, 0.01, '#222'); part(head, 0.08, 0.14, 0.175, 0.05, 0.05, 0.01, '#222');
   part(head, 0, 0.03, 0.175, 0.08, 0.02, 0.01, '#b5605a');
   // 머리카락
-  const hc = opt.hair || HAIR;
-  part(head, 0, 0.33, -0.02, 0.4, 0.1, 0.39, hc);                       // 정수리
+  const hc = opt.hair || ch.hairColor || HAIR, hl = ch.hairLen || 1;
+  if (ch.forehead) part(head, 0, 0.34, -0.04, 0.4, 0.09, 0.35, hc); else part(head, 0, 0.33, -0.02, 0.4, 0.1, 0.39, hc);   // 정수리
   part(head, 0, 0.18, -0.19, 0.4, 0.3, 0.06, hc);                       // 뒤
   part(head, -0.2, 0.2, -0.02, 0.04, 0.28, 0.36, hc); part(head, 0.2, 0.2, -0.02, 0.04, 0.28, 0.36, hc);
-  if (ch.hair === 'long') { part(head, 0, -0.18, -0.2, 0.42, 0.62, 0.08, hc); part(head, -0.21, -0.05, -0.05, 0.05, 0.42, 0.24, hc); part(head, 0.21, -0.05, -0.05, 0.05, 0.42, 0.24, hc); }
+  if (ch.hair === 'long') { const L = 0.62 * hl, S2 = 0.42 * hl; part(head, 0, 0.13 - L / 2, -0.2, 0.42, L, 0.08, hc); part(head, -0.21, 0.16 - S2 / 2, -0.05, 0.05, S2, 0.24, hc); part(head, 0.21, 0.16 - S2 / 2, -0.05, 0.05, S2, 0.24, hc); }
   if (ch.hair === 'bob') { part(head, 0, 0.02, -0.2, 0.44, 0.32, 0.08, hc); part(head, -0.22, 0.04, -0.02, 0.06, 0.3, 0.36, hc); part(head, 0.22, 0.04, -0.02, 0.06, 0.3, 0.36, hc); }
   if (ch.bangs) { const t = ch.bangs >= 2 ? 0.17 : ch.bangs < 1 ? 0.08 : 0.12; part(head, 0, 0.3 - t / 2 + 0.02, 0.17, 0.38, t, 0.05, hc); }
-  else { part(head, -0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); part(head, 0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); }
+  else if (!ch.forehead) { part(head, -0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); part(head, 0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); }
   if (ch.glasses) { const gm = '#111'; part(head, -0.08, 0.14, 0.185, 0.12, 0.09, 0.01, gm, { transparent: true, opacity: 0.85 }); part(head, 0.08, 0.14, 0.185, 0.12, 0.09, 0.01, gm, { transparent: true, opacity: 0.85 });
     part(head, -0.08, 0.14, 0.19, 0.09, 0.06, 0.005, '#cfe8ff'); part(head, 0.08, 0.14, 0.19, 0.09, 0.06, 0.005, '#cfe8ff'); part(head, 0, 0.15, 0.185, 0.04, 0.015, 0.01, gm); }
   if (ch.headphones) { const hp = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.035, 6, 16), mat('#111')); hp.rotation.x = Math.PI / 2; hp.position.set(0, 1.55, 0); body.add(hp);

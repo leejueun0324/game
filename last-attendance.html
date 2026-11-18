@@ -303,7 +303,7 @@ body.portrait #questBox .q:not(.cur) { display:none; } body.portrait #questBox d
 // 외형: hair = long | bob | short / bangs = 0 없음, 1 있음, 2 숱 많음, 0.5 숱 적음
 const CHARS = [
   { id:'jueun', name:'이주은', short:'주은', tags:'#주도형 #활발함 #솔직함', hp:9, atk:9, spd:8, color:'#ff8fc4',
-    gender:'여', birth:'07년생', age:20, height:167, hair:'long', bangs:2, glasses:false,
+    gender:'여', birth:'07년생', age:20, height:167, hair:'long', bangs:2, glasses:false, hairColor:'#6b4226', hairLen:1.5,
     top:{ type:'hoodie', color:'#8e9297' }, bottom:{ type:'shorts', color:'#3b4a66' }, outfit:'회색 후드티, 짧은 반바지',
     skill:{ id:'lure', name:'유인', cd:15, intro:'함정을 설치한 후 화재경보기나 스마트폰 알람을 통하여 소리를 울림.',
       effect:'조준한 지점으로 좀비들이 몰려가고, 함정에 걸린 좀비는 움직이지 못함.' } },
@@ -318,12 +318,12 @@ const CHARS = [
     skill:{ id:'swing', name:'풀스윙', cd:10, need:'bat', intro:'조준한 방향 앞쪽 넓은 부채꼴(약 150도) 안의 좀비를 배트로 크게 휘둘러 침. (야구배트를 과방이나 기숙사에서 획득해야 함)',
       effect:'맞은 좀비는 큰 피해를 입고 멀리 날아가며 1초 동안 기절. 덩치 좀비는 덜 날아가고 보스는 거의 밀리지 않음.' } },
   { id:'yujun', name:'박유준', short:'유준', tags:'#책임감 #계획형 #현실적', hp:9, atk:8, spd:9, color:'#7dd87d',
-    gender:'남', birth:'06년생', age:21, height:175, hair:'short', bangs:1, glasses:true,
+    gender:'남', birth:'06년생', age:21, height:175, hair:'short', bangs:1, glasses:false,
     top:{ type:'hoodie', color:'#8e9297' }, bottom:{ type:'jeans', color:'#202226' }, outfit:'회색 후드티, 검은색 청바지',
     skill:{ id:'pitch', name:'강속구', cd:8, intro:'야구공 3개를 0.2초 간격으로 조준한 방향에 연달아 던짐. 날아가는 동안 조준을 옮기면 다음 공도 그 방향으로 날아감.',
       effect:'공 하나에 큰 피해, 맞은 좀비는 밀리며 0.7초 기절. 공은 근처 좀비에게 튕겨 최대 3마리까지 맞힘.' } },
   { id:'eunbit', name:'장은빛', short:'은빛', tags:'#조용함 #즉흥적 #신중함', hp:3, atk:3, spd:3, color:'#ffe066',
-    gender:'여', birth:'06년생', age:21, height:165, hair:'long', bangs:0, glasses:false,
+    gender:'여', birth:'06년생', age:21, height:165, hair:'long', bangs:0, forehead:true, glasses:false,
     top:{ type:'sweat', color:'#7a5236' }, bottom:{ type:'training', color:'#1d1d22' }, outfit:'갈색 맨투맨, 검은색 트레이닝 긴바지',
     skill:{ id:'note', name:'쪽지', cd:10, intro:'말없이 쪽지로 팀원들에게 작전을 전하는 조용한 신호를 보냄.',
       effect:'5초 동안 팀원 전원의 이동속도와 공격속도가 빨라짐.' } },
@@ -333,7 +333,7 @@ const CHARS = [
     skill:{ id:'block', name:'블락', cd:10, intro:'달려드는 좀비를 정확한 타이밍에 쳐내 수비함.',
       effect:'2.5초 동안 앞에서 오는 공격을 모두 막고, 막은 좀비는 큰 피해를 입고 날아가며 기절함.' } },
   { id:'hyoseo', name:'권효서', short:'효서', tags:'#직설적 #화끈함 #당당함', hp:5, atk:5, spd:5, color:'#ff6b6b',
-    gender:'여', birth:'07년생', age:20, height:164, hair:'long', bangs:0, glasses:false,
+    gender:'여', birth:'07년생', age:20, height:164, hair:'long', bangs:0, forehead:true, glasses:false,
     top:{ type:'hoodie', color:'#8e9297' }, bottom:{ type:'jeans', color:'#4a6a9a' }, outfit:'회색 후드티, 청바지',
     skill:{ id:'molotov', name:'화염병 투척', cd:10, need:'molotov', intro:'소주병과 휴지로 만든 화염병. (소주병과 휴지를 획득해야 사용 가능)',
       effect:'폭발 후 5초간 불타는 지대를 만들어 좀비를 계속 태움.' } },
@@ -353,7 +353,7 @@ const CHARS = [
     skill:{ id:'escape', name:'퇴로 확보', cd:10, intro:'위험해지기 전에 빠져나갈 길부터 만들어 둠.',
       effect:'주변 좀비를 한 번에 밀어내고, 3초 동안 팀원 전원이 받는 피해가 절반으로 줄어듦.' } },
   { id:'chaeyun', name:'이채윤', short:'채윤', tags:'#조용함 #담백함 #다정함', hp:3, atk:5, spd:4, color:'#e8e8e8',
-    gender:'여', birth:'07년생', age:20, height:167, hair:'long', bangs:0, glasses:true,
+    gender:'여', birth:'07년생', age:20, height:167, hair:'long', bangs:0, forehead:true, glasses:true,
     top:{ type:'hoodie', color:'#1d1d22' }, bottom:{ type:'jeans', color:'#4a6a9a' }, outfit:'검은색 후드티, 청바지',
     skill:{ id:'ambush', name:'매복', cd:15, intro:'숨죽인 채 기다리다 좀비가 가장 가까이 오면 팀원들에게 알림.',
       effect:'알림 후 4초 동안 팀원 전원이 표식이 붙은 좀비에게 2배 피해를 줌.' } },
@@ -877,14 +877,14 @@ function makeHuman(ch, opt) {
   part(head, -0.08, 0.14, 0.175, 0.05, 0.05, 0.01, '#222'); part(head, 0.08, 0.14, 0.175, 0.05, 0.05, 0.01, '#222');
   part(head, 0, 0.03, 0.175, 0.08, 0.02, 0.01, '#b5605a');
   // 머리카락
-  const hc = opt.hair || HAIR;
-  part(head, 0, 0.33, -0.02, 0.4, 0.1, 0.39, hc);                       // 정수리
+  const hc = opt.hair || ch.hairColor || HAIR, hl = ch.hairLen || 1;
+  if (ch.forehead) part(head, 0, 0.34, -0.04, 0.4, 0.09, 0.35, hc); else part(head, 0, 0.33, -0.02, 0.4, 0.1, 0.39, hc);   // 정수리
   part(head, 0, 0.18, -0.19, 0.4, 0.3, 0.06, hc);                       // 뒤
   part(head, -0.2, 0.2, -0.02, 0.04, 0.28, 0.36, hc); part(head, 0.2, 0.2, -0.02, 0.04, 0.28, 0.36, hc);
-  if (ch.hair === 'long') { part(head, 0, -0.18, -0.2, 0.42, 0.62, 0.08, hc); part(head, -0.21, -0.05, -0.05, 0.05, 0.42, 0.24, hc); part(head, 0.21, -0.05, -0.05, 0.05, 0.42, 0.24, hc); }
+  if (ch.hair === 'long') { const L = 0.62 * hl, S2 = 0.42 * hl; part(head, 0, 0.13 - L / 2, -0.2, 0.42, L, 0.08, hc); part(head, -0.21, 0.16 - S2 / 2, -0.05, 0.05, S2, 0.24, hc); part(head, 0.21, 0.16 - S2 / 2, -0.05, 0.05, S2, 0.24, hc); }
   if (ch.hair === 'bob') { part(head, 0, 0.02, -0.2, 0.44, 0.32, 0.08, hc); part(head, -0.22, 0.04, -0.02, 0.06, 0.3, 0.36, hc); part(head, 0.22, 0.04, -0.02, 0.06, 0.3, 0.36, hc); }
   if (ch.bangs) { const t = ch.bangs >= 2 ? 0.17 : ch.bangs < 1 ? 0.08 : 0.12; part(head, 0, 0.3 - t / 2 + 0.02, 0.17, 0.38, t, 0.05, hc); }
-  else { part(head, -0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); part(head, 0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); }
+  else if (!ch.forehead) { part(head, -0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); part(head, 0.12, 0.29, 0.17, 0.14, 0.06, 0.04, hc); }
   if (ch.glasses) { const gm = '#111'; part(head, -0.08, 0.14, 0.185, 0.12, 0.09, 0.01, gm, { transparent: true, opacity: 0.85 }); part(head, 0.08, 0.14, 0.185, 0.12, 0.09, 0.01, gm, { transparent: true, opacity: 0.85 });
     part(head, -0.08, 0.14, 0.19, 0.09, 0.06, 0.005, '#cfe8ff'); part(head, 0.08, 0.14, 0.19, 0.09, 0.06, 0.005, '#cfe8ff'); part(head, 0, 0.15, 0.185, 0.04, 0.015, 0.01, gm); }
   if (ch.headphones) { const hp = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.035, 6, 16), mat('#111')); hp.rotation.x = Math.PI / 2; hp.position.set(0, 1.55, 0); body.add(hp);
