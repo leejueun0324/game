@@ -219,8 +219,7 @@
     </div>
     <div class="actions">
       <button class="btn primary" id="goBtn">마을로 가기 ▶</button>
-      <button class="btn mint hidden" id="newVillageBtn">🆕 새 마을 만들기</button>
-      <details id="codeBox" style="width:100%"><summary style="cursor:pointer;font-size:13px">친구 마을 코드로 들어가기</summary>
+      <details id="codeBox" style="width:100%"><summary style="cursor:pointer;font-size:13px">다른 마을 코드로 들어가기 (보통은 필요 없어요)</summary>
         <div id="codeRow" style="margin-top:6px"><input id="codeIn" class="txt" placeholder="마을 코드 (예: ab3k9x)" style="flex:1"><button class="btn mint" id="codeBtn">들어가기</button></div>
       </details>
     </div>
@@ -1963,8 +1962,9 @@ function closeBtn() { const c = el('button', { className: 'btn', textContent: '�
 function inviteLink() {
   const q = new URLSearchParams();
   for (const k of ['peerhost', 'peerport']) if (params.get(k)) q.set(k, params.get(k));
-  q.set('v', code);
-  return location.origin + location.pathname + '?' + q.toString();
+  if (code !== TOWN) q.set('v', code);
+  const qs = q.toString();
+  return location.origin + location.pathname + (qs ? '?' + qs : '');
 }
 function openInvite() {
   openModal(b => {
@@ -1983,7 +1983,7 @@ function openInvite() {
     b.append(row);
     b.append(el('p', { textContent: `마을 코드: ${code} · ${statusText}` }));
     if (location.protocol === 'file:' || /^(localhost|127\.)/.test(location.hostname)) b.append(el('p', { textContent: '⚠️ 지금은 내 컴퓨터에서 연 파일이라 친구가 이 링크로 들어올 수 없어요. GitHub Pages 같은 곳에 올린 주소에서 열어야 친구도 들어올 수 있어요.' }));
-    b.append(el('p', { textContent: '링크를 받은 친구가 열면 같은 마을에 이사 와요. 서로의 집에 놀러 가고, 인사하고, 수다를 떨 수 있어요!' }));
+    b.append(el('p', { textContent: '이 주소로 들어온 친구는 우리 마을에 이사 와서 자기 집이 하나씩 생겨요 (최대 10집). 서로의 집에 놀러 가고, 인사하고, 수다를 떨 수 있어요!' }));
     b.append(closeBtn());
   });
 }
@@ -2356,8 +2356,7 @@ function openCreator(outfit) {
   creatorLook = { ...me.look };
   $('nameIn').value = me.name;
   $('creatorTitle').textContent = outfit ? '👕 옷장 — 모습 바꾸기' : '내 캐릭터 만들기';
-  $('goBtn').textContent = outfit ? '✔ 이걸로 갈아입기' : (urlCode ? '💌 친구 마을로 가기 ▶' : save.lastCode ? '🏡 내 마을로 가기 ▶' : '🏡 새 마을 만들기 ▶');
-  $('newVillageBtn').classList.toggle('hidden', outfit || !!urlCode || !save.lastCode);
+  $('goBtn').textContent = outfit ? '✔ 이걸로 갈아입기' : (urlCode && urlCode !== TOWN ? '💌 친구 마을로 가기 ▶' : '🏡 우리 마을로 가기 ▶');
   $('codeBox').classList.toggle('hidden', outfit || !!urlCode);
   renderCreator();
   $('creator').classList.remove('hidden');
@@ -2372,9 +2371,8 @@ $('goBtn').onclick = () => {
   initAudio(); SFX.click();
   if (creatorOutfit) { finishCreator(); toast('👕 옷을 갈아입었어요!'); return; }
   finishCreator();
-  beginGame(urlCode || save.lastCode || null, !!(save.lastCode && (urlCode || save.lastCode) === save.lastCode));
+  beginGame(villageCode, save.lastCode === villageCode);
 };
-$('newVillageBtn').onclick = () => { initAudio(); SFX.click(); finishCreator(); beginGame(null); };
 $('codeBtn').onclick = () => {
   const c = $('codeIn').value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
   if (!c) return;
@@ -2641,10 +2639,19 @@ function loadVillage() {
 
 // ===== 게임 시작 =====
 const urlCode = (params.get('v') || params.get('house') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
-const canResume = !!save.name && !!(urlCode || save.lastCode);
-if (urlCode) { $('inviteNote').textContent = urlCode === save.lastCode ? '🏡 지난번에 놀던 마을이에요!' : '💌 친구의 마을에 초대받았어요!'; $('inviteNote').classList.remove('hidden'); }
+// 이 게임 주소로 들어오는 사람은 모두 같은 "우리 마을"에 살아요 (주소마다 마을 하나)
+function townCode() {
+  const src = location.host + location.pathname;
+  let h = 7; for (const ch of src) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return 'town' + h.toString(36);
+}
+const TOWN = townCode();
+const villageCode = urlCode || TOWN;
+const canResume = !!save.name;
+if (urlCode && urlCode !== TOWN) { $('inviteNote').textContent = urlCode === save.lastCode ? '🏡 지난번에 놀던 마을이에요!' : '💌 친구의 마을에 초대받았어요!'; $('inviteNote').classList.remove('hidden'); }
+else { $('inviteNote').textContent = '👫 이 주소로 들어오는 친구들은 모두 같은 마을에 살아요'; $('inviteNote').classList.remove('hidden'); }
 if (canResume) {
-  $('startBtn').textContent = urlCode && urlCode !== save.lastCode ? `▶ ${save.name}(으)로 놀러 가기` : `▶ 이어하기 · ${save.name}`;
+  $('startBtn').textContent = save.lastCode === villageCode ? `▶ 이어하기 · ${save.name}` : `▶ ${save.name}(으)로 마을 가기`;
   $('altStart').classList.remove('hidden');
   if (save.savedAt) $('savedNote').textContent = '💾 마지막 저장: ' + timeAgo(save.savedAt);
 } else if (urlCode) $('startBtn').textContent = '▶ 놀러 가기';
@@ -2656,7 +2663,7 @@ function timeAgo(t) {
 }
 $('startBtn').onclick = () => {
   initAudio(); SFX.greet(); $('title').classList.add('hidden');
-  if (canResume) beginGame(urlCode || save.lastCode, true);
+  if (canResume) beginGame(villageCode, save.lastCode === villageCode);
   else openCreator(false);
 };
 $('altStart').onclick = () => { initAudio(); SFX.click(); $('title').classList.add('hidden'); openCreator(false); };
@@ -2736,8 +2743,8 @@ function beginGame(c, resume) {
   inTitle = false; started = true;
   $('hud').classList.remove('hidden');
   code = c || genCode();
-  const q = new URLSearchParams(params); q.delete('house'); q.set('v', code);
-  history.replaceState(null, '', location.pathname + '?' + q.toString());
+  const q = new URLSearchParams(params); q.delete('house'); q.delete('v'); if (code !== TOWN) q.set('v', code);
+  history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q.toString() : ''));
   curMap = me.map = 'v';
   me.x = (26 + rand(4)) * TS + 8; me.y = 22 * TS + 10; me.dir = 0;
   if (c) { loadVillage(); rebuildLotSolid(); }   // 연결되기 전에도 저장해 둔 마을을 바로 보여줘요
@@ -2747,7 +2754,7 @@ function beginGame(c, resume) {
   lastTile = curMap + ':' + Math.floor(me.x / TS) + ',' + Math.floor(me.y / TS);
   saveMe();
   if (resume) setTimeout(() => toast('💾 저장된 곳에서 이어서 시작해요'), 400);
-  logSys(`🏡 마을 코드 [${code}] · 💌 초대 버튼으로 친구에게 링크를 보내요!`);
+  logSys(code === TOWN ? '👫 이 게임 주소로 들어오는 친구들은 모두 이 마을에 살아요. 각자 집이 하나씩 생겨요!' : `🏡 마을 코드 [${code}] · 💌 초대 버튼으로 친구에게 링크를 보내요!`);
   logSys('🖱️ 바닥·물건·친구를 누르면 그곳으로 가요 · ⌨️ WASD 이동, E 행동, Enter 채팅');
   if (c) joinVillage(c);
   else if (typeof Peer === 'undefined') goOffline('네트워크 라이브러리를 못 불러왔어요');
