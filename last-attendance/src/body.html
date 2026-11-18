@@ -1,0 +1,95 @@
+<canvas id="gl"></canvas>
+<canvas id="hud"></canvas>
+
+<!-- 표지 -->
+<section id="cover" class="screen">
+  <div class="rain"></div>
+  <div class="coverRoll" id="coverRoll"></div>
+  <div class="coverMain">
+    <div class="kicker">아자스 : 마지막 출석</div>
+    <h1 class="title"><span>마지막</span><span class="red">출석</span></h1>
+    <div class="stamp">결석 0</div>
+    <p class="tag">2026. 6. 23. 대구대학교 문헌정보학과 과방.<br>열한 명 — <b>한 명도 빠지지 말고, 전부 살아남아.</b></p>
+    <div class="col">
+      <button class="go" id="btnStart">시작하기</button>
+      <button class="go alt hidden" id="btnContinue">이어하기</button>
+      <div class="row"><button data-cards>🃏 캐릭터 카드</button><button data-rel>🕸 인물 관계도</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 모드 선택 -->
+<section id="modeSel" class="screen hidden">
+  <h2>모드 선택</h2>
+  <div class="modes">
+    <div class="mode" id="btnSolo"><b>개인 모드</b><span>캐릭터 한 명을 골라 플레이해요.<br>나머지 열 명은 AI 동료가 함께 움직여요.</span></div>
+    <div class="mode" id="btnCoop"><b>협동 모드</b><span>친구들과 방 코드로 접속해 실시간으로 함께 플레이해요.<br>(최대 11명, 빈 자리는 AI 동료)</span></div>
+  </div>
+  <button id="btnBack1">← 표지로</button>
+</section>
+
+<section id="coopSel" class="screen hidden">
+  <h2>협동 모드</h2>
+  <div class="form">
+    <label>닉네임 <input id="nick" maxlength="10" placeholder="닉네임"></label>
+    <button class="go" id="btnHost">방 만들기</button>
+    <div class="or">또는</div>
+    <label>방 코드 <input id="roomCode" maxlength="6" placeholder="예: AB12C" style="text-transform:uppercase"></label>
+    <button class="go alt" id="btnJoin">참가하기</button>
+    <p class="note">인터넷 연결이 필요해요. 브라우저끼리 직접 연결(WebRTC)되며, 일부 회사·학교 와이파이에서는 연결이 막힐 수 있어요.</p>
+  </div>
+  <button id="btnBack2">← 모드 선택</button>
+</section>
+
+<section id="lobby" class="screen hidden">
+  <h2>대기실 · 방 코드 <span id="lobbyCode" class="code">-</span></h2>
+  <p id="netStatus" class="note"></p>
+  <div id="lobbyPlayers" class="lplayers"></div>
+  <p class="sub">캐릭터를 고르세요</p>
+  <div id="lobbyChars" class="lchars"></div>
+  <p id="lobbyHint" class="note"></p>
+  <div class="row"><button class="go" id="btnLobbyStart">게임 시작</button><button id="btnBack3">← 나가기</button></div>
+</section>
+
+<section id="charSel" class="screen hidden">
+  <h2>캐릭터 선택</h2><p class="sub">카드를 눌러 자세히 보고 시작하세요</p>
+  <div id="charGrid" class="cgrid"></div>
+  <button data-home>← 처음으로</button>
+</section>
+
+<!-- 인게임 UI -->
+<div id="topbar" class="ingame">
+  <button id="tPhone" title="휴대폰 (Tab)">📱<i id="badge" class="hidden">0</i></button>
+  <button id="tCards" title="캐릭터 카드 (C)">🃏</button>
+  <button id="tRel" title="인물 관계도 (R)">🕸</button>
+  <button id="tPause" title="일시정지 (Esc)">⏸</button>
+  <button id="tSound">🔊</button>
+</div>
+<div id="questBox" class="ingame"></div>
+<div id="invBox" class="ingame"></div>
+<div id="banners"></div>
+<div id="cutin"></div>
+<div id="toast"></div>
+<div id="zoomBtns" class="ingame"><button id="bZin">＋</button><button id="bZout">－</button></div>
+<div id="actBtns" class="ingame">
+  <button id="bUse">사용</button>
+  <button id="bSkill"><b>스킬</b><small></small></button>
+  <button id="bAtk">공격</button>
+</div>
+<div id="help" class="ingame">WASD 이동 · 마우스 조준 · 클릭 공격 · Space/우클릭 스킬 · E 사용 · 휠 확대/축소 · Tab 폰 · C 카드 · R 관계도</div>
+
+<div id="dialog" class="hidden"><div id="dlgAv"></div><div class="dbody"><div id="dlgWho"></div><div id="dlgTxt"></div></div><div class="next">▶</div></div>
+<div id="chapterCard" class="hidden"></div>
+<div id="rollcall" class="hidden"></div>
+
+<div id="phone" class="hidden">
+  <div class="ph-top"><span id="phoneTitle">대구대 문정과 (11)</span><button id="phoneClose">✕</button></div>
+  <div class="ph-tabs"><button id="tabGroup" class="on">단톡방</button><button id="tabDM">1:1 메시지</button></div>
+  <div id="phoneBody"></div>
+  <div id="phoneInputRow"><input id="phoneInput" placeholder="메시지 입력"><button id="phoneSend">전송</button></div>
+</div>
+
+<div id="modal" class="hidden"><div class="panel"><button id="modalClose">✕</button><div id="modalBody"></div></div></div>
+<div id="pauseScr" class="screen dim hidden"><h2>일시정지</h2><button class="go" id="btnResume">계속하기</button><button data-home>처음으로</button></div>
+<div id="failScr" class="screen dim hidden"><h2 class="red">출석 실패</h2><p id="failReason"></p><button class="go" id="btnRetry">이 장 다시 하기</button><button data-home>처음으로</button></div>
+<div id="ending" class="screen hidden"></div>
