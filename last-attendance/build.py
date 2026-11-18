@@ -27,3 +27,16 @@ html = f'''<!DOCTYPE html>
 out = os.path.join(here, '..', 'last-attendance.html')
 open(out, 'w', encoding='utf-8').write(html)
 print('built', os.path.normpath(out), len(html) // 1024, 'KB')
+# Claude 링크(아티팩트)용: 문서 골격 없이 내용만
+art = f'''<title>마지막 출석</title>
+<style>
+{r('style.css')}
+</style>
+{r('body.html')}
+<script>{r('vendor/three.min.js')}</script>
+<script>{r('vendor/peerjs.min.js')}</script>
+<script>
+{chr(10).join(r(f) for f in js)}
+</script>
+'''
+open(os.path.join(here, 'dist-artifact.html'), 'w', encoding='utf-8').write(art)
