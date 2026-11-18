@@ -38,8 +38,8 @@ const STORY = {
     if (this.heli) { scene.remove(this.heli); this.heli = null; }
     const sp = WORLD.spawns[ch.start];
     G.units.forEach((u, i) => { const a = i / G.units.length * 6.283; u.x = sp.x + Math.sin(a) * 1.8; u.z = sp.z + Math.cos(a) * 1.8; pushOut(u);
-      u.state = 'active'; u.hp = u.maxHp; u.absent = false; u.scripted = false; u.scriptMove = null; u.skillCd = 2; u.hidden = 0; });
-    if (G.me) { G.me.x = sp.x; G.me.z = sp.z; }
+      u.fl = 0; u.state = 'active'; u.hp = u.maxHp; u.absent = false; u.scripted = false; u.scriptMove = null; u.skillCd = 2; u.hidden = 0; });
+    if (G.me) { G.me.x = sp.x; G.me.z = sp.z; G.me.fl = 0; } G.floorSeen = {};
     setNight(ch.night);
     (CH_SETUP[ch.id] || (() => {}))(this);
     if (!underground(sp.x) && idx <= 4) MISSIONS.place();
@@ -77,7 +77,7 @@ const STORY = {
     if (q.item === type || (q.item === 'supply' && type === 'supply')) { G.qprog++; UI.refreshQuest(); }
   },
   allInteracts() { return WORLD.interact.concat(this.interacts); },
-  nearInteract(u) { let b = null, bd = 1e9; for (const it of this.allInteracts()) { if (it.used || (it.enabled && !it.enabled())) continue; const d = Math.hypot(it.x - u.x, it.z - u.z); if (d < it.r && d < bd) { bd = d; b = it; } } return b; },
+  nearInteract(u) { let b = null, bd = 1e9; for (const it of this.allInteracts()) { if (it.used || (it.enabled && !it.enabled()) || (it.fl || 0) !== (u.fl || 0)) continue; const d = Math.hypot(it.x - u.x, it.z - u.z); if (d < it.r && d < bd) { bd = d; b = it; } } return b; },
   tryInteract(u) { const it = this.nearInteract(u); if (!it) return; if (it.use(u) !== false) { if (!it.multi) it.used = true; sfx('pick'); } },
   addInteract(id, x, z, label, use, opts) { const it = Object.assign({ id, x, z, label, use, r: 2.4, used: false }, opts || {}); this.interacts.push(it); return it; },
   questInteract(id) { const q = this.quest(); if (q && q.type === 'interact' && q.id === id) { G.qprog++; if (G.qprog >= (q.count || 1)) this.advance(); else UI.refreshQuest(); return true; } return false; },
@@ -87,17 +87,17 @@ const STORY = {
     (CH_TICK[ch.id] || (() => {}))(this, dt);
     if (this.amb) this.ambient(dt);
     const players = G.units.filter(u => u.ctrl !== 'ai' && u.state === 'active');
-    const inArea = (u, id, pad) => { const A = WORLD.areas[id]; return Math.hypot(u.x - A.x, u.z - A.z) < A.r + (pad || 0); };
+    const inArea = (u, id, pad) => { const A = WORLD.areas[id]; return !(u.fl > 0) && Math.hypot(u.x - A.x, u.z - A.z) < A.r + (pad || 0); };
     if (q.type === 'reach' && players.some(u => inArea(u, q.area))) this.advance();
     else if (q.type === 'gather') {
-      const A = WORLD.areas[q.area]; const missing = G.units.filter(u => !u.absent && (u.state !== 'active' || Math.hypot(u.x - A.x, u.z - A.z) > A.r + 7));
+      const A = WORLD.areas[q.area]; const missing = G.units.filter(u => !u.absent && (u.state !== 'active' || u.fl > 0 || Math.hypot(u.x - A.x, u.z - A.z) > A.r + 7));
       G.qprog = G.units.filter(u => !u.absent).length - missing.length;
       if (players.some(u => inArea(u, q.area)) && missing.length === 0) this.advance();
     }
     else if (q.type === 'collect' && G.qprog >= q.count) this.advance();
     else if (q.type === 'kill') { G.qprog = G.kills - (G.killBase || 0); if (G.qprog >= q.count) this.advance(); }
     else if (q.type === 'survive') {
-      const ok = !q.at || players.some(u => Math.hypot(u.x - WORLD.areas[q.at].x, u.z - WORLD.areas[q.at].z) < 14);
+      const ok = !q.at || players.some(u => !(u.fl > 0) && Math.hypot(u.x - WORLD.areas[q.at].x, u.z - WORLD.areas[q.at].z) < 14);
       if (ok) G.qtimer += dt; G.qprog = Math.floor(G.qtimer);
       if (G.qtimer >= q.sec) this.advance();
     }
@@ -230,5 +230,8 @@ STORY.finish = function () {
   _finish();
 };
 
-function saveProgress() { try { localStorage.setItem('lastAttendance', JSON.stringify({ ch: G.chapterIdx, me: G.me && G.me.ch.id, missions: G.missionsDone })); } catch (e) {} }
+function saveProgress(show) {
+  if (G.mode === 'client' || !G.me) return;
+  try { localStorage.setItem('lastAttendance', JSON.stringify({ ch: G.chapterIdx, q: G.questIdx, me: G.me.ch.id, missions: G.missionsDone, inv: G.inv, kills: G.kills, at: Date.now() })); if (show !== false) UI.saved(); } catch (e) {}
+}
 function loadProgress() { try { return JSON.parse(localStorage.getItem('lastAttendance') || 'null'); } catch (e) { return null; } }

@@ -49,7 +49,7 @@ const UI = {
     $('btnLobbyStart').onclick = () => NET.startGame();
     // 상단 버튼
     $('tPhone').onclick = () => this.togglePhone(); $('tCards').onclick = () => this.openCards(); $('tRel').onclick = () => this.openRelations();
-    $('tPause').onclick = () => this.togglePause(); $('tSound').onclick = () => { muted = !muted; $('tSound').textContent = muted ? '🔇' : '🔊'; };
+    $('tPause').onclick = () => this.togglePause(); $('tView').onclick = () => toggleView(); $('tSound').onclick = () => { muted = !muted; $('tSound').textContent = muted ? '🔇' : '🔊'; };
     $('modalClose').onclick = () => this.closeModal(); $('modal').onclick = e => { if (e.target.id === 'modal') this.closeModal(); };
     // 폰
     $('phoneClose').onclick = () => this.togglePhone(false);
@@ -120,6 +120,17 @@ const UI = {
   },
   modal(html) { $('modalBody').innerHTML = html; $('modal').classList.remove('hidden'); if (G.mode === 'solo' && G.running) G.paused = true; },
   closeModal() { $('modal').classList.add('hidden'); if (G.mode === 'solo' && G.running && !this.pausedByUser && !STORY.failed) G.paused = false; },
+  openFloors(u) {
+    const B = inBuilding(u.x, u.z); if (!B || !B.stairs) return;
+    const el = $('floorPanel'); el.classList.remove('hidden');
+    el.innerHTML = `<b>${esc(B.name)}</b><small>${B.floors > 5 ? '엘리베이터' : '계단'} · 층을 고르세요</small><div class="fl">${Array.from({ length: B.floors }, (_, i) => `<button data-f="${i}" class="${i === (u.fl || 0) ? 'on' : ''}">${i + 1}F</button>`).join('')}</div><button class="x">닫기</button>`;
+    if (G.mode === 'solo') G.paused = true;
+    const close = () => { el.classList.add('hidden'); if (G.mode === 'solo' && !this.pausedByUser) G.paused = false; };
+    el.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { close(); changeFloor(u, +b.dataset.f); });
+    el.querySelector('.x').onclick = close;
+    if (document.exitPointerLock) document.exitPointerLock();
+  },
+  saved() { const el = $('saveInd'); el.classList.remove('show'); void el.offsetWidth; el.classList.add('show'); },
   togglePause(v) {
     if (!G.running) return; const on = v === undefined ? $('pauseScr').classList.contains('hidden') : v;
     $('pauseScr').classList.toggle('hidden', !on); this.pausedByUser = on; if (G.mode === 'solo') G.paused = on;
@@ -266,7 +277,7 @@ const UI = {
     c.textAlign = 'center'; c.textBaseline = 'middle';
     // 이름/체력
     for (const u of G.units) {
-      if (u.absent) continue; const p = scr(u.x, 2.25 * (u.ch.height / 172), u.z); if (!p.ok) continue;
+      if (u.absent || !sameFl(u, G.me || u)) continue; const p = scr(u.x, FY(u) + 2.25 * (u.ch.height / 172), u.z); if (!p.ok) continue;
       c.font = `800 ${u === G.me ? 13 : 11}px sans-serif`; c.lineWidth = 3; c.strokeStyle = 'rgba(0,0,0,.75)'; c.strokeText(u.ch.name, p.x, p.y); c.fillStyle = u === G.me ? '#fff' : u.ch.color; c.fillText(u.ch.name, p.x, p.y);
       if (u.ctrl !== 'ai' && u !== G.me) { c.fillStyle = '#ffe066'; c.fillText('▼', p.x, p.y - 12); }
       if (u.hp < u.maxHp && u.state === 'active') this.bar(c, p.x - 18, p.y + 8, 36, 4, u.hp / u.maxHp, '#6be06b');
@@ -276,7 +287,7 @@ const UI = {
       if (u.say) this.bubble(c, p.x, p.y - 26, u.say.text);
     }
     for (const z of G.zombies) {
-      const p = scr(z.x, z.kind === 'brute' ? 2.6 : 2.1, z.z); if (!p.ok || p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) continue;
+      if (G.me && !sameFl(z, G.me)) continue; const p = scr(z.x, FY(z) + (z.kind === 'brute' ? 2.6 : 2.1), z.z); if (!p.ok || p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) continue;
       if (z.hp < z.maxHp && z.kind !== 'n1' && z.kind !== 'mimic') this.bar(c, p.x - 15, p.y, 30, 4, z.hp / z.maxHp, '#e44');
       if (z.mark > 0) { c.strokeStyle = '#ff4a4a'; c.lineWidth = 2; c.beginPath(); c.arc(p.x, p.y + 25, 14, 0, 7); c.stroke(); c.fillStyle = '#ff4a4a'; c.font = '900 12px sans-serif'; c.fillText('표식', p.x, p.y - 8); }
       if (z.stun > 0) { c.fillStyle = '#ffe066'; c.font = '900 13px sans-serif'; c.fillText('★', p.x, p.y - 8); }
@@ -286,15 +297,22 @@ const UI = {
       if (z.say) { this.bubble(c, p.x, p.y - 22, z.say.text, '#ffdada'); z.say.t -= 1 / 60; if (z.say.t <= 0) z.say = null; }
     }
     // 떠다니는 글자
-    for (const f of G.fx) if (f.type === 'text') { const p = scr(f.x, 2.4 + f.t * 1.2, f.z); if (!p.ok) continue; c.globalAlpha = Math.max(0, 1 - f.t / f.life); c.font = `900 ${f.size}px sans-serif`; c.lineWidth = 3; c.strokeStyle = '#000'; c.strokeText(f.text, p.x, p.y); c.fillStyle = f.color; c.fillText(f.text, p.x, p.y); c.globalAlpha = 1; }
+    for (const f of G.fx) if (f.type === 'text') { if (G.me && Math.abs((f.y || 0) - FY(G.me)) > 1) continue; const p = scr(f.x, (f.y || 0) + 2.4 + f.t * 1.2, f.z); if (!p.ok) continue; c.globalAlpha = Math.max(0, 1 - f.t / f.life); c.font = `900 ${f.size}px sans-serif`; c.lineWidth = 3; c.strokeStyle = '#000'; c.strokeText(f.text, p.x, p.y); c.fillStyle = f.color; c.fillText(f.text, p.x, p.y); c.globalAlpha = 1; }
     // 상호작용 / 목표
     const me = G.me;
     if (me && me.state === 'active') {
       const it = STORY.nearInteract(me);
-      if (it) { const p = scr(it.x, 1.6, it.z); c.font = '800 14px sans-serif'; const t = `${isTouch ? '[사용]' : '[E]'} ${it.label}`; const w = c.measureText(t).width + 18;
+      const stB = !it && stairsNear(me);
+      if (stB) { const p = scr(me.x, FY(me) + 2.9, me.z); c.font = '800 14px sans-serif'; const t = `${isTouch ? '[사용]' : '[E]'} 계단 · 층 이동 (지금 ${(me.fl || 0) + 1}층 / ${stB.floors}층)`; const w = c.measureText(t).width + 18;
         c.fillStyle = 'rgba(0,0,0,.7)'; this.rr(c, p.x - w / 2, p.y - 13, w, 26, 8); c.fill(); c.fillStyle = '#ffe066'; c.fillText(t, p.x, p.y); }
-      for (const it of STORY.allInteracts()) { if (it.used || (it.enabled && !it.enabled())) continue; const p = scr(it.x, 1.2, it.z); if (!p.ok) continue; c.fillStyle = '#ffe066'; c.font = '900 16px sans-serif'; c.fillText('◆', p.x, p.y + Math.sin(G.t * 4) * 3); }
-      for (const p0 of G.pickups) { const p = scr(p0.x, 1.3, p0.z); if (!p.ok || p.x < 0 || p.x > W || p.y < 0 || p.y > H) continue; c.font = '700 10px sans-serif'; c.fillStyle = p0.mission ? '#ffe066' : '#fff'; c.fillText((p0.mission ? '★ ' : '') + PICKNAME[p0.type], p.x, p.y); }
+      // 출입문 표시
+      if (!(me.fl > 0) && !underground(me.x)) for (const b of WORLD.buildings) for (const d of b.doorsW) { const dd = Math.hypot(d.x - me.x, d.z - me.z); if (dd > 26) continue;
+        const p = scr(d.x, 3.3, d.z); if (!p.ok || p.x < 0 || p.x > W || p.y < 0 || p.y > H) continue; c.font = '800 12px sans-serif'; c.fillStyle = 'rgba(0,0,0,.6)'; const t = '🚪 출입문', w = c.measureText(t).width + 12;
+        this.rr(c, p.x - w / 2, p.y - 10, w, 20, 6); c.fill(); c.fillStyle = '#5dff8f'; c.fillText(t, p.x, p.y); }
+      if (it) { const p = scr(it.x, FY(me) + 1.6, it.z); c.font = '800 14px sans-serif'; const t = `${isTouch ? '[사용]' : '[E]'} ${it.label}`; const w = c.measureText(t).width + 18;
+        c.fillStyle = 'rgba(0,0,0,.7)'; this.rr(c, p.x - w / 2, p.y - 13, w, 26, 8); c.fill(); c.fillStyle = '#ffe066'; c.fillText(t, p.x, p.y); }
+      for (const it of STORY.allInteracts()) { if (it.used || (it.enabled && !it.enabled()) || (it.fl || 0) !== (me.fl || 0)) continue; const p = scr(it.x, 1.2, it.z); if (!p.ok) continue; c.fillStyle = '#ffe066'; c.font = '900 16px sans-serif'; c.fillText('◆', p.x, p.y + Math.sin(G.t * 4) * 3); }
+      for (const p0 of G.pickups) { if ((p0.fl || 0) !== (me.fl || 0)) continue; const p = scr(p0.x, FY(p0) + 1.3, p0.z); if (!p.ok || p.x < 0 || p.x > W || p.y < 0 || p.y > H) continue; c.font = '700 10px sans-serif'; c.fillStyle = p0.mission ? '#ffe066' : '#fff'; c.fillText((p0.mission ? '★ ' : '') + PICKNAME[p0.type], p.x, p.y); }
       const tgt = this.objectiveTarget();
       if (tgt) { const p = scr(tgt.x, 0.5, tgt.z), dist = Math.round(Math.hypot(tgt.x - me.x, tgt.z - me.z));
         const off = p.x < 30 || p.x > W - 30 || p.y < 80 || p.y > H - 60 || !p.ok;
@@ -309,8 +327,11 @@ const UI = {
     if (boss) { const bw = Math.min(460, W - 40), y = H - (portrait ? 190 : 34); c.fillStyle = 'rgba(0,0,0,.65)'; this.rr(c, W / 2 - bw / 2 - 6, y - 22, bw + 12, 36, 8); c.fill();
       c.fillStyle = boss.kind === 'n1' ? '#ff8080' : '#ffb0b0'; c.font = '800 12px sans-serif'; c.fillText(boss.kind === 'n1' ? '1번 — 첫 번째 실험체' : '모방체 (4단계 감염자)', W / 2, y - 10); this.bar(c, W / 2 - bw / 2, y, bw, 8, boss.hp / boss.maxHp, '#d14b4b'); }
     this.drawParty(c, W, H, portrait); this.drawMinimap(c, W, H, portrait); this.drawSkill(c, W, H, portrait);
-    if (joy.id !== null) { c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 3; c.beginPath(); c.arc(joy.ox, joy.oy, 55, 0, 7); c.stroke();
-      const dx = joy.x - joy.ox, dy = joy.y - joy.oy, l = Math.hypot(dx, dy), f = l > 55 ? 55 / l : 1; c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.arc(joy.ox + dx * f, joy.oy + dy * f, 24, 0, 7); c.fill(); }
+    // 조준점 (캐릭터 시점)
+    if (G.view === 'chase' && !isTouch && me) { const cy = H / 2 - H * 0.04; c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 2; c.beginPath(); c.moveTo(W / 2 - 9, cy); c.lineTo(W / 2 - 3, cy); c.moveTo(W / 2 + 3, cy); c.lineTo(W / 2 + 9, cy); c.moveTo(W / 2, cy - 9); c.lineTo(W / 2, cy - 3); c.moveTo(W / 2, cy + 3); c.lineTo(W / 2, cy + 9); c.stroke(); }
+    // 스태미나 (달리기)
+    if (me) { const bw = Math.min(220, W * 0.4), x = W / 2 - bw / 2, y = H - (portrait ? 150 : 44); c.font = '700 11px sans-serif'; c.fillStyle = me.running ? '#ffe066' : '#ccc'; c.fillText(`🏃 달리기 ${Math.round(me.stamina)}`, W / 2, y - 9);
+      this.bar(c, x, y, bw, 5, me.stamina / 100, me.tired > 0 ? '#ff7b7b' : '#ffe066'); }
     if (G.night > 0.3 || (me && underground(me.x))) { const g = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.25, W / 2, H / 2, Math.max(W, H) * 0.7); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,10,.55)'); c.fillStyle = g; c.fillRect(0, 0, W, H); }
     if (me && me.hurt > 0) { c.fillStyle = `rgba(200,0,0,${me.hurt * 0.8})`; c.fillRect(0, 0, W, H); }
   },
@@ -326,7 +347,7 @@ const UI = {
   },
   drawParty(c, W, H, portrait) {
     const list = G.units.filter(u => !u.absent), rowH = portrait ? 0 : H < 520 ? 21 : 30, x0 = 10, y0 = 60;
-    if (portrait) { // 세로: 상단 가로줄
+    if (portrait || H < 520) { // 세로/낮은 화면: 상단 가로줄
       const n = list.length, w = Math.min(34, (W - 20) / n);
       list.forEach((u, i) => { const x = 10 + i * w, y = 52; const im = PORTRAIT_IMG[u.ch.id];
         c.globalAlpha = u.state === 'active' ? 1 : 0.4; if (im && im.complete) c.drawImage(im, x, y, w - 4, w - 4); c.globalAlpha = 1;
@@ -351,11 +372,12 @@ const UI = {
       const F = WORLD.field, [fx0, fz0] = P(F.x - F.w / 2, F.z - F.d / 2); c.fillStyle = '#8a4a32'; c.fillRect(fx0, fz0, F.w * k, F.d * k);
       c.fillStyle = '#3f7fb5'; for (const W2 of WORLD.walls) if (W2.tag === 'lake') { const [x, z] = P(W2.x, W2.z); c.fillRect(x, z, W2.w * k, W2.d * k); } }
     else { c.fillStyle = '#555'; for (const W2 of WORLD.walls) if (W2.x > UG_X - 60) { const [x, z] = P(W2.x, W2.z); c.fillRect(x, z, Math.max(1, W2.w * k), Math.max(1, W2.d * k)); } }
+    if (!ug) { c.fillStyle = '#5dff8f'; for (const b of WORLD.buildings) for (const d of b.doorsW) { const [x, y] = P(d.x, d.z); c.fillRect(x - 1.5, y - 1.5, 3, 3); } }
     c.fillStyle = '#ff4040'; for (const z of G.zombies) { if (z.kind === 'agent' && !G.inv.radio && D2(z, me) > 30) continue; const [x, y] = P(z.x, z.z); if (x < mx || x > mx + mw || y < my || y > my + mh) continue; const s = z.kind === 'n1' || z.kind === 'mimic' ? 4 : 1.6; c.fillStyle = z.kind === 'agent' ? '#ffd36b' : '#ff4040'; c.fillRect(x - s / 2, y - s / 2, s, s); }
     for (const p of G.pickups) if (p.mission && !ug) { const [x, y] = P(p.x, p.z); c.fillStyle = '#ffe066'; c.font = '9px sans-serif'; c.fillText('★', x, y); }
     for (const u of G.units) { if (u.absent) continue; const [x, y] = P(u.x, u.z); c.fillStyle = u === G.me ? '#fff' : u.ctrl !== 'ai' ? '#ffe066' : u.state === 'down' ? '#f55' : '#7dff7d'; c.beginPath(); c.arc(x, y, u === G.me ? 3.5 : 2.3, 0, 7); c.fill(); }
     const t = this.objectiveTarget(); if (t) { const [x, y] = P(t.x, t.z); c.strokeStyle = '#ffe066'; c.lineWidth = 2; c.beginPath(); c.arc(clamp(x, mx, mx + mw), clamp(y, my, my + mh), 5 + Math.sin(G.t * 5) * 1.5, 0, 7); c.stroke(); }
-    c.font = '700 10px sans-serif'; c.fillStyle = '#fff'; c.fillText(ug ? (me.z > 70 ? 'K-13 연구소 (지하)' : '지하 주차장') : (inBuilding(me.x, me.z) || { name: '대구대 경산캠퍼스' }).name, mx + mw / 2, my + mh + 11);
+    c.font = '700 10px sans-serif'; c.fillStyle = '#fff'; c.fillText(ug ? (me.z > 70 ? 'K-13 연구소 (지하)' : '지하 주차장') : (inBuilding(me.x, me.z) ? inBuilding(me.x, me.z).name + ` · ${(me.fl || 0) + 1}층` : '대구대 경산캠퍼스'), mx + mw / 2, my + mh + 11);
   },
   drawSkill(c, W, H, portrait) {
     const me = G.me; if (!me) return; const el = $('bSkill'); const cd = Math.max(0, me.skillCd), why = skillReady(me);

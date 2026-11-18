@@ -7,7 +7,7 @@ function startGame(players, myPid, chIdx) {
   const save = loadProgress(); if (save && save.missions && chIdx > 0) G.missionsDone = save.missions;
   CHARS.forEach((ch, i) => makeUnit(ch, 0, 0));
   for (const p of players) { const u = unitByCh(p.ch); if (!u) continue; u.ctrl = p.pid === myPid ? 'local' : 'remote'; u.player = p.name; if (p.pid === myPid) G.me = u; }
-  if (chIdx > 0) { G.inv = { bat: 2, ext: 3, molotov: 2 }; }
+  if (chIdx > 0) { G.inv = (save && save.inv) || { bat: 2, ext: 3, molotov: 2 }; G.kills = (save && save.kills) || 0; }
   equipTeam();
   G.running = true; G.paused = false; document.body.classList.add('playing');
   if (isTouch) document.body.classList.add('touch');
@@ -25,6 +25,7 @@ function loop(now) {
     if (G.mode === 'client') { updateGame(dt); updateProjectiles(dt); updateFx(dt); NET.clientTick(dt); for (const u of G.units) if (u.say && (u.say.t -= dt) <= 0) u.say = null; }
     else if (!G.paused && !hostWait) { updateGame(dt); STORY.tick(dt); updateFx(dt); UI.idleChat(dt); }
     if (G.mode === 'host') NET.hostTick(dt);
+    G.saveT = (G.saveT || 0) + dt; if (G.saveT > 20 && !STORY.failed && !UI.dialog) { G.saveT = 0; saveProgress(); }
     if (G.questIdxShown !== G.questIdx + '/' + G.qprog) { G.questIdxShown = G.questIdx + '/' + G.qprog; UI.refreshQuest(); }
   }
   if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(-20 + Math.sin(t) * 110, 50, -30 + Math.cos(t) * 110); camera.lookAt(-20, 4, -30); updateZombies(dt); }

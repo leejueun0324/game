@@ -73,7 +73,7 @@ const NET = {
     if (m.t === 'pick') { const p = this.players.find(q => q.pid === from); if (p && !this.players.some(q => q.ch === m.ch && q.pid !== from)) p.ch = m.ch; this.renderLobby(); this.broadcast({ t: 'lobby', players: this.players }); return; }
     const p = this.players.find(q => q.pid === from); if (!p || !G.running) return;
     const u = unitByCh(p.ch); if (!u) return;
-    if (m.t === 'in') { if (u.state === 'active') { u.x = m.x; u.z = m.z; } u.face = m.face; u.speed = m.speed; }
+    if (m.t === 'in') { if (u.state === 'active') { u.x = m.x; u.z = m.z; u.fl = m.fl || 0; } u.face = m.face; u.speed = m.speed; }
     else if (m.t === 'act') { if (m.a === 'atk') meleeAttack(u, m.face); else if (m.a === 'skill') { u.skillCd = 0; castSkill(u, m.tx, m.tz); } else if (m.a === 'use') STORY.tryInteract(u); }
     else if (m.t === 'chat') { UI.kakao(m.from, m.text, true, m.to);
       if (m.to && !UI.isPlayer(m.to)) setTimeout(() => UI.kakao(m.to, DM_REPLY[m.to][(Math.random() * 3) | 0], true, m.from), 1500); }
@@ -82,9 +82,9 @@ const NET = {
     this.snapT -= dt; if (this.snapT > 0) return; this.snapT = 0.1;
     const r = v => Math.round(v * 100) / 100;
     const snap = { t: 'snap',
-      u: G.units.map(u => [u.id, r(u.x), r(u.z), r(u.face), Math.round(u.hp), u.state, r(u.speed || 0), u.atkAnim > 0 ? 1 : 0, u.absent ? 1 : 0, u.hidden > 0 ? 1 : 0, r(u.downT), u.weapon || '', r(u.reviveT)]),
-      z: G.zombies.map(z => [z.id, z.kind, r(z.x), r(z.z), r(z.face), Math.round(z.hp), z.maxHp, z.stun > 0 ? 1 : 0, z.mark > 0 ? 1 : 0, z.confused > 0 ? 1 : 0, z.root > 0 ? 1 : 0, r(z.speedNow || 0), z.atkAnim > 0 ? 1 : 0]),
-      p: G.pickups.map(p => [p.id, p.type, r(p.x), r(p.z), p.mission || '']),
+      u: G.units.map(u => [u.id, r(u.x), r(u.z), r(u.face), Math.round(u.hp), u.state, r(u.speed || 0), u.atkAnim > 0 ? 1 : 0, u.absent ? 1 : 0, u.hidden > 0 ? 1 : 0, r(u.downT), u.weapon || '', r(u.reviveT), u.fl || 0]),
+      z: G.zombies.map(z => [z.id, z.kind, r(z.x), r(z.z), r(z.face), Math.round(z.hp), z.maxHp, z.stun > 0 ? 1 : 0, z.mark > 0 ? 1 : 0, z.confused > 0 ? 1 : 0, z.root > 0 ? 1 : 0, r(z.speedNow || 0), z.atkAnim > 0 ? 1 : 0, z.fl || 0]),
+      p: G.pickups.map(p => [p.id, p.type, r(p.x), r(p.z), p.mission || '', p.fl || 0]),
       it: STORY.allInteracts().map(i => [i.id, r(i.x), r(i.z), i.label, !i.used && (!i.enabled || i.enabled()) ? 1 : 0]),
       q: [G.chapterIdx, G.questIdx, G.qprog, STORY.questOverride || null], inv: G.inv, night: G.night, buffs: G.buffs, md: G.missionsDone, ev: this.events };
     this.events = [];
@@ -99,16 +99,16 @@ const NET = {
   },
   applySnap(s) {
     for (const a of s.u) { const u = unitById(a[0]); if (!u) continue;
-      if (u !== G.me) { u.x = a[1]; u.z = a[2]; u.face = a[3]; u.speed = a[6]; if (a[7]) u.atkAnim = 1; } else if (a[5] !== 'active' || u.state !== 'active') { u.x = a[1]; u.z = a[2]; }
+      if (u !== G.me) { u.x = a[1]; u.z = a[2]; u.face = a[3]; u.speed = a[6]; u.fl = a[13]; if (a[7]) u.atkAnim = 1; } else if (a[5] !== 'active' || u.state !== 'active') { u.x = a[1]; u.z = a[2]; }
       u.hp = a[4]; u.state = a[5]; u.absent = !!a[8]; u.hidden = a[9] ? 1 : 0; u.downT = a[10]; u.reviveT = a[12]; if (u.weapon !== (a[11] || null)) setWeapon(u, a[11] || null); }
     const seen = new Set();
     for (const a of s.z) { seen.add(a[0]); let z = this.zModels[a[0]];
       if (!z) { const model = a[1] === 'agent' ? makeAgent() : a[1] === 'mimic' ? makeMimic() : a[1] === 'n1' ? makeNumberOne() : makeZombie(a[1]); scene.add(model);
         z = this.zModels[a[0]] = { id: a[0], kind: a[1], model, r: ZDEF[a[1]].r }; G.zombies.push(z); }
-      Object.assign(z, { x: a[2], z: a[3], face: a[4], hp: a[5], maxHp: a[6], stun: a[7], mark: a[8], confused: a[9], root: a[10], speedNow: a[11] }); if (a[12]) z.atkAnim = 1; }
+      Object.assign(z, { fl: a[13], x: a[2], z: a[3], face: a[4], hp: a[5], maxHp: a[6], stun: a[7], mark: a[8], confused: a[9], root: a[10], speedNow: a[11] }); if (a[12]) z.atkAnim = 1; }
     for (const id in this.zModels) if (!seen.has(+id)) { scene.remove(this.zModels[id].model); G.zombies = G.zombies.filter(z => z !== this.zModels[id]); delete this.zModels[id]; }
     const pseen = new Set();
-    for (const a of s.p) { pseen.add(a[0]); if (!this.pModels[a[0]]) { const p = dropPickup(a[1], a[2], a[3], { mission: a[4] || undefined }); G.nextId--; p.id = a[0]; p.remote = true; this.pModels[a[0]] = p; } }
+    for (const a of s.p) { pseen.add(a[0]); if (!this.pModels[a[0]]) { const p = dropPickup(a[1], a[2], a[3], { mission: a[4] || undefined, fl: a[5] }); G.nextId--; p.id = a[0]; p.remote = true; this.pModels[a[0]] = p; } }
     for (const id in this.pModels) if (!pseen.has(+id)) { scene.remove(this.pModels[id].mesh); G.pickups = G.pickups.filter(p => p !== this.pModels[id]); delete this.pModels[id]; }
     STORY.interacts = s.it.map(a => ({ id: a[0], x: a[1], z: a[2], label: a[3], used: !a[4], r: 2.4 }));
     const qChanged = G.chapterIdx !== s.q[0] || G.questIdx !== s.q[1] || G.qprog !== s.q[2];
@@ -133,6 +133,6 @@ const NET = {
   },
   clientTick(dt) {
     this.inT -= dt; if (this.inT > 0 || !G.me) return; this.inT = 0.066;
-    const u = G.me; this.send({ t: 'in', x: u.x, z: u.z, face: u.face, speed: u.speed || 0 });
+    const u = G.me; this.send({ t: 'in', x: u.x, z: u.z, face: u.face, speed: u.speed || 0, fl: u.fl || 0 });
   },
 };

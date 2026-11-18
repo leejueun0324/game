@@ -14,11 +14,14 @@ function mat(color, opts) {
   return MATS[k];
 }
 const BOXG = new THREE.BoxGeometry(1, 1, 1);
-function box(parent, x, y, z, w, h, d, color, opts) {
-  const m = new THREE.Mesh(BOXG, mat(color, opts));
+function box(parent, x, y, z, w, h, d, color, opts, material) {
+  const m = new THREE.Mesh(BOXG, material || mat(color, opts));
   m.scale.set(w, h, d); m.position.set(x, y + h / 2, z); parent.add(m); return m;
 }
-function solid(x, z, w, d, tag) { const W = { x: x - w / 2, z: z - d / 2, w, d, tag }; WORLD.walls.push(W); return W; }
+const FH = 3.4;                 // 층 높이
+let SR = [0, 0];                // solid()가 적용될 층 범위
+function solid(x, z, w, d, tag) { const W = { x: x - w / 2, z: z - d / 2, w, d, tag, f0: SR[0], f1: SR[1] }; WORLD.walls.push(W); return W; }
+const onFl = (W, fl) => W.f0 <= fl && fl <= W.f1;
 
 // 축 정렬 벽(문 구멍 포함). gaps: [{at: 중심(0~1), w: 폭}]
 function wallLine(parent, x1, z1, x2, z2, h, color, gaps, tag) {
@@ -48,7 +51,7 @@ function textSprite(text, size, color, bg) {
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 8; g.strokeStyle = 'rgba(0,0,0,.75)';
   g.strokeText(text, w / 2, c.height / 2); g.fillStyle = color || '#fff'; g.fillText(text, w / 2, c.height / 2);
   const tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: true, transparent: true }));
   s.scale.set(size * w / c.height, size, 1); s.renderOrder = 10; return s;
 }
 function area(id, x, z, r, label) { WORLD.areas[id] = { id, x, z, r, label }; }
@@ -82,14 +85,17 @@ function facadeTex(style) {
 // doors: {side:'n'|'s'|'e'|'w', at, w}
 function building(scene, def) {
   def.wallStart = WORLD.walls.length;
+  def.floors = def.floors || 5; def.h = Math.min(def.floors, 5) * FH + 0.4;
   const g = new THREE.Group(); scene.add(g);
   const { x, z, w, d } = def, x0 = x - w / 2, x1 = x + w / 2, z0 = z - d / 2, z1 = z + d / 2, H = 3.4;
   const gaps = s => (def.doors || []).filter(o => o.side === s);
   const wc = STYLE[def.style || 'brick'].wall;
+  SR = [0, Math.min(def.floors, 5) - 1];
   wallLine(g, x0, z0, x1, z0, H, wc, gaps('n'), def.id);
   wallLine(g, x0, z1, x1, z1, H, wc, gaps('s'), def.id);
   wallLine(g, x0, z0, x0, z1, H, wc, gaps('w'), def.id);
   wallLine(g, x1, z0, x1, z1, H, wc, gaps('e'), def.id);
+  SR = [0, 0];
   // 실내 바닥
   const fl = box(g, x, 0.01, z, w - 0.4, 0.04, d - 0.4, def.floor || '#a89a86');
   // 윗층(외관) + 지붕: 내부에 들어가면 숨김
@@ -108,6 +114,14 @@ function building(scene, def) {
     [[x, z0 - 0.3, w + 1, 0.4], [x, z1 + 0.3, w + 1, 0.4], [x0 - 0.3, z, 0.4, d + 1], [x1 + 0.3, z, 0.4, d + 1]].forEach(([px, pz, pw, pd]) => { const m = new THREE.Mesh(BOXG, pm); m.scale.set(pw, 1, pd); m.position.set(px, def.h + 0.9, pz); up.add(m); }); }
   // 1층 외벽 띠 / 입구 캐노피
   (def.doors || []).forEach(o => { if (o.side !== 's') return; const cx = x0 + o.at * w; const c = box(g, cx, 3.0, z1 + 1.2, o.w + 2.4, 0.25, 2.6, st.trim); });
+  (def.doors || []).forEach(o => {   // 출입문 표시: 초록 문틀 + 바닥 매트
+    const hz = o.side === 'n' || o.side === 's', cx = hz ? x0 + o.at * w : (o.side === 'w' ? x0 : x1), cz = hz ? (o.side === 'n' ? z0 : z1) : z0 + o.at * d;
+    const fm = mat('#2ee86b', { emissive: '#0f6a2c' }), out = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }[o.side];
+    [-1, 1].forEach(sg => box(g, cx + (hz ? sg * (o.w / 2 + 0.12) : 0), 0, cz + (hz ? 0 : sg * (o.w / 2 + 0.12)), 0.22, 2.7, 0.22, null, null, fm));
+    box(g, cx, 2.6, cz, hz ? o.w + 0.5 : 0.24, 0.22, hz ? 0.24 : o.w + 0.5, null, null, fm);
+    const mt = new THREE.Mesh(new THREE.PlaneGeometry(hz ? o.w : 1.6, hz ? 1.6 : o.w), new THREE.MeshBasicMaterial({ color: '#2ee86b', transparent: true, opacity: 0.45, depthWrite: false }));
+    mt.rotation.x = -Math.PI / 2; mt.position.set(cx + out[0] * 0.9, 0.06, cz + out[1] * 0.9); g.add(mt);
+  });
   const lab = textSprite(def.name, 3.2, '#fff'); lab.position.set(x, def.h + 3, z); scene.add(lab);
   const B = Object.assign({ x0, x1, z0, z1, group: g, up, label: lab, doorsW: [] }, def);
   (def.doors || []).forEach(o => {
@@ -127,6 +141,63 @@ function building(scene, def) {
   }
   return B;
 }
+// ---------- 층 (2층 이상) ----------
+function addFloors(scene) {
+  for (const B of WORLD.buildings) {
+    const nF = B.floors; B.floorGroups = []; B.stairs = [];
+    const tower = B.id === 'seongsan' ? { x0: 24, x1: 36, z0: -66, z1: -54 } : null;
+    const rect = n => (tower && n >= 5) ? tower : { x0: B.x0, x1: B.x1, z0: B.z0, z1: B.z1 };
+    // 1층 계단 위치
+    let sx = tower ? 30 : B.x1 - 2.4, sz = tower ? -59 : (B.z0 + B.z1) / 2;
+    if (blockedAt(sx, sz, 1.1, 0)) { let best = null; for (let gx = B.x1 - 2.5; gx > B.x0 + 2 && !best; gx -= 1.5) for (let gz = B.z0 + 2; gz < B.z1 - 2; gz += 1.5) if (!blockedAt(gx, gz, 1.1, 0)) { best = [gx, gz]; break; } if (best) [sx, sz] = best; }
+    B.stairs[0] = { x: sx, z: sz };
+    stairMesh(B.group.parent === scene ? scene : scene, sx, sz, 0);
+    // 2층부터 출입문 막기
+    SR = [1, Math.min(nF, 5) - 1];
+    (B.doors || []).forEach((o, i) => { const D = B.doorsW[i]; const hz = o.side === 'n' || o.side === 's'; solid(D.x, D.z, hz ? o.w + 0.4 : 0.5, hz ? 0.5 : o.w + 0.4, 'doorfill'); });
+    SR = [0, 0];
+    for (let n = 1; n < nF; n++) {
+      const R = rect(n), g = new THREE.Group(); g.position.y = n * FH; g.visible = false; scene.add(g); B.floorGroups[n] = g;
+      const w = R.x1 - R.x0, d = R.z1 - R.z0, cx = (R.x0 + R.x1) / 2, cz = (R.z0 + R.z1) / 2;
+      box(g, cx, -0.12, cz, w, 0.12, d, '#b9ad98');                                   // 바닥
+      const wcol = STYLE[B.style || 'brick'].wall;
+      if (tower && n >= 5) { SR = [5, nF - 1]; [[R.x0, R.z0, R.x1, R.z0], [R.x0, R.z1, R.x1, R.z1], [R.x0, R.z0, R.x0, R.z1], [R.x1, R.z0, R.x1, R.z1]].forEach(([a, b2, c2, d2]) => wallLine(g, a, b2, c2, d2, FH - 0.2, '#c9d3dc')); SR = [0, 0]; }
+      else [[cx, R.z0, w, 0.35], [cx, R.z1, w, 0.35], [R.x0, cz, 0.35, d], [R.x1, cz, 0.35, d]].forEach(([px, pz, pw, pd]) => { box(g, px, 0, pz, pw, FH - 0.2, pd, wcol); });
+      // 창문
+      for (let k = R.x0 + 2; k < R.x1 - 1; k += 3.5) { box(g, k, 1.1, R.z1 + 0.05, 1.8, 1.2, 0.3, '#8fc1e0'); box(g, k, 1.1, R.z0 - 0.05, 1.8, 1.2, 0.3, '#8fc1e0'); }
+      // 복도 + 방
+      SR = [n, n];
+      const alongX = w >= d, half = 1.5;
+      if (alongX) {
+        const nR = Math.max(1, Math.round((w - 4) / 7)), step = (w - 4) / nR;
+        const gapsN = [], gapsS = [];
+        for (let i = 0; i < nR; i++) { const rx = R.x0 + step * (i + 0.5); gapsN.push({ at: (rx - R.x0) / w, w: 1.6 }); gapsS.push({ at: (rx - R.x0) / w, w: 1.6 }); }
+        if (cz - half - R.z0 > 2.5) { wallLine(g, R.x0, cz - half, R.x1 - 4, cz - half, FH - 0.2, '#e8e2d6', gapsN.map(o => ({ at: o.at * w / (w - 4), w: o.w }))); }
+        if (R.z1 - cz - half > 2.5) { wallLine(g, R.x0, cz + half, R.x1 - 4, cz + half, FH - 0.2, '#e8e2d6', gapsS.map(o => ({ at: o.at * w / (w - 4), w: o.w }))); }
+        for (let i = 1; i < nR; i++) { const px = R.x0 + step * i; if (cz - half - R.z0 > 2.5) wallLine(g, px, R.z0, px, cz - half, FH - 0.2, '#e8e2d6'); if (R.z1 - cz - half > 2.5) wallLine(g, px, cz + half, px, R.z1, FH - 0.2, '#e8e2d6'); }
+        for (let i = 0; i < nR; i++) { const rx = R.x0 + step * (i + 0.5);
+          if (cz - half - R.z0 > 3.5) { box(g, rx, 0, (R.z0 + cz - half) / 2, 1.6, 0.75, 0.8, '#8a6a48'); solid(rx, (R.z0 + cz - half) / 2, 1.6, 0.8); }
+          if (R.z1 - cz - half > 3.5) { box(g, rx, 0, (R.z1 + cz + half) / 2, 1.6, 0.75, 0.8, '#8a6a48'); solid(rx, (R.z1 + cz + half) / 2, 1.6, 0.8); } }
+      } else {
+        const nR = Math.max(1, Math.round((d - 4) / 7)), step = (d - 4) / nR;
+        const gaps = []; for (let i = 0; i < nR; i++) gaps.push({ at: (step * (i + 0.5)) / (d - 4), w: 1.6 });
+        wallLine(g, cx - half, R.z0, cx - half, R.z1 - 4, FH - 0.2, '#e8e2d6', gaps); wallLine(g, cx + half, R.z0, cx + half, R.z1 - 4, FH - 0.2, '#e8e2d6', gaps);
+        for (let i = 1; i < nR; i++) { const pz = R.z0 + step * i; wallLine(g, R.x0, pz, cx - half, pz, FH - 0.2, '#e8e2d6'); wallLine(g, cx + half, pz, R.x1, pz, FH - 0.2, '#e8e2d6'); }
+      }
+      SR = [0, 0];
+      const st = alongX ? { x: tower && n >= 5 ? 30 : R.x1 - 2, z: cz } : { x: cx, z: R.z1 - 2 };
+      if (tower && n < 5) { st.x = 30; st.z = cz; }
+      B.stairs[n] = st; stairMesh(g, st.x, st.z, n, true);
+    }
+  }
+}
+function stairMesh(parent, x, z, n, local) {
+  const g = new THREE.Group(); g.position.set(x, local ? 0 : 0, z); parent.add(g);
+  for (let i = 0; i < 5; i++) box(g, -0.8 + i * 0.4, 0, 0, 0.4, 0.15 + i * 0.12, 1.8, '#8d8476');
+  const sm = new THREE.Mesh(new THREE.CircleGeometry(1.3, 24), new THREE.MeshBasicMaterial({ color: '#ffe066', transparent: true, opacity: 0.25, depthWrite: false })); sm.rotation.x = -Math.PI / 2; sm.position.y = 0.05; g.add(sm);
+  if (!local) { const lab = textSprite('계단 ⇅', 0.9, '#ffe066'); lab.material.depthTest = true; lab.position.set(0, 2.4, 0); g.add(lab); }
+}
+function stairsNear(e) { const B = inBuilding(e.x, e.z); if (!B || !B.stairs) return null; const s = B.stairs[e.fl || 0]; if (s && Math.hypot(s.x - e.x, s.z - e.z) < 2) return B; return null; }
 function inBuilding(px, pz) { for (const b of WORLD.buildings) if (px > b.x0 && px < b.x1 && pz > b.z0 && pz < b.z1) return b; return null; }
 
 // 소품
@@ -185,7 +256,7 @@ function buildWorld(scene) {
   area('parking_ramp', RX, RZ + 4, 4, '지하 주차장 입구');
 
   // --- 성산홀 (본관) ---
-  building(scene, { id: 'seongsan', name: '성산홀 (본관)', style: 'stone', to: [30, -60], x: 0, z: -48, w: 58, d: 28, h: 15, color: '#d8cbb3', roof: '#7a3b2e', wall: '#cbbd9f', floor: '#9b8e7a',
+  building(scene, { id: 'seongsan', name: '성산홀 (본관)', style: 'stone', floors: 20, to: [30, -60], x: 0, z: -48, w: 58, d: 28, h: 15, color: '#d8cbb3', roof: '#7a3b2e', wall: '#cbbd9f', floor: '#9b8e7a',
     doors: [{ side: 's', at: 0.5, w: 4 }, { side: 'n', at: 0.2, w: 2.4 }, { side: 'e', at: 0.5, w: 2.4 }, { side: 'w', at: 0.5, w: 2.4 }],
     inner(g, B) {
       // 강당
@@ -257,8 +328,10 @@ function buildWorld(scene) {
 
 
   // 성산홀 타워
-  box(scene, 30, 0, -82, 11, 46, 11, '#c9d3dc'); box(scene, 30, 46, -82, 12, 2, 12, '#7a8a9a'); solid(30, -82, 11, 11);
-  for (let y = 4; y < 44; y += 3) box(scene, 30, y, -76.4, 9, 1.2, 0.2, '#6f9fc0');
+  { const SS = WORLD.buildings.find(b => b.id === 'seongsan'); const tg = new THREE.Group(); scene.add(tg); SS.tower = tg;
+    const tb = 5 * FH, th = 15 * FH; box(tg, 30, tb, -60, 12, th, 12, '#c9d3dc'); box(tg, 30, tb + th, -60, 13, 1.5, 13, '#7a8a9a');
+    for (let y = tb + 1; y < tb + th - 1; y += FH) { box(tg, 30, y, -53.9, 10, 1.4, 0.2, '#6f9fc0'); box(tg, 23.9, y, -60, 0.2, 1.4, 10, '#6f9fc0'); box(tg, 36.1, y, -60, 0.2, 1.4, 10, '#6f9fc0'); }
+    const tl = textSprite('성산홀 20F', 2.4, '#fff'); tl.position.set(30, tb + th + 4, -60); tg.add(tl); }
   // 지도 속 다른 건물들 (들어갈 수 있는 단순한 건물)
   const GEN = [
     ['W3-6', '사회과학3관 (W3-6)', -100, -76, 22, 16, 11, 'brick'], ['W3-4', '사회과학2관 (W3-4)', -148, -42, 18, 22, 10, 'brick'],
@@ -333,6 +406,7 @@ function buildWorld(scene) {
   for (let x = -164; x < -52; x += 3) box(scene, x, 0, 41.2, 0.15, 0.9, 0.15, '#6b4f36');
   car(scene, -30, 72, 0.3, '#8a2a2a'); car(scene, -10, 30, 0.5, '#2a4a8a'); car(scene, 40, -6, Math.PI / 2, '#666'); car(scene, -80, -20, 0.6, '#c9c9c9'); car(scene, 4, 2, 0.4, '#d2b04a');
 
+  addFloors(scene);
   buildUnderground(scene);
 }
 
@@ -376,15 +450,16 @@ function buildUnderground(scene) {
   WORLD.spawns.room_lab = { x: X + 28, z: LZ + 22 };
 }
 
-// 충돌 질의
-function blockedAt(x, z, r) {
-  for (const W of WORLD.walls) if (x > W.x - r && x < W.x + W.w + r && z > W.z - r && z < W.z + W.d + r) return true;
+// 충돌 질의 (fl: 층)
+function blockedAt(x, z, r, fl) {
+  fl = fl || 0;
+  for (const W of WORLD.walls) if (onFl(W, fl) && x > W.x - r && x < W.x + W.w + r && z > W.z - r && z < W.z + W.d + r) return true;
   return false;
 }
 function pushOut(e) {
-  let hit = false;
+  let hit = false; const fl = e.fl || 0;
   for (const W of WORLD.walls) {
-    if (e.x < W.x - e.r || e.x > W.x + W.w + e.r || e.z < W.z - e.r || e.z > W.z + W.d + e.r) continue;
+    if (!onFl(W, fl) || e.x < W.x - e.r || e.x > W.x + W.w + e.r || e.z < W.z - e.r || e.z > W.z + W.d + e.r) continue;
     const cx = Math.max(W.x, Math.min(e.x, W.x + W.w)), cz = Math.max(W.z, Math.min(e.z, W.z + W.d));
     let dx = e.x - cx, dz = e.z - cz; const d2 = dx * dx + dz * dz;
     if (d2 >= e.r * e.r) continue;
@@ -396,10 +471,10 @@ function pushOut(e) {
   }
   return hit;
 }
-function segBlocked(x1, z1, x2, z2) {
+function segBlocked(x1, z1, x2, z2, fl) {
   const steps = Math.ceil(Math.hypot(x2 - x1, z2 - z1) / 0.8);
-  for (let i = 1; i < steps; i++) { const t = i / steps; if (blockedAt(x1 + (x2 - x1) * t, z1 + (z2 - z1) * t, 0)) return true; }
+  for (let i = 1; i < steps; i++) { const t = i / steps; if (blockedAt(x1 + (x2 - x1) * t, z1 + (z2 - z1) * t, 0, fl)) return true; }
   return false;
 }
-function freeSpot(x, z, r) { return !blockedAt(x, z, r) && ((x > MAP.x0 + 2 && x < MAP.x1 - 2 && z > MAP.z0 + 2 && z < MAP.z1 - 2) || x > UG_X - 60); }
+function freeSpot(x, z, r, fl) { return !blockedAt(x, z, r, fl) && ((x > MAP.x0 + 2 && x < MAP.x1 - 2 && z > MAP.z0 + 2 && z < MAP.z1 - 2) || x > UG_X - 60); }
 function underground(x) { return x > UG_X - 60; }
