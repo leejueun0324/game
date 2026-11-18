@@ -94,7 +94,7 @@ const RELATIONS = [
 // 스토리 장
 // objective type: talk, interact(id), reach(area), collect(item,count), kill(n), survive(sec), revive(id), boss(id), gather(area)
 const CHAPTERS = [
-  { id:'prologue', title:'프롤로그 — 평범했던 오후', time:'2026. 6. 23. 오후 4:12', night:0, start:'room_kwabang', loc:'인문대 · 문헌정보학과 과방',
+  { id:'prologue', title:'프롤로그 — 평범했던 오후', time:'2026. 6. 23. 오후 4:12', night:0, start:'room_kwabang', loc:'사회과학1관(W3-5) · 문헌정보학과 과방',
     intro:[
       ['juwon','야, 개배고픈데 뭐 먹을 사람?'], ['junhee','난 아무거나.'], ['bonwoo','아무거나가 제일 어려운 거 알지?'],
       ['yujun','투표하자 투표'], ['jueun','또 시작이네.'], ['hyoseo','아니 근데 얘들아. 학교 주변에 경찰차가 좀 많은 거 같지 않아?'],
@@ -115,15 +115,15 @@ const CHAPTERS = [
   { id:'ch1', title:'1장 — 출석체크', time:'오후 4:31', night:0.1, start:'out_humanities', loc:'캠퍼스',
     intro:[
       ['juwon','잠깐. 우리 인원이 몇 명이지?'], ['yujun','열한 명.'], ['juwon','그럼 한 명씩 확인하자.'], ['*','__ROLLCALL__'],
-      ['jihu','걸음걸이 봐.'], ['*','다리를 질질 끌던 사람이—달렸다.'], ['jueun','잠깐만 이쪽. 도서관!'],
+      ['jihu','걸음걸이 봐.'], ['*','다리를 질질 끌던 사람이—달렸다.'], ['jueun','잠깐만 이쪽. 도서관! 창파도서관!'],
     ],
-    kakao:[['jueun','도서관으로 가자. 거기 문 잠글 수 있어'], ['seolwoo','정문 쪽은 막혔어요. 인문대 뒤로 돌아가요']],
+    kakao:[['jueun','창파도서관으로 가자. 거기 문 잠글 수 있어'], ['seolwoo','운동장 쪽은 막혔어요. 자유광장 쪽으로 돌아가요']],
     quests:[
-      { text:'열한 명 모두 데리고 중앙도서관 입구까지 이동', type:'gather', area:'lib_door' },
+      { text:'열한 명 모두 데리고 창파도서관 입구까지 이동', type:'gather', area:'lib_door' },
     ],
     outro:[['*','이주은이 가장 먼저 문을 닫았다. 지후와 준희가 책상을 끌어와 입구를 막았다.'], ['eunbit','살았다…….'], ['bonwoo','저희 아직 안 죽었네요.']] },
 
-  { id:'ch2', title:'2장 — 도서관', time:'오후 5:02', night:0.25, start:'room_library', loc:'중앙도서관',
+  { id:'ch2', title:'2장 — 도서관', time:'오후 5:02', night:0.25, start:'room_library', loc:'창파도서관',
     intro:[
       ['chaeyun','전기 나가면?'], ['yujun','냉장고 있는 곳부터 확인해야겠는데. 물도 필요하고.'],
       ['hyoseo','그리고…… 휴대폰.'], ['*','쿵. 도서관 안쪽에서 소리가 났다.'], ['junhee','……도서관 안에 우리 말고 누가 있어?'],
@@ -151,7 +151,7 @@ const CHAPTERS = [
       ['*','저장되지 않은 번호: "내일 오전 6시, 운동장에 헬기가 옵니다. 열한 명이라면…… 전부 데리고 오십시오."'],
       ['hyoseo','그럼 내일 6시까지 살아남자.'], ['*','열한 개의 손이 겹쳐졌다. "아자스."']] },
 
-  { id:'ch4', title:'4장 — 의심 그리고 06:00', time:'새벽 5:17', night:0.85, start:'room_seongsan', loc:'성산홀 → 대운동장',
+  { id:'ch4', title:'4장 — 의심 그리고 06:00', time:'새벽 5:17', night:0.85, start:'room_seongsan', loc:'성산홀 → 제1운동장',
     intro:[['juwon','헬기 진짜 올까?'], ['jueun','모르겠어.'], ['*','철컥. 누군가 계단 쪽으로 걸어가고 있었다.']],
     kakao:[['???','열한 명은 절대로 운동장으로 가지 마십시오. 그곳에는 구조대가 없습니다.'],
            ['방송','생존자는 운동장으로 이동하십시오. 구조 헬기가 곧 도착합니다.']],
@@ -160,7 +160,7 @@ const CHAPTERS = [
       { text:'대화하기', type:'talk', lines:[['jueun','……박유준?'], ['yujun','헬기…… 안 와.'], ['*','치직— "당신들 중 한 명은 이미 감염되었습니다."'],
         ['hyoseo','……붕대 풀어.'], ['*','상처 주변 피부가 검게 변하고 있었다.'], ['yujun','그래서 혼자 나가려고 했어.'],
         ['jueun','같이 가. 우리 열한 명이라고 했잖아.'], ['juwon','둘 중 하나는 구라네.']] },
-      { text:'오전 6시 — 대운동장으로 이동', type:'reach', area:'field_center' },
+      { text:'오전 6시 — 제1운동장으로 이동', type:'reach', area:'field_center' },
       { text:'K-13 요원을 피해 지하 주차장 입구로 탈출', type:'reach', area:'parking_ramp' },
     ],
     outro:[['*','헬기 기체 측면에는 검은 글자가 적혀 있었다. K-13.'], ['junhee','저거 구조대 아닌데.'], ['jueun','저쪽! 지하 주차장!']] },
@@ -194,13 +194,13 @@ const CHAPTERS = [
 
 // 건물 미션 (자유 수행, 보상)
 const BUILDING_MISSIONS = [
-  { id:'bm_kwabang', bld:'인문대', text:'과방 사물함에서 휴대폰 보조배터리 찾기', item:'battery', reward:'phone', rewardText:'단톡방 알림 + 휴대폰 배터리 충전' },
-  { id:'bm_library', bld:'중앙도서관', text:'자료실 깊은 곳 손전등 찾기', item:'flashlight', reward:'light', rewardText:'밤 시야 확대' },
-  { id:'bm_store', bld:'학생회관 · 편의점', text:'편의점에서 소주병과 휴지 챙기기', item:'molotov', reward:'molotov', rewardText:'화염병 재료 +2' },
+  { id:'bm_kwabang', bld:'사회과학1관 (W3-5)', text:'과방 사물함에서 휴대폰 보조배터리 찾기', item:'battery', reward:'phone', rewardText:'단톡방 알림 + 휴대폰 배터리 충전' },
+  { id:'bm_library', bld:'창파도서관', text:'자료실 깊은 곳 손전등 찾기', item:'flashlight', reward:'light', rewardText:'밤 시야 확대' },
+  { id:'bm_store', bld:'웅지관 · 편의점', text:'편의점에서 소주병과 휴지 챙기기', item:'molotov', reward:'molotov', rewardText:'화염병 재료 +2' },
   { id:'bm_dorm', bld:'행복기숙사', text:'기숙사 방에서 야구배트 찾기', item:'bat', reward:'bat', rewardText:'야구배트 (준희 스킬 해금)' },
   { id:'bm_biho', bld:'비호생활관', text:'휴게실 비상식량 상자 열기', item:'ration', reward:'heal', rewardText:'팀 전원 체력 회복' },
-  { id:'bm_eng', bld:'공과대학', text:'실습실에서 쇠파이프 확보', item:'pipe', reward:'pipe', rewardText:'쇠파이프 (공격력 상승)' },
-  { id:'bm_edu', bld:'사범대학', text:'복도 소화기 2개 회수', item:'extinguisher', reward:'ext', rewardText:'소화기 (본우 스킬 해금)' },
+  { id:'bm_eng', bld:'공학1관', text:'실습실에서 쇠파이프 확보', item:'pipe', reward:'pipe', rewardText:'쇠파이프 (공격력 상승)' },
+  { id:'bm_edu', bld:'사범1관', text:'복도 소화기 2개 회수', item:'extinguisher', reward:'ext', rewardText:'소화기 (본우 스킬 해금)' },
   { id:'bm_seongsan', bld:'성산홀', text:'강당 방송실에서 무전기 찾기', item:'radio', reward:'radio', rewardText:'K-13 무전 도청 (적 위치 표시)' },
 ];
 

@@ -349,7 +349,8 @@ const UI = {
     const k = Math.min(mw / (bx1 - bx0), mh / (bz1 - bz0)), P = (x, z) => [mx + (x - bx0) * k, my + (z - bz0) * k];
     c.fillStyle = 'rgba(0,0,0,.6)'; c.fillRect(mx - 3, my - 3, mw + 6, mh + 6); c.fillStyle = ug ? '#2a2c30' : '#3d5a2e'; c.fillRect(mx, my, (bx1 - bx0) * k, (bz1 - bz0) * k);
     if (!ug) { for (const b of WORLD.buildings) { const [x, z] = P(b.x0, b.z0); c.fillStyle = b === inBuilding(me.x, me.z) ? '#d9c79a' : '#9c8d74'; c.fillRect(x, z, b.w * k, b.d * k); }
-      const [fx0, fz0] = P(52, 56); c.fillStyle = '#8a4a32'; c.fillRect(fx0, fz0, 66 * k, 38 * k); }
+      const F = WORLD.field, [fx0, fz0] = P(F.x - F.w / 2, F.z - F.d / 2); c.fillStyle = '#8a4a32'; c.fillRect(fx0, fz0, F.w * k, F.d * k);
+      c.fillStyle = '#3f7fb5'; for (const W2 of WORLD.walls) if (W2.tag === 'lake') { const [x, z] = P(W2.x, W2.z); c.fillRect(x, z, W2.w * k, W2.d * k); } }
     else { c.fillStyle = '#555'; for (const W2 of WORLD.walls) if (W2.x > UG_X - 60) { const [x, z] = P(W2.x, W2.z); c.fillRect(x, z, Math.max(1, W2.w * k), Math.max(1, W2.d * k)); } }
     c.fillStyle = '#ff4040'; for (const z of G.zombies) { if (z.kind === 'agent' && !G.inv.radio && D2(z, me) > 30) continue; const [x, y] = P(z.x, z.z); if (x < mx || x > mx + mw || y < my || y > my + mh) continue; const s = z.kind === 'n1' || z.kind === 'mimic' ? 4 : 1.6; c.fillStyle = z.kind === 'agent' ? '#ffd36b' : '#ff4040'; c.fillRect(x - s / 2, y - s / 2, s, s); }
     for (const p of G.pickups) if (p.mission && !ug) { const [x, y] = P(p.x, p.z); c.fillStyle = '#ffe066'; c.font = '9px sans-serif'; c.fillText('★', x, y); }

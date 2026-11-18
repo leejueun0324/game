@@ -27,7 +27,7 @@ function loop(now) {
     if (G.mode === 'host') NET.hostTick(dt);
     if (G.questIdxShown !== G.questIdx + '/' + G.qprog) { G.questIdxShown = G.questIdx + '/' + G.qprog; UI.refreshQuest(); }
   }
-  if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(Math.sin(t) * 95, 46, -40 + Math.cos(t) * 95); camera.lookAt(0, 4, -40); updateZombies(dt); }
+  if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(-20 + Math.sin(t) * 110, 50, -30 + Math.cos(t) * 110); camera.lookAt(-20, 4, -30); updateZombies(dt); }
   syncModels(dt); updateCamera(dt);
   renderer.render(scene, camera);
   UI.drawHUD();
@@ -35,6 +35,6 @@ function loop(now) {
 }
 window.addEventListener('load', () => {
   initRenderer(); initInput(); UI.init();
-  G.me = null; setNight(0.55); for (let i = 0; i < 40; i++) spawnAround(i % 4 ? 'walker' : 'runner', 0, -10, 5, 70);
+  G.me = null; setNight(0.55); for (let i = 0; i < 40; i++) spawnAround(i % 4 ? 'walker' : 'runner', -20, -10, 5, 80);
   requestAnimationFrame(loop);
 });

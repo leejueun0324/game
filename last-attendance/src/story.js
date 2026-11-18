@@ -10,12 +10,12 @@ function addBarrier(x, z, w, d, color) {
 function removeBarrier(b) { if (!b) return; scene.remove(b.m); const i = WORLD.walls.indexOf(b.W); if (i >= 0) WORLD.walls.splice(i, 1); const j = BARRIERS.indexOf(b); if (j >= 0) BARRIERS.splice(j, 1); }
 function clearBarriers() { while (BARRIERS.length) removeBarrier(BARRIERS[0]); }
 
-const MISSION_SPOTS = { bm_kwabang: [-63, 47.5], bm_library: [-91, -16], bm_store: [72, 24], bm_dorm: [110, -66], bm_biho: [40, -100], bm_eng: [-95, -102], bm_edu: [-55, 101], bm_seongsan: [24, -57] };
+const MISSION_SPOTS = { bm_kwabang: ['humanities', -63, 47.5], bm_library: ['library', -91, -16], bm_store: ['union', 72, 24], bm_dorm: ['dorm', 110, -66], bm_biho: ['biho', 40, -100], bm_eng: ['eng', -95, -102], bm_edu: ['edu', -55, 101], bm_seongsan: ['seongsan', 24, -57] };
 const MISSIONS = {
   place() {
     for (const m of BUILDING_MISSIONS) {
       if (G.missionsDone[m.id] || G.pickups.some(p => p.mission === m.id)) continue;
-      const [x, z] = MISSION_SPOTS[m.id]; dropPickup(m.item, x, z, { mission: m.id });
+      const [bid, mx, mz] = MISSION_SPOTS[m.id], [x, z] = at(bid, mx, mz); dropPickup(m.item, x, z, { mission: m.id });
     }
   },
   complete(id, u) {
@@ -122,37 +122,37 @@ const STORY = {
 // ---------- 장별 설정 ----------
 const CH_SETUP = {
   prologue(S) {
-    S.storeDoor = addBarrier(-68, 33, 1.6, 0.3, '#6b4f36');
-    S.addInteract('kw_door', -71.8, 41.3, '과방 문 잠그기', u => {
-      S.door = addBarrier(-71, 41.3, 0.4, 2.1, '#5a4430'); S.questInteract('kw_door');
-      for (let i = 0; i < 5; i++) spawnZombie('walker', -78 - (i % 3) * 1.5, 39 + (i % 2) * 3);
+    S.storeDoor = addBarrier(...at('humanities', -68, 33), 1.6, 0.3, '#6b4f36');
+    S.addInteract('kw_door', ...at('humanities', -71.8, 41.3), '과방 문 잠그기', u => {
+      S.door = addBarrier(...at('humanities', -71, 41.3), 0.4, 2.1, '#5a4430'); S.questInteract('kw_door');
+      for (let i = 0; i < 5; i++) spawnZombie('walker', ...at('humanities', -78 - (i % 3) * 1.5, 39 + (i % 2) * 3));
       UI.banner('쾅! 쾅! 문 밖에서 무언가 두드린다', '#ff8080');
     }, { enabled: () => G.questIdx === 0 });
-    S.addInteract('kw_key', -66, 41.2, '책상 위 열쇠 집기', u => {
+    S.addInteract('kw_key', ...at('humanities', -66, 41.2), '책상 위 열쇠 집기', u => {
       S.questInteract('kw_key'); removeBarrier(S.storeDoor);
-      dropPickup('storage', -63.5, 29.8, { sub: 'bat' }); dropPickup('storage', -62, 30.8, { sub: 'ext' });
+      dropPickup('storage', ...at('humanities', -63.5, 29.8), { sub: 'bat' }); dropPickup('storage', ...at('humanities', -62, 30.8), { sub: 'ext' });
       say(unitByCh('hyoseo'), '과방 창고 열쇠. 창고 열었어!', 3);
     }, { enabled: () => G.questIdx === 1 });
-    S.amb = { n: 16, min: 25, max: 60, at: { x: -60, z: 10 } };
-    setTimeout(() => { const z = spawnZombie('walker', -90, 41); z.target = null; }, 500);
+    { const [ax, az] = at('humanities', -60, 10); S.amb = { n: 16, min: 25, max: 60, at: { x: ax, z: az } }; }
+    setTimeout(() => { const z = spawnZombie('walker', ...at('humanities', -90, 41)); z.target = null; }, 500);
   },
-  ch1(S) { dropPickup('molotov', -70, 12); S.amb = { n: 34, min: 16, max: 40, runner: 0.25, every: 0.6, burst: 2 }; for (let i = 0; i < 18; i++) spawnAround(Math.random() < 0.3 ? 'runner' : 'walker', -64, 22, 10, 40); },
+  ch1(S) { dropPickup('molotov', ...at('humanities', -70, 12)); S.amb = { n: 34, min: 16, max: 40, runner: 0.25, every: 0.6, burst: 2 }; for (let i = 0; i < 18; i++) spawnAround(Math.random() < 0.3 ? 'runner' : 'walker', ...at('humanities', -64, 22), 10, 40); },
   ch2(S) {
-    for (let i = 0; i < 6; i++) spawnZombie('walker', -88 + (i % 3) * 7 + rand(-1, 1), -40.5 + (i < 3 ? 0 : 5) + 2.5);
-    for (let i = 0; i < 10; i++) spawnAround('walker', -61, -6, 4, 14);
+    for (let i = 0; i < 6; i++) spawnZombie('walker', ...at('library', -88 + (i % 3) * 7 + rand(-1, 1), -40.5 + (i < 3 ? 0 : 5) + 2.5));
+    for (let i = 0; i < 10; i++) spawnAround('walker', ...at('library', -61, -6), 4, 14);
     let n = 0;
-    [[-61.5, -15.8, -61.5, -14, 4.2, 0.4], [-52.6, -22, -51, -22, 0.4, 2.6]].forEach(([ix, iz, bx, bz, bw, bd]) => {
+    [[-61.5, -15.8, -61.5, -14, 4.2, 0.4], [-52.6, -22, -51, -22, 0.4, 2.6]].map(([ix, iz, bx, bz, bw, bd]) => [...at('library', ix, iz), ...at('library', bx, bz), bw, bd]).forEach(([ix, iz, bx, bz, bw, bd]) => {
       S.addInteract('lib_barricade', ix, iz, '책상으로 입구 막기', u => { addBarrier(bx, bz, bw, bd); S.questInteract('lib_barricade'); }, { enabled: () => G.questIdx === 0 });
     });
-    const sup = [[-90, -21.5], [-86, -16], [-82.5, -21.5], [-89, -15.5]]; sup.forEach(([x, z]) => dropPickup('supply', x, z));
-    S.amb = { n: 14, min: 12, max: 30, at: { x: -60, z: -4 } };
+    const sup = [[-90, -21.5], [-86, -16], [-82.5, -21.5], [-89, -15.5]]; sup.forEach(([x, z]) => dropPickup('supply', ...at('library', x, z)));
+    { const [ax, az] = at('library', -60, -4); S.amb = { n: 14, min: 12, max: 30, at: { x: ax, z: az } }; }
   },
-  ch3(S) { dropPickup('molotov', 70, 24); dropPickup('molotov', 56, 36);
+  ch3(S) { dropPickup('molotov', ...at('union', 70, 24)); dropPickup('molotov', ...at('union', 56, 36));
     S.amb = { n: 34, min: 18, max: 40, runner: 0.3, brute: 0.06, every: 0.7, burst: 2 };
-    S.addInteract('ss_door', 0, -36, '성산홀 정문 잠그기', u => { addBarrier(0, -34, 4.4, 0.45, '#5a4430'); S.questInteract('ss_door'); UI.banner('정문을 잠갔다. 하지만 옆문이 아직 열려 있다', '#ffb0b0'); }, { enabled: () => G.questIdx === 2 });
+    S.addInteract('ss_door', ...at('seongsan', 0, -36), '성산홀 정문 잠그기', u => { addBarrier(...at('seongsan', 0, -34), 4.4, 0.45, '#5a4430'); S.questInteract('ss_door'); UI.banner('정문을 잠갔다. 하지만 옆문이 아직 열려 있다', '#ffb0b0'); }, { enabled: () => G.questIdx === 2 });
     const e = unitByCh('eunbit'); if (e && e.ctrl !== 'ai') S.questOverride = { 1: { text: '계단에서 넘어진 이주원 일으켜 세우기', type: 'revive', id: 'juwon' } }; },
   ch4(S) {
-    const y = unitByCh('yujun'); if (y && y !== G.me && y.ctrl === 'ai') { y.x = -17; y.z = -60.5; y.scripted = true; }
+    const y = unitByCh('yujun'); if (y && y !== G.me && y.ctrl === 'ai') { [y.x, y.z] = at('seongsan', -17, -60.5); y.scripted = true; }
     S.amb = { n: 14, min: 25, max: 45, every: 1.2 };
   },
   ch5(S) {
@@ -182,20 +182,20 @@ const CH_SETUP = {
 };
 const CH_ONQUEST = {
   prologue(S, qi) {
-    if (qi === 3) { S.setTimer(2.5, () => { removeBarrier(S.door); UI.banner('쩌적— 과방 문이 부서졌다! 뛰어!', '#ff6060'); for (let i = 0; i < 4; i++) spawnZombie(i ? 'walker' : 'runner', -76, 40 + i); }); equipTeam(); }
+    if (qi === 3) { S.setTimer(2.5, () => { removeBarrier(S.door); UI.banner('쩌적— 과방 문이 부서졌다! 뛰어!', '#ff6060'); for (let i = 0; i < 4; i++) spawnZombie(i ? 'walker' : 'runner', ...at('humanities', -76, 40 + i)); }); equipTeam(); }
   },
   ch3(S, qi) {
-    if (qi === 1) { const e = unitByCh(S.quest().id); if (e) { e.x = 2; e.z = -29.5; e.state = 'down'; e.hp = 0; e.downT = 60; e.scripted = true; e.wasDown = true; say(e, '꺄악!', 2);
-      for (let i = 0; i < 6; i++) spawnAround('walker', 0, -26, 8, 16); } }
-    if (qi === 3) { S.amb = { n: 40, min: 8, max: 22, at: { x: 0, z: -48 }, runner: 0.35, brute: 0.08, every: 0.5, burst: 2 }; UI.banner('밤이 깊어진다. 옆문과 뒷문을 지켜!', '#9aa8ff'); setNight(0.9); }
+    if (qi === 1) { const e = unitByCh(S.quest().id); if (e) { [e.x, e.z] = at('seongsan', 2, -29.5); e.state = 'down'; e.hp = 0; e.downT = 60; e.scripted = true; e.wasDown = true; say(e, '꺄악!', 2);
+      for (let i = 0; i < 6; i++) spawnAround('walker', ...at('seongsan', 0, -26), 8, 16); } }
+    if (qi === 3) { S.amb = { n: 40, min: 8, max: 22, at: { x: at('seongsan', 0, -48)[0], z: at('seongsan', 0, -48)[1] }, runner: 0.35, brute: 0.08, every: 0.5, burst: 2 }; UI.banner('밤이 깊어진다. 옆문과 뒷문을 지켜!', '#9aa8ff'); setNight(0.9); }
   },
   ch4(S, qi) {
     if (qi === 2) { const y = unitByCh('yujun'); if (y) y.scripted = false; setNight(0.45); UI.banner('오전 5시 56분. 운동장으로.', '#ffe9a8'); }
     if (qi === 3) {
       UI.banner('헬리콥터 소리가 들린다— K-13', '#ffd36b');
-      const h = makeHeli(); h.position.set(104, 40, 88); h.rotation.y = 0.6; scene.add(h); S.heli = h; S.heliT = 0;
+      const h = makeHeli(); h.position.set(WORLD.field.x + 18, 40, WORLD.field.z + 10); h.rotation.y = 0.6; scene.add(h); S.heli = h; S.heliT = 0;
       S.setTimer(3, () => { UI.dialogStart([['*', '"학생들은 움직이지 마십시오."'], ['*', '"감염자는 앞으로 나오십시오."'], ['jihu', '뛰어야 해.'], ['*', '탕!']], () => {
-        for (let i = 0; i < 5; i++) spawnZombie('agent', 85 + rand(-6, 6), 75 + rand(-6, 6));
+        for (let i = 0; i < 5; i++) spawnZombie('agent', WORLD.field.x + rand(-6, 6), WORLD.field.z + rand(-6, 6));
         S.agentWave = 3; S.amb = { n: 30, min: 18, max: 34, runner: 0.5, every: 0.5, burst: 2 };
       }); });
     }
@@ -215,7 +215,7 @@ const CH_ONQUEST = {
 const CH_TICK = {
   ch4(S, dt) {
     if (S.heli) { S.heliT += dt; S.heli.position.y = Math.max(3, 40 - S.heliT * 9); S.heli.userData.rotor.rotation.y += dt * 25; }
-    if (S.agentWave > 0) { S.agentT = (S.agentT || 10) - dt; if (S.agentT <= 0) { S.agentT = 10; S.agentWave--; for (let i = 0; i < 3; i++) spawnZombie('agent', 85 + rand(-5, 5), 75 + rand(-5, 5)); } }
+    if (S.agentWave > 0) { S.agentT = (S.agentT || 10) - dt; if (S.agentT <= 0) { S.agentT = 10; S.agentWave--; for (let i = 0; i < 3; i++) spawnZombie('agent', WORLD.field.x + rand(-5, 5), WORLD.field.z + rand(-5, 5)); } }
   },
   ch5(S, dt) {
     if (S.yujunHold && S.mimic && !S.mimic.dead) { const y = unitByCh('yujun'); if (y && y.state === 'active') { y.scriptMove = { x: S.mimic.x, z: S.mimic.z }; S.mimic.target = y; S.mimic.retarget = 1; y.inv = 1; } }

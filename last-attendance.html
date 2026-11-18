@@ -416,7 +416,7 @@ const RELATIONS = [
 // 스토리 장
 // objective type: talk, interact(id), reach(area), collect(item,count), kill(n), survive(sec), revive(id), boss(id), gather(area)
 const CHAPTERS = [
-  { id:'prologue', title:'프롤로그 — 평범했던 오후', time:'2026. 6. 23. 오후 4:12', night:0, start:'room_kwabang', loc:'인문대 · 문헌정보학과 과방',
+  { id:'prologue', title:'프롤로그 — 평범했던 오후', time:'2026. 6. 23. 오후 4:12', night:0, start:'room_kwabang', loc:'사회과학1관(W3-5) · 문헌정보학과 과방',
     intro:[
       ['juwon','야, 개배고픈데 뭐 먹을 사람?'], ['junhee','난 아무거나.'], ['bonwoo','아무거나가 제일 어려운 거 알지?'],
       ['yujun','투표하자 투표'], ['jueun','또 시작이네.'], ['hyoseo','아니 근데 얘들아. 학교 주변에 경찰차가 좀 많은 거 같지 않아?'],
@@ -437,15 +437,15 @@ const CHAPTERS = [
   { id:'ch1', title:'1장 — 출석체크', time:'오후 4:31', night:0.1, start:'out_humanities', loc:'캠퍼스',
     intro:[
       ['juwon','잠깐. 우리 인원이 몇 명이지?'], ['yujun','열한 명.'], ['juwon','그럼 한 명씩 확인하자.'], ['*','__ROLLCALL__'],
-      ['jihu','걸음걸이 봐.'], ['*','다리를 질질 끌던 사람이—달렸다.'], ['jueun','잠깐만 이쪽. 도서관!'],
+      ['jihu','걸음걸이 봐.'], ['*','다리를 질질 끌던 사람이—달렸다.'], ['jueun','잠깐만 이쪽. 도서관! 창파도서관!'],
     ],
-    kakao:[['jueun','도서관으로 가자. 거기 문 잠글 수 있어'], ['seolwoo','정문 쪽은 막혔어요. 인문대 뒤로 돌아가요']],
+    kakao:[['jueun','창파도서관으로 가자. 거기 문 잠글 수 있어'], ['seolwoo','운동장 쪽은 막혔어요. 자유광장 쪽으로 돌아가요']],
     quests:[
-      { text:'열한 명 모두 데리고 중앙도서관 입구까지 이동', type:'gather', area:'lib_door' },
+      { text:'열한 명 모두 데리고 창파도서관 입구까지 이동', type:'gather', area:'lib_door' },
     ],
     outro:[['*','이주은이 가장 먼저 문을 닫았다. 지후와 준희가 책상을 끌어와 입구를 막았다.'], ['eunbit','살았다…….'], ['bonwoo','저희 아직 안 죽었네요.']] },
 
-  { id:'ch2', title:'2장 — 도서관', time:'오후 5:02', night:0.25, start:'room_library', loc:'중앙도서관',
+  { id:'ch2', title:'2장 — 도서관', time:'오후 5:02', night:0.25, start:'room_library', loc:'창파도서관',
     intro:[
       ['chaeyun','전기 나가면?'], ['yujun','냉장고 있는 곳부터 확인해야겠는데. 물도 필요하고.'],
       ['hyoseo','그리고…… 휴대폰.'], ['*','쿵. 도서관 안쪽에서 소리가 났다.'], ['junhee','……도서관 안에 우리 말고 누가 있어?'],
@@ -473,7 +473,7 @@ const CHAPTERS = [
       ['*','저장되지 않은 번호: "내일 오전 6시, 운동장에 헬기가 옵니다. 열한 명이라면…… 전부 데리고 오십시오."'],
       ['hyoseo','그럼 내일 6시까지 살아남자.'], ['*','열한 개의 손이 겹쳐졌다. "아자스."']] },
 
-  { id:'ch4', title:'4장 — 의심 그리고 06:00', time:'새벽 5:17', night:0.85, start:'room_seongsan', loc:'성산홀 → 대운동장',
+  { id:'ch4', title:'4장 — 의심 그리고 06:00', time:'새벽 5:17', night:0.85, start:'room_seongsan', loc:'성산홀 → 제1운동장',
     intro:[['juwon','헬기 진짜 올까?'], ['jueun','모르겠어.'], ['*','철컥. 누군가 계단 쪽으로 걸어가고 있었다.']],
     kakao:[['???','열한 명은 절대로 운동장으로 가지 마십시오. 그곳에는 구조대가 없습니다.'],
            ['방송','생존자는 운동장으로 이동하십시오. 구조 헬기가 곧 도착합니다.']],
@@ -482,7 +482,7 @@ const CHAPTERS = [
       { text:'대화하기', type:'talk', lines:[['jueun','……박유준?'], ['yujun','헬기…… 안 와.'], ['*','치직— "당신들 중 한 명은 이미 감염되었습니다."'],
         ['hyoseo','……붕대 풀어.'], ['*','상처 주변 피부가 검게 변하고 있었다.'], ['yujun','그래서 혼자 나가려고 했어.'],
         ['jueun','같이 가. 우리 열한 명이라고 했잖아.'], ['juwon','둘 중 하나는 구라네.']] },
-      { text:'오전 6시 — 대운동장으로 이동', type:'reach', area:'field_center' },
+      { text:'오전 6시 — 제1운동장으로 이동', type:'reach', area:'field_center' },
       { text:'K-13 요원을 피해 지하 주차장 입구로 탈출', type:'reach', area:'parking_ramp' },
     ],
     outro:[['*','헬기 기체 측면에는 검은 글자가 적혀 있었다. K-13.'], ['junhee','저거 구조대 아닌데.'], ['jueun','저쪽! 지하 주차장!']] },
@@ -516,13 +516,13 @@ const CHAPTERS = [
 
 // 건물 미션 (자유 수행, 보상)
 const BUILDING_MISSIONS = [
-  { id:'bm_kwabang', bld:'인문대', text:'과방 사물함에서 휴대폰 보조배터리 찾기', item:'battery', reward:'phone', rewardText:'단톡방 알림 + 휴대폰 배터리 충전' },
-  { id:'bm_library', bld:'중앙도서관', text:'자료실 깊은 곳 손전등 찾기', item:'flashlight', reward:'light', rewardText:'밤 시야 확대' },
-  { id:'bm_store', bld:'학생회관 · 편의점', text:'편의점에서 소주병과 휴지 챙기기', item:'molotov', reward:'molotov', rewardText:'화염병 재료 +2' },
+  { id:'bm_kwabang', bld:'사회과학1관 (W3-5)', text:'과방 사물함에서 휴대폰 보조배터리 찾기', item:'battery', reward:'phone', rewardText:'단톡방 알림 + 휴대폰 배터리 충전' },
+  { id:'bm_library', bld:'창파도서관', text:'자료실 깊은 곳 손전등 찾기', item:'flashlight', reward:'light', rewardText:'밤 시야 확대' },
+  { id:'bm_store', bld:'웅지관 · 편의점', text:'편의점에서 소주병과 휴지 챙기기', item:'molotov', reward:'molotov', rewardText:'화염병 재료 +2' },
   { id:'bm_dorm', bld:'행복기숙사', text:'기숙사 방에서 야구배트 찾기', item:'bat', reward:'bat', rewardText:'야구배트 (준희 스킬 해금)' },
   { id:'bm_biho', bld:'비호생활관', text:'휴게실 비상식량 상자 열기', item:'ration', reward:'heal', rewardText:'팀 전원 체력 회복' },
-  { id:'bm_eng', bld:'공과대학', text:'실습실에서 쇠파이프 확보', item:'pipe', reward:'pipe', rewardText:'쇠파이프 (공격력 상승)' },
-  { id:'bm_edu', bld:'사범대학', text:'복도 소화기 2개 회수', item:'extinguisher', reward:'ext', rewardText:'소화기 (본우 스킬 해금)' },
+  { id:'bm_eng', bld:'공학1관', text:'실습실에서 쇠파이프 확보', item:'pipe', reward:'pipe', rewardText:'쇠파이프 (공격력 상승)' },
+  { id:'bm_edu', bld:'사범1관', text:'복도 소화기 2개 회수', item:'extinguisher', reward:'ext', rewardText:'소화기 (본우 스킬 해금)' },
   { id:'bm_seongsan', bld:'성산홀', text:'강당 방송실에서 무전기 찾기', item:'radio', reward:'radio', rewardText:'K-13 무전 도청 (적 위치 표시)' },
 ];
 
@@ -558,9 +558,10 @@ const DM_REPLY = {
 // ============================================================
 //  월드: 대구대 경산캠퍼스(재구성), 건물 내부, 지하, 충돌
 // ============================================================
-const WORLD = { walls: [], buildings: [], areas: {}, spawns: {}, interact: [], doors: [], labels: [], upper: [], trees: [] };
+const WORLD = { walls: [], buildings: [], areas: {}, spawns: {}, interact: [], doors: [], labels: [], upper: [], trees: [], shift: {}, roads: [] };
+function at(id, x, z) { const s = WORLD.shift[id] || [0, 0]; return [x + s[0], z + s[1]]; }
 const UG_X = 520;           // 지하 구역 x 오프셋
-const MAP = { x0: -160, x1: 160, z0: -140, z1: 140 };
+const MAP = { x0: -168, x1: 168, z0: -138, z1: 142 };
 
 const MATS = {};
 function mat(color, opts) {
@@ -612,6 +613,7 @@ function addInteract(id, x, z, label, opts) { const o = Object.assign({ id, x, z
 // ---------- 건물 ----------
 // doors: {side:'n'|'s'|'e'|'w', at, w}
 function building(scene, def) {
+  def.wallStart = WORLD.walls.length;
   const g = new THREE.Group(); scene.add(g);
   const { x, z, w, d } = def, x0 = x - w / 2, x1 = x + w / 2, z0 = z - d / 2, z1 = z + d / 2, H = 3.4;
   const gaps = s => (def.doors || []).filter(o => o.side === s);
@@ -640,7 +642,15 @@ function building(scene, def) {
     B.doorsW.push({ x: p.x, z: p.z, ox: p.x + out[0], oz: p.z + out[1], ix: p.x - out[0], iz: p.z - out[1] });
   });
   WORLD.buildings.push(B);
+  const w0 = WORLD.walls.length - 0;
   if (def.inner) def.inner(g, B);
+  if (def.to) {   // 설계 좌표 → 실제 캠퍼스 위치로 이동
+    const dx = def.to[0] - def.x, dz = def.to[1] - def.z; WORLD.shift[def.id] = [dx, dz];
+    for (let i = def.wallStart; i < WORLD.walls.length; i++) { WORLD.walls[i].x += dx; WORLD.walls[i].z += dz; }
+    g.position.set(dx, 0, dz); lab.position.x += dx; lab.position.z += dz;
+    B.x += dx; B.z += dz; B.x0 += dx; B.x1 += dx; B.z0 += dz; B.z1 += dz;
+    B.doorsW.forEach(o => { o.x += dx; o.ox += dx; o.ix += dx; o.z += dz; o.oz += dz; o.iz += dz; });
+  }
   return B;
 }
 function inBuilding(px, pz) { for (const b of WORLD.buildings) if (px > b.x0 && px < b.x1 && pz > b.z0 && pz < b.z1) return b; return null; }
@@ -661,42 +671,47 @@ function car(g, x, z, rot, color) {
 }
 
 function buildWorld(scene) {
-  // 땅
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(MAP.x1 - MAP.x0 + 80, MAP.z1 - MAP.z0 + 80), mat('#5d8a45'));
+  // 땅 / 호수
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(MAP.x1 - MAP.x0 + 120, MAP.z1 - MAP.z0 + 120), mat('#5d8a45'));
   ground.rotation.x = -Math.PI / 2; scene.add(ground);
-  // 도로/광장
-  const road = (x, z, w, d, c) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat(c || '#6e6f6a')); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.02, z); scene.add(m); };
-  road(0, 70, 14, 120);               // 정문 진입로
-  road(0, 8, 300, 12);                // 동서 중앙로
-  road(-35, -20, 10, 70);             // 도서관 길
-  road(45, -20, 10, 70);              // 기숙사 길
-  road(0, -6, 52, 40, '#b8ad97');     // 잔디광장 둘레 보도
-  road(0, -6, 38, 28, '#6a9a4e');     // 잔디광장
-  road(0, -30, 28, 6, '#b8ad97');     // 성산홀 앞
-  road(-80, 55, 40, 10, '#b8ad97');
-  road(85, 75, 84, 56, '#a85a3e');    // 운동장 트랙
-  road(85, 75, 66, 38, '#4f8c3a');    // 운동장 잔디
-  road(45, 72, 10, 22, '#3c3d40');    // 주차장 진입로
+  const flat = (x, z, w, d, c, y, rot) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat(c)); m.rotation.x = -Math.PI / 2; if (rot) m.rotation.z = rot; m.position.set(x, y || 0.015, z); scene.add(m); return m; };
+  // 호수 (지도 남서쪽)
+  [[-122, 92, 92, 100], [-66, 118, 26, 48]].forEach(([x, z, w, d]) => { flat(x, z, w, d, '#3f7fb5', 0.02); solid(x, z, w, d, 'lake'); });
+  flat(-122, 92, 96, 104, '#c9b98a', 0.012);
+  // 도로 (선분)
+  const seg = (pts, w, c) => { for (let i = 0; i < pts.length - 1; i++) { const [x1, z1] = pts[i], [x2, z2] = pts[i + 1], L = Math.hypot(x2 - x1, z2 - z1);
+    flat((x1 + x2) / 2, (z1 + z2) / 2, w, L + w * 0.6, c || '#6e6f6a', 0.016, -Math.atan2(x2 - x1, z2 - z1)); WORLD.roads.push([x1, z1, x2, z2, w]); } };
+  seg([[-40, 132], [-36, 100], [-22, 58], [-4, 22], [14, -12], [30, -42]], 11);          // 정문 → 사랑광장 → 성산홀
+  seg([[-66, -8], [-20, -8], [60, -6], [100, -2], [150, 2]], 9);                          // 동서 중앙로
+  seg([[14, -12], [60, -30], [100, -32], [150, -32]], 8);                                 // 동쪽 공학관 길
+  seg([[-66, -8], [-84, -36], [-112, -62], [-146, -66]], 8);                             // 사회과학대 길
+  seg([[-66, -8], [-62, 30]], 8); seg([[-4, 22], [16, 54]], 8);                           // 주차장 / 행복기숙사
+  seg([[-34, -48], [-46, -70], [-62, -88]], 7); seg([[-20, -8], [-34, -48], [-20, -86]], 7);
+  flat(24, -30, 30, 18, '#b8ad97', 0.017); flat(24, -30, 20, 10, '#6a9a4e', 0.018);       // 사랑광장
+  const sq = textSprite('사랑광장', 2.2, '#fff'); sq.position.set(24, 3, -30); scene.add(sq);
+  flat(-30, -50, 14, 12, '#b8ad97', 0.017); const fq = textSprite('자유광장', 2, '#fff'); fq.position.set(-30, 3, -50); scene.add(fq);
   // 정문
-  box(scene, -9, 0, 128, 2, 6, 2, '#35456b'); box(scene, 9, 0, 128, 2, 6, 2, '#35456b'); box(scene, 0, 6, 128, 20, 1.4, 2, '#35456b');
-  solid(-9, 128, 2, 2); solid(9, 128, 2, 2);
-  const gl = textSprite('大邱大學校 정문', 2.6, '#ffe9a8'); gl.position.set(0, 9, 128); scene.add(gl);
-  // 경계 담장
-  [[0, MAP.z0, MAP.x1 - MAP.x0, 1], [0, MAP.z1, MAP.x1 - MAP.x0, 1], [MAP.x0, 0, 1, MAP.z1 - MAP.z0], [MAP.x1, 0, 1, MAP.z1 - MAP.z0]].forEach(([x, z, w, d]) => {
-    if (w > 1) { box(scene, x - w / 4 - 6, 0, z, w / 2 - 12, 1.6, d, '#7a7468'); box(scene, x + w / 4 + 6, 0, z, w / 2 - 12, 1.6, d, '#7a7468'); }
-    else box(scene, x, 0, z, w, 1.6, d, '#7a7468');
-    solid(x, z, w, d); });
-  // 운동장 표지
-  const fl = textSprite('대운동장', 3, '#fff'); fl.position.set(85, 4, 48); scene.add(fl);
-  area('field_center', 85, 75, 10, '대운동장 중앙');
-  // 지하 주차장 입구
-  box(scene, 45, 0, 62, 12, 3, 1, '#4a4c50'); box(scene, 39.5, 0, 72, 1, 3, 20, '#4a4c50'); box(scene, 50.5, 0, 72, 1, 3, 20, '#4a4c50');
-  solid(39.5, 72, 1, 20); solid(50.5, 72, 1, 20);
-  const pl = textSprite('지하 주차장 ↓', 2.2, '#ffd36b'); pl.position.set(45, 5, 64); scene.add(pl);
-  area('parking_ramp', 45, 76, 4, '지하 주차장 입구');
+  box(scene, -48, 0, 104, 2, 6, 2, '#35456b'); box(scene, -28, 0, 100, 2, 6, 2, '#35456b'); box(scene, -38, 6, 102, 22, 1.4, 2, '#35456b');
+  solid(-48, 104, 2, 2); solid(-28, 100, 2, 2);
+  const gl = textSprite('대구대학교 정문', 2.6, '#ffe9a8'); gl.position.set(-38, 9, 102); scene.add(gl);
+  // 경계
+  [[0, MAP.z0, MAP.x1 - MAP.x0, 1], [MAP.x0, 0, 1, MAP.z1 - MAP.z0], [MAP.x1, 0, 1, MAP.z1 - MAP.z0]].forEach(([x, z, w, d]) => { box(scene, x, 0, z, w, 1.6, d, '#7a7468'); solid(x, z, w, d); });
+  solid(60, MAP.z1, MAP.x1 - 40, 1); box(scene, 60, 0, MAP.z1, MAP.x1 - 40, 1.6, 1, '#7a7468');
+  // 제1운동장 (헬기 착륙) / 제2운동장
+  const F = WORLD.field = { x: -100, z: 0, w: 66, d: 38 };
+  flat(F.x, F.z, F.w + 18, F.d + 18, '#a85a3e', 0.014); flat(F.x, F.z, F.w, F.d, '#4f8c3a', 0.016);
+  const fl = textSprite('제1운동장', 3, '#fff'); fl.position.set(F.x, 4, F.z - 24); scene.add(fl);
+  area('field_center', F.x, F.z, 10, '제1운동장 중앙');
+  flat(72, -18, 30, 20, '#4f8c3a', 0.016); const f2 = textSprite('제2운동장', 2.2, '#fff'); f2.position.set(72, 3, -18); scene.add(f2);
+  // 지하 주차장 입구 (제1운동장 옆)
+  const RX = -60, RZ = 34;
+  box(scene, RX, 0, RZ - 10, 12, 3, 1, '#4a4c50'); box(scene, RX - 5.5, 0, RZ, 1, 3, 20, '#4a4c50'); box(scene, RX + 5.5, 0, RZ, 1, 3, 20, '#4a4c50');
+  flat(RX, RZ, 10, 20, '#3c3d40', 0.02); solid(RX - 5.5, RZ, 1, 20); solid(RX + 5.5, RZ, 1, 20);
+  const pl = textSprite('지하 주차장 ↓', 2.2, '#ffd36b'); pl.position.set(RX, 5, RZ - 8); scene.add(pl);
+  area('parking_ramp', RX, RZ + 4, 4, '지하 주차장 입구');
 
   // --- 성산홀 (본관) ---
-  building(scene, { id: 'seongsan', name: '성산홀', x: 0, z: -48, w: 58, d: 28, h: 15, color: '#d8cbb3', roof: '#7a3b2e', wall: '#cbbd9f', floor: '#9b8e7a',
+  building(scene, { id: 'seongsan', name: '성산홀 (본관)', to: [30, -60], x: 0, z: -48, w: 58, d: 28, h: 15, color: '#d8cbb3', roof: '#7a3b2e', wall: '#cbbd9f', floor: '#9b8e7a',
     doors: [{ side: 's', at: 0.5, w: 4 }, { side: 'n', at: 0.2, w: 2.4 }, { side: 'e', at: 0.5, w: 2.4 }, { side: 'w', at: 0.5, w: 2.4 }],
     inner(g, B) {
       // 강당
@@ -708,13 +723,13 @@ function buildWorld(scene) {
       desk(g, 24, -59); box(g, 24, 0.75, -59, 1, 0.4, 0.4, '#222');
       desk(g, -22, -40); desk(g, -22, -52); desk(g, 22, -40);
       // 정면 계단
-      for (let i = 0; i < 4; i++) box(scene, 0, 0, -32.5 + i * 1.2, 18, 0.07 * (4 - i), 1.2, '#b8ad97');
+      for (let i = 0; i < 4; i++) box(g, 0, 0, -32.5 + i * 1.2, 18, 0.07 * (4 - i), 1.2, '#b8ad97');
     } });
   area('ss_stairs', 0, -30, 5, '성산홀 정면 계단'); area('ss_back', -17, -61, 3.5, '성산홀 뒤편 계단');
   WORLD.spawns.room_seongsan = { x: 0, z: -42 };
 
   // --- 중앙도서관 ---
-  building(scene, { id: 'library', name: '중앙도서관', x: -72, z: -30, w: 42, d: 32, h: 13, color: '#c7c2b8', roof: '#4b5563', wall: '#bdb6a8', floor: '#8f8577',
+  building(scene, { id: 'library', name: '창파도서관 (W2-2)', to: [-14, -28], x: -72, z: -30, w: 42, d: 32, h: 13, color: '#c7c2b8', roof: '#4b5563', wall: '#bdb6a8', floor: '#8f8577',
     doors: [{ side: 's', at: 0.75, w: 4 }, { side: 'e', at: 0.75, w: 2.4 }, { side: 'n', at: 0.15, w: 2.4 }],
     inner(g, B) {
       for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) shelf(g, -84 + c * 7, -38 + r * 5, 5, true);
@@ -723,12 +738,12 @@ function buildWorld(scene) {
       desk(g, -88, -20); desk(g, -85, -18); shelf(g, -91.5, -19, 6, false);
       desk(g, -60, -38); desk(g, -60, -34); desk(g, -56, -38); desk(g, -56, -34);
     } });
-  area('lib_door', -61.5, -10.5, 5, '중앙도서관 입구');
+  area('lib_door', -61.5, -10.5, 5, '창파도서관 입구');
   area('lib_archive', -87, -19, 3, '자료실');
   WORLD.spawns.room_library = { x: -62, z: -20 }; WORLD.spawns.out_library = { x: -62, z: -6 };
 
   // --- 인문대 (과방) ---
-  building(scene, { id: 'humanities', name: '인문대 · 문헌정보학과', x: -80, z: 38, w: 38, d: 22, h: 11, color: '#c9a98a', roof: '#6c4a3a', wall: '#c2a588', floor: '#98846c',
+  building(scene, { id: 'humanities', name: '사회과학1관 (W3-5) · 문헌정보학과', to: [-108, -41], x: -80, z: 38, w: 38, d: 22, h: 11, color: '#c9a98a', roof: '#6c4a3a', wall: '#c2a588', floor: '#98846c',
     doors: [{ side: 's', at: 0.3, w: 4 }, { side: 'n', at: 0.9, w: 1.8 }, { side: 'w', at: 0.5, w: 2.4 }],
     inner(g, B) {
       // 복도 / 과방(동쪽) / 창고(북동)
@@ -744,44 +759,64 @@ function buildWorld(scene) {
   WORLD.spawns.out_humanities = { x: -64, z: 22 };
 
   // --- 학생회관 · 편의점 ---
-  building(scene, { id: 'union', name: '학생회관 · 편의점', x: 62, z: 30, w: 34, d: 22, h: 9, color: '#9fbfa8', roof: '#3f5a48', wall: '#93b39c', floor: '#a2a596',
+  building(scene, { id: 'union', name: '웅지관 (W2-4) · 편의점', to: [-55, -30], x: 62, z: 30, w: 34, d: 22, h: 9, color: '#9fbfa8', roof: '#3f5a48', wall: '#93b39c', floor: '#a2a596',
     doors: [{ side: 'n', at: 0.3, w: 4 }, { side: 's', at: 0.7, w: 2.4 }],
     inner(g, B) { wallLine(g, 62, 19, 62, 41, 3.4, '#93b39c', [{ at: 0.5, w: 2.4 }]);
       for (let i = 0; i < 3; i++) shelf(g, 66 + i * 4, 30, 8, false); box(g, 52, 0, 23, 6, 1, 1, '#ddd'); solid(52, 23, 6, 1); } });
   // --- 행복기숙사 ---
-  building(scene, { id: 'dorm', name: '행복기숙사', x: 100, z: -55, w: 28, d: 44, h: 20, color: '#e6dccd', roof: '#5b6b80', wall: '#d8cdbd', floor: '#a49884',
+  building(scene, { id: 'dorm', name: '행복기숙사 (E1-10)', to: [16, 80], x: 100, z: -55, w: 28, d: 44, h: 20, color: '#e6dccd', roof: '#5b6b80', wall: '#d8cdbd', floor: '#a49884',
     doors: [{ side: 'w', at: 0.5, w: 3 }],
     inner(g, B) { for (let i = 0; i < 4; i++) { wallLine(g, 104, -75 + i * 10, 114, -75 + i * 10, 3.4, '#d8cdbd'); wallLine(g, 104, -75 + i * 10, 104, -65 + i * 10, 3.4, '#d8cdbd', [{ at: 0.5, w: 1.8 }]);
       box(g, 110, 0, -71 + i * 10, 2, 0.6, 4, '#6a7fa0'); solid(110, -71 + i * 10, 2, 4); } } });
   // --- 비호생활관 ---
-  building(scene, { id: 'biho', name: '비호생활관', x: 45, z: -95, w: 42, d: 20, h: 16, color: '#d9c7b0', roof: '#5a4a3a', wall: '#cdbba3', floor: '#a49884',
+  building(scene, { id: 'biho', name: '비호생활관', to: [-50, -96], x: 45, z: -95, w: 42, d: 20, h: 16, color: '#d9c7b0', roof: '#5a4a3a', wall: '#cdbba3', floor: '#a49884',
     doors: [{ side: 's', at: 0.5, w: 3 }],
     inner(g, B) { wallLine(g, 24, -95, 66, -95, 3.4, '#cdbba3', [{ at: 0.5, w: 3 }, { at: 0.2, w: 1.8 }, { at: 0.8, w: 1.8 }]); desk(g, 40, -90); desk(g, 50, -90); } });
   // --- 공과대학 ---
-  building(scene, { id: 'eng', name: '공과대학', x: -80, z: -95, w: 44, d: 22, h: 14, color: '#a7adb5', roof: '#3d434b', wall: '#9aa1aa', floor: '#8c8f93',
+  building(scene, { id: 'eng', name: '공학1관 (E3-5)', to: [124, 18], x: -80, z: -95, w: 44, d: 22, h: 14, color: '#a7adb5', roof: '#3d434b', wall: '#9aa1aa', floor: '#8c8f93',
     doors: [{ side: 's', at: 0.6, w: 3 }, { side: 'e', at: 0.5, w: 2.4 }],
     inner(g, B) { wallLine(g, -80, -106, -80, -84, 3.4, '#9aa1aa', [{ at: 0.5, w: 2.4 }]); for (let i = 0; i < 3; i++) { desk(g, -94 + i * 4, -98); desk(g, -70 + i * 4, -98); } } });
   // --- 사범대학 ---
-  building(scene, { id: 'edu', name: '사범대학', x: -45, z: 95, w: 36, d: 20, h: 12, color: '#d1b9a5', roof: '#704a3a', wall: '#c5ad99', floor: '#9c8a78',
+  building(scene, { id: 'edu', name: '사범1관 (W1-7)', to: [-44, 8], x: -45, z: 95, w: 36, d: 20, h: 12, color: '#d1b9a5', roof: '#704a3a', wall: '#c5ad99', floor: '#9c8a78',
     doors: [{ side: 'n', at: 0.5, w: 3 }, { side: 'e', at: 0.5, w: 2.4 }],
     inner(g, B) { wallLine(g, -63, 95, -27, 95, 3.4, '#c5ad99', [{ at: 0.5, w: 3 }]); desk(g, -55, 100); desk(g, -35, 100); } });
+
+
+  // 성산홀 타워
+  box(scene, 30, 0, -82, 11, 46, 11, '#c9d3dc'); box(scene, 30, 46, -82, 12, 2, 12, '#7a8a9a'); solid(30, -82, 11, 11);
+  for (let y = 4; y < 44; y += 3) box(scene, 30, y, -76.4, 9, 1.2, 0.2, '#6f9fc0');
+  // 지도 속 다른 건물들 (들어갈 수 있는 단순한 건물)
+  const GEN = [
+    ['W3-6', '사회과학3관 (W3-6)', -100, -76, 22, 16, 11, '#cdb79e'], ['W3-4', '사회과학2관 (W3-4)', -148, -42, 18, 22, 10, '#c8b296'],
+    ['W3-2', '장애학생지원센터 (W3-2)', -78, -64, 16, 12, 8, '#d6c9b4'], ['W2-8', '디자인예술2관 (W2-8)', -36, -68, 20, 14, 10, '#b9c4cf'],
+    ['hyangto', '향토생활관', -74, -116, 24, 14, 14, '#d9c7b0'], ['E2-1', '경영1관 (E2-1)', 64, -46, 22, 14, 11, '#c9b6a6'],
+    ['E1-1', '인문1관 (E1-1)', 2, 42, 20, 14, 10, '#c7a68c'], ['E1-6', '체육관 (E1-6)', 36, 18, 26, 18, 9, '#9fb0c0'],
+    ['E1-9', '복지관 (E1-9)', 62, 20, 18, 14, 8, '#cfc3ae'], ['E1-7', '산학협력관 (E1-7)', 70, 64, 22, 16, 12, '#a9b8c6'],
+    ['E3-1', '공학2관 (E3-1)', 92, 26, 16, 14, 11, '#a7adb5'], ['E3-6', '공학3관 (E3-6)', 112, -14, 22, 14, 12, '#a7adb5'],
+    ['E3-10', '생명과학3관 (E3-10)', 90, -58, 22, 14, 11, '#b8c2a8'], ['W1-1', '생명과학1관 (W1-1)', -12, 30, 18, 12, 10, '#b8c2a8'],
+  ];
+  for (const [id, name, x, z, w, d, h, color] of GEN) building(scene, { id, name, x, z, w, d, h, color, roof: '#4d4a46', wall: '#c4b8a4', floor: '#9a8f80',
+    doors: [{ side: 's', at: 0.5, w: 2.6 }], inner(g, B) { desk(g, x - w / 4, z); desk(g, x + w / 4, z); } });
+  // 위치 이동된 건물의 지점들
+  const mv = (o, id) => { const [x, z] = at(id, o.x, o.z); o.x = x; o.z = z; };
+  [['kw_exit', 'humanities'], ['lib_door', 'library'], ['lib_archive', 'library'], ['ss_stairs', 'seongsan'], ['ss_back', 'seongsan']].forEach(([a, id]) => mv(WORLD.areas[a], id));
+  [['room_kwabang', 'humanities'], ['out_humanities', 'humanities'], ['room_library', 'library'], ['out_library', 'library'], ['room_seongsan', 'seongsan']].forEach(([a, id]) => mv(WORLD.spawns[a], id));
 
   // 나무
   let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const trunkM = mat('#5b3e2a'), leafM = mat('#3f7a30'), leaf2 = mat('#4f8f3a');
   const coneG = new THREE.ConeGeometry(2.2, 5, 7), cylG = new THREE.CylinderGeometry(0.3, 0.4, 2, 6);
-  for (let i = 0, tries = 0; i < 140 && tries < 3000; tries++) {
+  const nearRoad = (x, z) => WORLD.roads.some(([x1, z1, x2, z2, w]) => { const dx = x2 - x1, dz = z2 - z1, L2 = dx * dx + dz * dz, t = clamp(((x - x1) * dx + (z - z1) * dz) / L2, 0, 1); return Math.hypot(x - x1 - t * dx, z - z1 - t * dz) < w / 2 + 3; });
+  for (let i = 0, tries = 0; i < 170 && tries < 5000; tries++) {
     const x = MAP.x0 + 6 + rnd() * (MAP.x1 - MAP.x0 - 12), z = MAP.z0 + 6 + rnd() * (MAP.z1 - MAP.z0 - 12);
-    if (blockedAt(x, z, 4) || Math.abs(x) < 9 && z > 10 || Math.abs(z - 8) < 8 || (x > 35 && x < 132 && z > 42 && z < 108) || (Math.abs(x) < 28 && z > -24 && z < 12)
-      || Math.abs(x + 35) < 7 || Math.abs(x - 45) < 7) continue;
+    if (blockedAt(x, z, 4) || nearRoad(x, z) || (Math.abs(x - F.x) < F.w / 2 + 12 && Math.abs(z - F.z) < F.d / 2 + 12) || Math.hypot(x - 24, z - 30 + 60) < 16
+      || (Math.abs(x - RX) < 8 && Math.abs(z - RZ) < 14) || Math.hypot(x + 38, z - 102) < 12) continue;
     const t = new THREE.Group(); t.position.set(x, 0, z);
     const tr = new THREE.Mesh(cylG, trunkM); tr.position.y = 1; t.add(tr);
     const lf = new THREE.Mesh(coneG, i % 2 ? leafM : leaf2); lf.position.y = 4.2; t.add(lf);
     scene.add(t); solid(x, z, 1, 1); WORLD.trees.push(t); i++;
   }
-  // 버려진 차, 가방
-  car(scene, -20, 9, Math.PI / 2, '#8a2a2a'); car(scene, 28, 6, Math.PI / 2 + 0.3, '#2a4a8a'); car(scene, 3, 50, 0.2, '#666'); car(scene, -6, 90, -0.1, '#c9c9c9');
-  car(scene, 60, 8, Math.PI / 2, '#d2b04a');
+  car(scene, -30, 72, 0.3, '#8a2a2a'); car(scene, -10, 30, 0.5, '#2a4a8a'); car(scene, 40, -6, Math.PI / 2, '#666'); car(scene, -80, -20, 0.6, '#c9c9c9'); car(scene, 4, 2, 0.4, '#d2b04a');
 
   buildUnderground(scene);
 }
@@ -1606,12 +1641,12 @@ function addBarrier(x, z, w, d, color) {
 function removeBarrier(b) { if (!b) return; scene.remove(b.m); const i = WORLD.walls.indexOf(b.W); if (i >= 0) WORLD.walls.splice(i, 1); const j = BARRIERS.indexOf(b); if (j >= 0) BARRIERS.splice(j, 1); }
 function clearBarriers() { while (BARRIERS.length) removeBarrier(BARRIERS[0]); }
 
-const MISSION_SPOTS = { bm_kwabang: [-63, 47.5], bm_library: [-91, -16], bm_store: [72, 24], bm_dorm: [110, -66], bm_biho: [40, -100], bm_eng: [-95, -102], bm_edu: [-55, 101], bm_seongsan: [24, -57] };
+const MISSION_SPOTS = { bm_kwabang: ['humanities', -63, 47.5], bm_library: ['library', -91, -16], bm_store: ['union', 72, 24], bm_dorm: ['dorm', 110, -66], bm_biho: ['biho', 40, -100], bm_eng: ['eng', -95, -102], bm_edu: ['edu', -55, 101], bm_seongsan: ['seongsan', 24, -57] };
 const MISSIONS = {
   place() {
     for (const m of BUILDING_MISSIONS) {
       if (G.missionsDone[m.id] || G.pickups.some(p => p.mission === m.id)) continue;
-      const [x, z] = MISSION_SPOTS[m.id]; dropPickup(m.item, x, z, { mission: m.id });
+      const [bid, mx, mz] = MISSION_SPOTS[m.id], [x, z] = at(bid, mx, mz); dropPickup(m.item, x, z, { mission: m.id });
     }
   },
   complete(id, u) {
@@ -1718,37 +1753,37 @@ const STORY = {
 // ---------- 장별 설정 ----------
 const CH_SETUP = {
   prologue(S) {
-    S.storeDoor = addBarrier(-68, 33, 1.6, 0.3, '#6b4f36');
-    S.addInteract('kw_door', -71.8, 41.3, '과방 문 잠그기', u => {
-      S.door = addBarrier(-71, 41.3, 0.4, 2.1, '#5a4430'); S.questInteract('kw_door');
-      for (let i = 0; i < 5; i++) spawnZombie('walker', -78 - (i % 3) * 1.5, 39 + (i % 2) * 3);
+    S.storeDoor = addBarrier(...at('humanities', -68, 33), 1.6, 0.3, '#6b4f36');
+    S.addInteract('kw_door', ...at('humanities', -71.8, 41.3), '과방 문 잠그기', u => {
+      S.door = addBarrier(...at('humanities', -71, 41.3), 0.4, 2.1, '#5a4430'); S.questInteract('kw_door');
+      for (let i = 0; i < 5; i++) spawnZombie('walker', ...at('humanities', -78 - (i % 3) * 1.5, 39 + (i % 2) * 3));
       UI.banner('쾅! 쾅! 문 밖에서 무언가 두드린다', '#ff8080');
     }, { enabled: () => G.questIdx === 0 });
-    S.addInteract('kw_key', -66, 41.2, '책상 위 열쇠 집기', u => {
+    S.addInteract('kw_key', ...at('humanities', -66, 41.2), '책상 위 열쇠 집기', u => {
       S.questInteract('kw_key'); removeBarrier(S.storeDoor);
-      dropPickup('storage', -63.5, 29.8, { sub: 'bat' }); dropPickup('storage', -62, 30.8, { sub: 'ext' });
+      dropPickup('storage', ...at('humanities', -63.5, 29.8), { sub: 'bat' }); dropPickup('storage', ...at('humanities', -62, 30.8), { sub: 'ext' });
       say(unitByCh('hyoseo'), '과방 창고 열쇠. 창고 열었어!', 3);
     }, { enabled: () => G.questIdx === 1 });
-    S.amb = { n: 16, min: 25, max: 60, at: { x: -60, z: 10 } };
-    setTimeout(() => { const z = spawnZombie('walker', -90, 41); z.target = null; }, 500);
+    { const [ax, az] = at('humanities', -60, 10); S.amb = { n: 16, min: 25, max: 60, at: { x: ax, z: az } }; }
+    setTimeout(() => { const z = spawnZombie('walker', ...at('humanities', -90, 41)); z.target = null; }, 500);
   },
-  ch1(S) { dropPickup('molotov', -70, 12); S.amb = { n: 34, min: 16, max: 40, runner: 0.25, every: 0.6, burst: 2 }; for (let i = 0; i < 18; i++) spawnAround(Math.random() < 0.3 ? 'runner' : 'walker', -64, 22, 10, 40); },
+  ch1(S) { dropPickup('molotov', ...at('humanities', -70, 12)); S.amb = { n: 34, min: 16, max: 40, runner: 0.25, every: 0.6, burst: 2 }; for (let i = 0; i < 18; i++) spawnAround(Math.random() < 0.3 ? 'runner' : 'walker', ...at('humanities', -64, 22), 10, 40); },
   ch2(S) {
-    for (let i = 0; i < 6; i++) spawnZombie('walker', -88 + (i % 3) * 7 + rand(-1, 1), -40.5 + (i < 3 ? 0 : 5) + 2.5);
-    for (let i = 0; i < 10; i++) spawnAround('walker', -61, -6, 4, 14);
+    for (let i = 0; i < 6; i++) spawnZombie('walker', ...at('library', -88 + (i % 3) * 7 + rand(-1, 1), -40.5 + (i < 3 ? 0 : 5) + 2.5));
+    for (let i = 0; i < 10; i++) spawnAround('walker', ...at('library', -61, -6), 4, 14);
     let n = 0;
-    [[-61.5, -15.8, -61.5, -14, 4.2, 0.4], [-52.6, -22, -51, -22, 0.4, 2.6]].forEach(([ix, iz, bx, bz, bw, bd]) => {
+    [[-61.5, -15.8, -61.5, -14, 4.2, 0.4], [-52.6, -22, -51, -22, 0.4, 2.6]].map(([ix, iz, bx, bz, bw, bd]) => [...at('library', ix, iz), ...at('library', bx, bz), bw, bd]).forEach(([ix, iz, bx, bz, bw, bd]) => {
       S.addInteract('lib_barricade', ix, iz, '책상으로 입구 막기', u => { addBarrier(bx, bz, bw, bd); S.questInteract('lib_barricade'); }, { enabled: () => G.questIdx === 0 });
     });
-    const sup = [[-90, -21.5], [-86, -16], [-82.5, -21.5], [-89, -15.5]]; sup.forEach(([x, z]) => dropPickup('supply', x, z));
-    S.amb = { n: 14, min: 12, max: 30, at: { x: -60, z: -4 } };
+    const sup = [[-90, -21.5], [-86, -16], [-82.5, -21.5], [-89, -15.5]]; sup.forEach(([x, z]) => dropPickup('supply', ...at('library', x, z)));
+    { const [ax, az] = at('library', -60, -4); S.amb = { n: 14, min: 12, max: 30, at: { x: ax, z: az } }; }
   },
-  ch3(S) { dropPickup('molotov', 70, 24); dropPickup('molotov', 56, 36);
+  ch3(S) { dropPickup('molotov', ...at('union', 70, 24)); dropPickup('molotov', ...at('union', 56, 36));
     S.amb = { n: 34, min: 18, max: 40, runner: 0.3, brute: 0.06, every: 0.7, burst: 2 };
-    S.addInteract('ss_door', 0, -36, '성산홀 정문 잠그기', u => { addBarrier(0, -34, 4.4, 0.45, '#5a4430'); S.questInteract('ss_door'); UI.banner('정문을 잠갔다. 하지만 옆문이 아직 열려 있다', '#ffb0b0'); }, { enabled: () => G.questIdx === 2 });
+    S.addInteract('ss_door', ...at('seongsan', 0, -36), '성산홀 정문 잠그기', u => { addBarrier(...at('seongsan', 0, -34), 4.4, 0.45, '#5a4430'); S.questInteract('ss_door'); UI.banner('정문을 잠갔다. 하지만 옆문이 아직 열려 있다', '#ffb0b0'); }, { enabled: () => G.questIdx === 2 });
     const e = unitByCh('eunbit'); if (e && e.ctrl !== 'ai') S.questOverride = { 1: { text: '계단에서 넘어진 이주원 일으켜 세우기', type: 'revive', id: 'juwon' } }; },
   ch4(S) {
-    const y = unitByCh('yujun'); if (y && y !== G.me && y.ctrl === 'ai') { y.x = -17; y.z = -60.5; y.scripted = true; }
+    const y = unitByCh('yujun'); if (y && y !== G.me && y.ctrl === 'ai') { [y.x, y.z] = at('seongsan', -17, -60.5); y.scripted = true; }
     S.amb = { n: 14, min: 25, max: 45, every: 1.2 };
   },
   ch5(S) {
@@ -1778,20 +1813,20 @@ const CH_SETUP = {
 };
 const CH_ONQUEST = {
   prologue(S, qi) {
-    if (qi === 3) { S.setTimer(2.5, () => { removeBarrier(S.door); UI.banner('쩌적— 과방 문이 부서졌다! 뛰어!', '#ff6060'); for (let i = 0; i < 4; i++) spawnZombie(i ? 'walker' : 'runner', -76, 40 + i); }); equipTeam(); }
+    if (qi === 3) { S.setTimer(2.5, () => { removeBarrier(S.door); UI.banner('쩌적— 과방 문이 부서졌다! 뛰어!', '#ff6060'); for (let i = 0; i < 4; i++) spawnZombie(i ? 'walker' : 'runner', ...at('humanities', -76, 40 + i)); }); equipTeam(); }
   },
   ch3(S, qi) {
-    if (qi === 1) { const e = unitByCh(S.quest().id); if (e) { e.x = 2; e.z = -29.5; e.state = 'down'; e.hp = 0; e.downT = 60; e.scripted = true; e.wasDown = true; say(e, '꺄악!', 2);
-      for (let i = 0; i < 6; i++) spawnAround('walker', 0, -26, 8, 16); } }
-    if (qi === 3) { S.amb = { n: 40, min: 8, max: 22, at: { x: 0, z: -48 }, runner: 0.35, brute: 0.08, every: 0.5, burst: 2 }; UI.banner('밤이 깊어진다. 옆문과 뒷문을 지켜!', '#9aa8ff'); setNight(0.9); }
+    if (qi === 1) { const e = unitByCh(S.quest().id); if (e) { [e.x, e.z] = at('seongsan', 2, -29.5); e.state = 'down'; e.hp = 0; e.downT = 60; e.scripted = true; e.wasDown = true; say(e, '꺄악!', 2);
+      for (let i = 0; i < 6; i++) spawnAround('walker', ...at('seongsan', 0, -26), 8, 16); } }
+    if (qi === 3) { S.amb = { n: 40, min: 8, max: 22, at: { x: at('seongsan', 0, -48)[0], z: at('seongsan', 0, -48)[1] }, runner: 0.35, brute: 0.08, every: 0.5, burst: 2 }; UI.banner('밤이 깊어진다. 옆문과 뒷문을 지켜!', '#9aa8ff'); setNight(0.9); }
   },
   ch4(S, qi) {
     if (qi === 2) { const y = unitByCh('yujun'); if (y) y.scripted = false; setNight(0.45); UI.banner('오전 5시 56분. 운동장으로.', '#ffe9a8'); }
     if (qi === 3) {
       UI.banner('헬리콥터 소리가 들린다— K-13', '#ffd36b');
-      const h = makeHeli(); h.position.set(104, 40, 88); h.rotation.y = 0.6; scene.add(h); S.heli = h; S.heliT = 0;
+      const h = makeHeli(); h.position.set(WORLD.field.x + 18, 40, WORLD.field.z + 10); h.rotation.y = 0.6; scene.add(h); S.heli = h; S.heliT = 0;
       S.setTimer(3, () => { UI.dialogStart([['*', '"학생들은 움직이지 마십시오."'], ['*', '"감염자는 앞으로 나오십시오."'], ['jihu', '뛰어야 해.'], ['*', '탕!']], () => {
-        for (let i = 0; i < 5; i++) spawnZombie('agent', 85 + rand(-6, 6), 75 + rand(-6, 6));
+        for (let i = 0; i < 5; i++) spawnZombie('agent', WORLD.field.x + rand(-6, 6), WORLD.field.z + rand(-6, 6));
         S.agentWave = 3; S.amb = { n: 30, min: 18, max: 34, runner: 0.5, every: 0.5, burst: 2 };
       }); });
     }
@@ -1811,7 +1846,7 @@ const CH_ONQUEST = {
 const CH_TICK = {
   ch4(S, dt) {
     if (S.heli) { S.heliT += dt; S.heli.position.y = Math.max(3, 40 - S.heliT * 9); S.heli.userData.rotor.rotation.y += dt * 25; }
-    if (S.agentWave > 0) { S.agentT = (S.agentT || 10) - dt; if (S.agentT <= 0) { S.agentT = 10; S.agentWave--; for (let i = 0; i < 3; i++) spawnZombie('agent', 85 + rand(-5, 5), 75 + rand(-5, 5)); } }
+    if (S.agentWave > 0) { S.agentT = (S.agentT || 10) - dt; if (S.agentT <= 0) { S.agentT = 10; S.agentWave--; for (let i = 0; i < 3; i++) spawnZombie('agent', WORLD.field.x + rand(-5, 5), WORLD.field.z + rand(-5, 5)); } }
   },
   ch5(S, dt) {
     if (S.yujunHold && S.mimic && !S.mimic.dead) { const y = unitByCh('yujun'); if (y && y.state === 'active') { y.scriptMove = { x: S.mimic.x, z: S.mimic.z }; S.mimic.target = y; S.mimic.retarget = 1; y.inv = 1; } }
@@ -2180,7 +2215,8 @@ const UI = {
     const k = Math.min(mw / (bx1 - bx0), mh / (bz1 - bz0)), P = (x, z) => [mx + (x - bx0) * k, my + (z - bz0) * k];
     c.fillStyle = 'rgba(0,0,0,.6)'; c.fillRect(mx - 3, my - 3, mw + 6, mh + 6); c.fillStyle = ug ? '#2a2c30' : '#3d5a2e'; c.fillRect(mx, my, (bx1 - bx0) * k, (bz1 - bz0) * k);
     if (!ug) { for (const b of WORLD.buildings) { const [x, z] = P(b.x0, b.z0); c.fillStyle = b === inBuilding(me.x, me.z) ? '#d9c79a' : '#9c8d74'; c.fillRect(x, z, b.w * k, b.d * k); }
-      const [fx0, fz0] = P(52, 56); c.fillStyle = '#8a4a32'; c.fillRect(fx0, fz0, 66 * k, 38 * k); }
+      const F = WORLD.field, [fx0, fz0] = P(F.x - F.w / 2, F.z - F.d / 2); c.fillStyle = '#8a4a32'; c.fillRect(fx0, fz0, F.w * k, F.d * k);
+      c.fillStyle = '#3f7fb5'; for (const W2 of WORLD.walls) if (W2.tag === 'lake') { const [x, z] = P(W2.x, W2.z); c.fillRect(x, z, W2.w * k, W2.d * k); } }
     else { c.fillStyle = '#555'; for (const W2 of WORLD.walls) if (W2.x > UG_X - 60) { const [x, z] = P(W2.x, W2.z); c.fillRect(x, z, Math.max(1, W2.w * k), Math.max(1, W2.d * k)); } }
     c.fillStyle = '#ff4040'; for (const z of G.zombies) { if (z.kind === 'agent' && !G.inv.radio && D2(z, me) > 30) continue; const [x, y] = P(z.x, z.z); if (x < mx || x > mx + mw || y < my || y > my + mh) continue; const s = z.kind === 'n1' || z.kind === 'mimic' ? 4 : 1.6; c.fillStyle = z.kind === 'agent' ? '#ffd36b' : '#ff4040'; c.fillRect(x - s / 2, y - s / 2, s, s); }
     for (const p of G.pickups) if (p.mission && !ug) { const [x, y] = P(p.x, p.z); c.fillStyle = '#ffe066'; c.font = '9px sans-serif'; c.fillText('★', x, y); }
@@ -2373,7 +2409,7 @@ function loop(now) {
     if (G.mode === 'host') NET.hostTick(dt);
     if (G.questIdxShown !== G.questIdx + '/' + G.qprog) { G.questIdxShown = G.questIdx + '/' + G.qprog; UI.refreshQuest(); }
   }
-  if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(Math.sin(t) * 95, 46, -40 + Math.cos(t) * 95); camera.lookAt(0, 4, -40); updateZombies(dt); }
+  if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(-20 + Math.sin(t) * 110, 50, -30 + Math.cos(t) * 110); camera.lookAt(-20, 4, -30); updateZombies(dt); }
   syncModels(dt); updateCamera(dt);
   renderer.render(scene, camera);
   UI.drawHUD();
@@ -2381,7 +2417,7 @@ function loop(now) {
 }
 window.addEventListener('load', () => {
   initRenderer(); initInput(); UI.init();
-  G.me = null; setNight(0.55); for (let i = 0; i < 40; i++) spawnAround(i % 4 ? 'walker' : 'runner', 0, -10, 5, 70);
+  G.me = null; setNight(0.55); for (let i = 0; i < 40; i++) spawnAround(i % 4 ? 'walker' : 'runner', -20, -10, 5, 80);
   requestAnimationFrame(loop);
 });
 
