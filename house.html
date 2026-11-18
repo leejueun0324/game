@@ -2385,7 +2385,7 @@ let peer = null, peerGen = 0, isHost = false, hostConn = null, code = null, atte
 const conns = new Map();
 const GAME_VER = 3;
 let gotWelcome = false, hostVer = GAME_VER, offline = false;
-function connected() { return isHost || (!!hostConn && hostConn.open && gotWelcome); }
+function connected() { return (isHost && (offline || (!!peer && peer.open))) || (!!hostConn && hostConn.open && gotWelcome); }
 function retryConnect() {
   if (!code) return;
   offline = false; attempts = 0; gotWelcome = false;
@@ -2437,7 +2437,8 @@ function sendChat(text, to) {
 function joinVillage(c) {
   code = c;
   if (typeof Peer === 'undefined') { goOffline('네트워크 라이브러리를 못 불러왔어요'); return; }
-  tryGuest();
+  // 먼저 마을 문을 열어 보고(아무도 없으면 바로 내가 호스트), 이미 열려 있으면 손님으로 들어가요
+  becomeHost(true);
 }
 function tryGuest() {
   cleanupPeer(); isHost = false; offline = false; gotWelcome = false;
@@ -2467,7 +2468,7 @@ function tryGuest() {
     else if (['network', 'server-error', 'socket-error', 'browser-incompatible', 'ssl-unavailable'].includes(e.type)) goOffline(e.type);
   });
 }
-function becomeHost() {
+function becomeHost(probe) {
   cleanupPeer(); isHost = true; offline = false;
   if (!gotWorld) { loadVillage(); gotWorld = true; }
   ensureLot(me.id);
@@ -2484,7 +2485,7 @@ function becomeHost() {
   peer.on('disconnected', () => { if (gen === peerGen && peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1000); });
   peer.on('error', e => {
     if (gen !== peerGen) return;
-    if (e.type === 'unavailable-id') { isHost = false; setTimeout(() => { if (gen === peerGen) tryGuest(); }, 500 + Math.random() * 1000 * attempts); }
+    if (e.type === 'unavailable-id') { isHost = false; setTimeout(() => { if (gen === peerGen) tryGuest(); }, probe ? 0 : 500 + Math.random() * 1000 * attempts); }
     else if (['network', 'server-error', 'socket-error', 'browser-incompatible', 'ssl-unavailable'].includes(e.type)) goOffline(e.type);
   });
 }
