@@ -241,6 +241,7 @@
   <div id="hudTR">
     <div class="pix chip" id="clock">☀️ 1일차 08:00</div>
     <div class="pix chip" id="placeChip">📍 우리 마을</div>
+    <button class="pix chip" id="netChip" style="cursor:pointer;font-family:inherit;color:inherit">🟡 연결 중…</button>
     <div class="row">
       <button class="btn" id="btnPeople">👥 <span id="pcount">1</span></button>
       <button class="btn" id="btnInvite">💌 초대</button>
@@ -1232,6 +1233,7 @@ function actionFor(o) {
     case 'fountain': return { label: '동전 던지기 (-1💰)', icon: '🪙', dur: 1.5, can: () => save.coins >= 1 || '돈이 없어요',
       done: () => { addCoins(-1); N('fun', 10); SFX.splash(); toast('✨ 소원: ' + WISHES[rand(WISHES.length)]); } };
     case 'lot':
+      if (!connected()) return { off: true, label: '🟡 마을에 연결하는 중이에요. 잠시만 기다려 주세요' };
       if (lotOf(me.id) < 0) return { label: '여기에 내 집 짓기 (무료)', icon: '🏗️', dur: 1, done: () => requestMove(o.idx, 0) };
       return { label: '이 집터로 이사하기 (100💰)', icon: '🚚', dur: 0.3, can: () => save.coins >= 100 || '이사하려면 100💰이 필요해요', done: () => confirmMove(o.idx) };
     case 'sign': return { label: '표지판 읽기', icon: '🪧', dur: 0.4, done: () => toast('🏡 우리 마을에 오신 걸 환영해요! 💌 초대로 친구를 불러요') };
@@ -1704,7 +1706,7 @@ function drawVillage(ents) {
         drawHouseExt(lx, ly, h.roof, darkness() > 0.3, inTitle || owner === me.id || !!players[owner]);
         if (!inTitle) overlay.push({ house: true, x: (lx + 3) * TS, y: ly * TS - 4, name: (owner === me.id ? '⭐ ' : '') + ownerName(owner) + '의 집', online: owner === me.id || !!players[owner] });
       } });
-    } else ents.push({ y: (ly + 4) * TS, draw: () => { drawEmptyLot(lx, ly); if (!inTitle) overlay.push({ house: true, x: (lx + 3) * TS, y: (ly + 2) * TS + 8, name: '🏗️ 빈 집터 · 이사 가능', empty: true }); } });
+    } else ents.push({ y: (ly + 4) * TS, draw: () => { drawEmptyLot(lx, ly); if (!inTitle) overlay.push({ house: true, x: (lx + 3) * TS, y: (ly + 2) * TS + 8, name: connected() ? '🏗️ 빈 집터 · 이사 가능' : '🟡 확인 중…', empty: true }); } });
   }
 }
 function drawInterior(ents) {
@@ -1909,6 +1911,7 @@ function updateUI() {
   $('clock').textContent = `${isNight() ? '🌙' : '☀️'} ${world.day}일차 ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
   $('placeChip').textContent = '📍 ' + (curMap === 'v' ? '우리 마을' : mapName(curMap));
   $('pcount').textContent = 1 + Object.keys(players).length;
+  $('netChip').textContent = netLabel();
   $('btnHome').textContent = curMap === 'h:' + me.id ? '🚪 나가기' : '🏠 집';
   const btn = $('actBtn');
   if (me.act) { btn.disabled = false; btn.textContent = me.act.cont ? `그만하기 · ${me.act.label}` : `${me.act.label}...`; }
@@ -1943,6 +1946,12 @@ $('zoomIn').onclick = () => zoom(1);
 $('zoomOut').onclick = () => zoom(-1);
 $('btnSound').onclick = () => { muted = !muted; $('btnSound').textContent = muted ? '🔇' : '🔊'; if (!muted) { initAudio(); SFX.click(); } };
 $('btnInvite').onclick = () => { SFX.click(); openInvite(); };
+$('netChip').onclick = () => { SFX.click(); if (offline) retryConnect(); else openInvite(); };
+function netLabel() {
+  if (offline) return '⚪ 혼자 플레이 · 🔄 다시 연결';
+  if (isHost) return peer && peer.open ? '🟢 연결됨 (호스트)' : '🟡 마을 여는 중…';
+  return connected() ? '🟢 연결됨' : '🟡 마을에 연결하는 중…';
+}
 $('btnPeople').onclick = () => { SFX.click(); openPeople(); };
 
 // ----- 창 -----
@@ -2376,6 +2385,15 @@ $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') $('goBtn')
 // ===== 네트워크 =====
 let peer = null, peerGen = 0, isHost = false, hostConn = null, code = null, attempts = 0, reconnecting = false, lastHostMsg = 0, statusText = '연결 전';
 const conns = new Map();
+const GAME_VER = 3;
+let gotWelcome = false, hostVer = GAME_VER, offline = false;
+function connected() { return isHost || (!!hostConn && hostConn.open && gotWelcome); }
+function retryConnect() {
+  if (!code) return;
+  offline = false; attempts = 0; gotWelcome = false;
+  logSys('🔄 마을에 다시 연결하는 중...');
+  tryGuest();
+}
 const params = new URLSearchParams(location.search);
 const PREFIX = 'urimaeul-v2-';
 function peerOpts() {
@@ -2397,11 +2415,12 @@ function ensureLot(id) {
   for (let i = 0; i < LOTS.length; i++) if (!used.has(i)) { world.lots[id] = i; return; }
 }
 function goOffline(reason) {
-  cleanupPeer(); isHost = true;
+  cleanupPeer(); isHost = true; offline = true;
   if (!gotWorld) { loadVillage(); gotWorld = true; }
   ensureLot(me.id);
   setStatus('⚪ 혼자 플레이 중 (' + reason + ')');
-  logSys('⚠️ 친구와 연결하지 못해서 혼자 플레이 중이에요. 새로고침하면 다시 시도해요.');
+  logSys('⚠️ 친구 마을에 연결하지 못해서 혼자 플레이 중이에요. 오른쪽 위 "🔄 다시 연결"을 눌러 보세요.');
+  if (started) notify('⚠️ 친구 마을에 연결이 잘 안 돼요. 지금은 혼자 놀 수 있어요.', [['🔄 다시 연결', retryConnect, 'primary']], 15000);
 }
 function net(msg) {
   if (isHost) { if (msg.t === 'p' || msg.t === 'fx') broadcast(msg); }
@@ -2423,14 +2442,16 @@ function joinVillage(c) {
   tryGuest();
 }
 function tryGuest() {
-  cleanupPeer(); isHost = false;
-  if (++attempts > 8) { goOffline('마을에 연결할 수 없어요'); return; }
+  cleanupPeer(); isHost = false; offline = false; gotWelcome = false;
+  if (++attempts > 4) { goOffline('마을에 연결할 수 없어요'); return; }
   setStatus('🟡 마을에 연결하는 중...');
   const gen = peerGen;
   peer = new Peer(undefined, peerOpts());
-  let opened = false;
+  let opened = false, signaled = false;
+  setTimeout(() => { if (gen === peerGen && !signaled) tryGuest(); }, 12000);
   peer.on('open', () => {
     if (gen !== peerGen) return;
+    signaled = true;
     const c = peer.connect(PREFIX + code, { reliable: true, serialization: 'json' });
     c.on('open', () => {
       if (gen !== peerGen) return;
@@ -2449,7 +2470,7 @@ function tryGuest() {
   });
 }
 function becomeHost() {
-  cleanupPeer(); isHost = true;
+  cleanupPeer(); isHost = true; offline = false;
   if (!gotWorld) { loadVillage(); gotWorld = true; }
   ensureLot(me.id);
   setStatus('🟡 마을 문을 여는 중...');
@@ -2511,7 +2532,7 @@ function hostRecv(c, d) {
     upsert(p);
     houses[p.id] = sanitizeHouse(d.house); houses[p.id].name = p.name; houses[p.id].look = p.look;
     ensureLot(p.id);
-    c.send({ t: 'welcome', world, players: [pubMe(), ...Object.values(players).filter(x => x.id !== p.id).map(cleanP)], houses: allHouses() });
+    c.send({ t: 'welcome', ver: GAME_VER, world, players: [pubMe(), ...Object.values(players).filter(x => x.id !== p.id).map(cleanP)], houses: allHouses() });
     broadcast({ t: 'p', p }, c);
     broadcast({ t: 'house', id: p.id, house: houses[p.id] }, c);
     broadcast({ t: 'world', world });
@@ -2582,7 +2603,10 @@ function guestHandle(d) {
   if (!d || typeof d !== 'object') return;
   switch (d.t) {
     case 'welcome': {
-      const first = !gotWorld || lotOf(me.id) < 0;
+      const first = !gotWelcome;
+      gotWelcome = true;
+      hostVer = +d.ver || 1;
+      if (first && hostVer < GAME_VER) logSys('⚠️ 마을을 연 친구가 예전 버전이에요. 그 친구에게 새로고침해 달라고 하면 이사 같은 새 기능이 잘 돼요.');
       setWorld(d.world);
       for (const p of d.players || []) upsert(p);
       if (d.houses && typeof d.houses === 'object') for (const id in d.houses) storeHouse(id, d.houses[id]);
@@ -2653,7 +2677,8 @@ function confirmMove(i) {
 function requestMove(i, cost) {
   if (lotOwner(i)) { toast('이미 다른 이웃이 살고 있어요'); return; }
   if (save.coins < cost) { toast('돈이 부족해요'); return; }
-  if (isHost) { if (hostMove(me.id, i)) moveDone(cost); }
+  if (!connected()) { toast('🟡 아직 마을에 연결하는 중이에요. 잠시 후 다시 눌러 주세요'); return; }
+  if (isHost) { if (hostMove(me.id, i)) moveDone(cost); else toast('여기에는 지을 수 없어요'); }
   else { pendingMove = { lot: i, cost, until: now() + 6000 }; net({ t: 'move', lot: i }); toast('🚚 이사 준비 중...'); }
 }
 function moveDone(cost) {
@@ -2673,7 +2698,11 @@ function hostMove(id, i) {
 function checkPendingMove() {
   if (!pendingMove) return;
   if (lotOf(me.id) === pendingMove.lot) { const c = pendingMove.cost; pendingMove = null; moveDone(c); }
-  else if (now() > pendingMove.until) { pendingMove = null; toast('이사하지 못했어요. 다시 시도해 주세요'); }
+  else if (now() > pendingMove.until) {
+    pendingMove = null;
+    if (hostVer < GAME_VER) notify('⚠️ 마을을 연 친구가 예전 버전이라 집을 지을 수 없어요. 그 친구에게 새로고침을 부탁해 주세요.', []);
+    else toast('연결이 불안정해서 실패했어요. 다시 눌러 주세요');
+  }
 }
 function openBoard() {
   openModal(b => {
