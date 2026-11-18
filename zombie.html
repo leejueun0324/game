@@ -103,7 +103,7 @@ const CHARS = [
   { id:'junhee', name:'이준희', short:'준희', color:'#ffb35c', hp:1.35, spd:0.9,  dmg:1.05, cd:8, tag:'#느긋함 #유쾌함 #듬직함',
     skill:'풀스윙 홈런', shout:'날려버린다!!', desc:'과방에 굴러다니던 야구배트로 풀스윙. 앞쪽 넓은 범위의 좀비에게 큰 피해를 주고 멀리 날려버리며 1초간 기절시킨다. 처치하면 홈런!', quote:'배가 너무 고파ㅛ' },
   { id:'yujun',  name:'박유준', short:'유준', color:'#7dd87d', hp:1.1,  spd:0.95, dmg:1.0,  cd:9, tag:'#책임감 #계획형 #현실적',
-    skill:'강속구 3연투', shout:'스트라이크 꽂는다.', desc:'체육창고에서 챙긴 야구공 3개를 연속으로 던진다. 공은 좀비를 맞히고 근처 좀비에게 튕겨 최대 3마리를 맞히며, 맞은 좀비는 밀려나고 잠깐 기절한다. 3구 모두 같은 좀비에 꽂히면 삼진 아웃!', quote:'과방 5:00-6:30 빌림' },
+    skill:'강속구 3연투', shout:'', desc:'체육창고에서 챙긴 야구공 3개를 연속으로 던진다. 공은 좀비를 맞히고 근처 좀비에게 튕겨 최대 3마리를 맞히며, 맞은 좀비는 밀려나고 잠깐 기절한다. 3구 모두 같은 좀비에 꽂히면 삼진 아웃!', quote:'과방 5:00-6:30 빌림' },
   { id:'eunbit', name:'장은빛', short:'은빛', color:'#ffe066', hp:0.95, spd:1.12, dmg:1.0,  cd:9,  tag:'#즉흥적 #명랑함 #호기심',
     skill:'돌파 러시', shout:'일단 뛰어!!', desc:'생각보다 몸이 먼저 나간다. 3초간 이동속도 2배, 앞을 막는 좀비는 몸통 박치기로 밀쳐낸다.', quote:'비상' },
   { id:'jihu',   name:'이지후', short:'지후', color:'#b9a3ff', hp:0.95, spd:1.0,  dmg:1.15, cd:8,  tag:'#차분함 #꼼꼼함 #신중함',
@@ -410,7 +410,7 @@ function aoe(x, y, r, dmg, kb, stun, color, txt) {
 function later(t, fn) { G.delayed.push({ t, fn }); }
 function castSkill(c, isPlayer) {
   const id = c.ch.id, a = c.aim, dm = c.ch.dmg * (isPlayer ? 1 : .7);
-  sfx('skill'); say(c, c.ch.shout, 2.2);
+  sfx('skill'); if (c.ch.shout) say(c, c.ch.shout, 2.2);
   if (isPlayer) G.cutin = { name: c.ch.skill, who: c.ch.name, color: c.ch.color, t: 1.2 };
   else floatText(c.x, c.y - 48, c.ch.skill, c.ch.color, 15);
   const aimDist = max => isPlayer ? Math.min(max, Math.hypot(mouseWorld().x - c.x, mouseWorld().y - c.y)) : max * .7;
