@@ -18,6 +18,7 @@
     font-family: 'Galmuri11', "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
   #cv { position: fixed; inset: 0; display: block; touch-action: none; }
   .hidden { display: none !important; }
+  #hud { z-index: 5; } #editPanel { z-index: 6; } #title { z-index: 10; } #creator { z-index: 20; } #modal { z-index: 30; }
   .pix { background: var(--paper); border: 3px solid var(--ink); border-radius: 10px; box-shadow: 0 4px 0 rgba(0,0,0,.28); }
   .btn { font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ink); background: var(--paper);
     border: 3px solid var(--ink); border-radius: 10px; padding: 7px 12px; cursor: pointer;
@@ -116,6 +117,9 @@
     #notes { top: 150px; right: auto; left: 50%; transform: translateX(-50%); }
   }
 
+  #zoomBox { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 6px; }
+  #zoomBox .btn { width: 42px; height: 42px; padding: 0; font-size: 20px; }
+
   /* ===== 꾸미기 ===== */
   #editPanel { position: fixed; left: 50%; bottom: 8px; transform: translateX(-50%); width: min(760px, calc(100vw - 12px));
     padding: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 46vh; }
@@ -129,6 +133,39 @@
   .card small { color: var(--muted); }
   #editFoot { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; flex: none; }
   #editInfo { font-size: 13px; flex: 1; min-width: 140px; }
+
+  /* ===== 가로로 눕힌 휴대폰 (화면 높이가 낮을 때) ===== */
+  @media (max-height: 520px) {
+    #hudTL { padding: 5px 8px; left: 6px; top: 6px; min-width: 0; }
+    .who { margin-bottom: 3px; font-size: 13px; }
+    .who canvas { width: 24px; height: 24px; }
+    .bar { min-width: 40px; height: 8px; }
+    #hudTR { right: 6px; top: 6px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; max-width: 52vw; }
+    .chip { padding: 4px 8px; font-size: 12px; }
+    #hudTR .btn, #hudB .btn { padding: 5px 9px; font-size: 13px; }
+    #chatBox { bottom: 8px; left: 6px; width: min(300px, 40vw); }
+    #log { max-height: 64px; font-size: 12px; }
+    #chatForm input { padding: 6px 8px; font-size: 13px; }
+    #hudB { bottom: 8px; left: auto; right: 60px; transform: none; width: auto; }
+    #actBtn { min-width: 0; max-width: 28vw; overflow: hidden; text-overflow: ellipsis; }
+    #emotePop { left: auto; right: 60px; transform: none; bottom: 52px; }
+    #zoomBox { right: 6px; }
+    #zoomBox .btn { width: 38px; height: 38px; }
+    #toast { top: 52px; }
+    #notes { top: 52px; right: 52px; left: auto; transform: none; width: min(300px, 46vw); }
+    .note { padding: 6px 8px; } .note p { margin-bottom: 5px; font-size: 13px; }
+    #editPanel { left: auto; right: 6px; top: 6px; bottom: 6px; transform: none; width: min(420px, 46vw); max-height: none; }
+    #title { gap: 10px; }
+    .logo { font-size: clamp(40px, 9vh, 72px); }
+    .logo small { margin-top: 8px; }
+    #startBtn { font-size: 18px; padding: 10px 30px; }
+    #creator { padding: 6px; }
+    #creator > .pix { padding: 12px; gap: 10px; grid-template-columns: 140px 1fr; }
+    #previewBox { height: 150px; } #preview { width: 80px; height: 120px; }
+    .opt { margin-bottom: 6px; }
+    #modal > .pix { padding: 12px; }
+  }
+  @media (max-height: 520px) and (max-width: 560px) { #creator > .pix { grid-template-columns: 1fr; } }
 
   /* ===== 창 ===== */
   #modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 14px; background: rgba(20,16,40,.5); }
@@ -218,6 +255,7 @@
     <button class="btn" id="btnEmote">😊</button>
   </div>
   <div id="emotePop" class="pix hidden"></div>
+  <div id="zoomBox"><button class="btn" id="zoomIn" title="확대 (+)">＋</button><button class="btn" id="zoomOut" title="축소 (-)">－</button></div>
 </div>
 
 <!-- 꾸미기 -->
@@ -274,10 +312,32 @@ function resize() {
 }
 function applyScale(s) { S = s; BW = Math.ceil(SW / S); BH = Math.ceil(SH / S); buf.width = BW; buf.height = BH; }
 // 꾸미기 중에는 집 전체가 보이도록 살짝 멀리서 봐요
-function editScale() {
-  const avail = SH - ($('editPanel').offsetHeight + 12);
-  return Math.max(2, Math.min(baseS, Math.floor(Math.min(SW / (12 * TS + 8), avail / (HH * TS - 16)))));
+function editArea() {
+  const r = $('editPanel').getBoundingClientRect();
+  if (r.width && r.left > SW * 0.3) return { w: r.left - 8, h: SH };   // 가로 화면: 패널이 오른쪽
+  return { w: SW, h: (r.height ? r.top : SH * 0.55) - 8 };             // 세로 화면: 패널이 아래쪽
 }
+function editScale() {
+  const a = editArea();
+  return Math.max(1, Math.min(baseS + 1, Math.floor(Math.min(a.w / (12 * TS + 8), a.h / (HH * TS - 16)))));
+}
+// 확대·축소 (픽셀이 깨지지 않게 정수 배율로)
+let zoomStep = 0;
+function targetScale() {
+  if (edit && curMap !== 'v') return editScale();
+  return Math.max(1, Math.min(baseS + 4, baseS + zoomStep));
+}
+function zoom(d) {
+  if (!started) return;
+  if (edit) { toast('꾸미기 중에는 집 전체가 보이도록 자동으로 맞춰져요'); return; }
+  const before = targetScale();
+  zoomStep = Math.max(1 - baseS, Math.min(4, zoomStep + d));
+  const after = targetScale();
+  if (after !== before) { SFX.click(); toast(after > before ? `🔍 확대 (${after}배)` : `🔍 축소 (${after}배)`); }
+  else toast(d > 0 ? '더 이상 확대할 수 없어요' : '더 이상 축소할 수 없어요');
+  try { localStorage.setItem('urimaeul-zoom', String(zoomStep)); } catch (e) {}
+}
+try { zoomStep = clampInt(+localStorage.getItem('urimaeul-zoom') || 0, -6, 4); } catch (e) {}
 addEventListener('resize', resize);
 resize();
 function R(x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
@@ -1184,6 +1244,8 @@ addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); if (!edit) $('chatIn').focus(); return; }
   if (e.key === 'Escape' && edit) { if (edit.hold || edit.sel) { cancelHold(); renderEdit(); } else closeEdit(); return; }
   if ((e.key === 'e' || e.key === 'E' || e.key === ' ') && !e.repeat) { e.preventDefault(); if (!edit) doNearest(); return; }
+  if (e.key === '+' || e.key === '=') { zoom(1); return; }
+  if (e.key === '-' || e.key === '_') { zoom(-1); return; }
   const em = ['👋', '❤️', '😂', '😮', '👍', '😢', '🎉', '💤'];
   if (e.key >= '1' && e.key <= '8') { sendEmote(em[+e.key - 1]); return; }
   keys[e.key.toLowerCase()] = true;
@@ -1200,9 +1262,14 @@ function doNearest() {
 const cam = { x: 0, y: 0 };
 function screenToWorld(e) { return [e.clientX / S + cam.x, e.clientY / S + cam.y]; }
 let pointerDown = false;
+const touches = new Map();
+let pinchD = 0, wheelAcc = 0;
+function pinchDist() { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y); }
 cv.addEventListener('pointerdown', e => {
   initAudio();
   if (!started) return;
+  touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size >= 2) { pinchD = pinchDist(); pointerDown = false; if (!edit) { path = null; pendingTarget = null; } return; }
   $('emotePop').classList.add('hidden');
   const [wx, wy] = screenToWorld(e);
   if (edit) { pointerDown = true; editPointer(wx, wy, 'down'); return; }
@@ -1223,11 +1290,25 @@ cv.addEventListener('pointerdown', e => {
   if (!solidAt(tx, ty)) walkToTile(tx, ty);
 });
 cv.addEventListener('pointermove', e => {
+  if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (touches.size >= 2 && pinchD) {
+    const d = pinchDist();
+    if (d / pinchD > 1.35) { zoom(1); pinchD = d; } else if (d / pinchD < 0.74) { zoom(-1); pinchD = d; }
+    return;
+  }
   if (!edit) return;
   const [wx, wy] = screenToWorld(e);
   editPointer(wx, wy, pointerDown ? 'drag' : 'hover');
 });
-addEventListener('pointerup', () => { pointerDown = false; });
+function endPointer(e) { pointerDown = false; touches.delete(e.pointerId); if (touches.size < 2) pinchD = 0; }
+addEventListener('pointerup', endPointer);
+addEventListener('pointercancel', endPointer);
+cv.addEventListener('wheel', e => {
+  if (!started) return;
+  e.preventDefault();
+  wheelAcc += e.deltaY;
+  if (Math.abs(wheelAcc) > 80) { zoom(wheelAcc < 0 ? 1 : -1); wheelAcc = 0; }
+}, { passive: false });
 
 // ===== 업데이트 =====
 const SPD = 72;
@@ -1361,7 +1442,7 @@ function visiblePlayers() {
 }
 function draw() {
   overlay.length = 0;
-  const wantS = edit && curMap !== 'v' ? editScale() : baseS;
+  const wantS = targetScale();
   if (wantS !== S) applyScale(wantS);
   const [mw, mh] = mapSize();
   let tx = me.x - BW / 2, ty = me.y - 10 - BH / 2;
@@ -1369,9 +1450,9 @@ function draw() {
   cam.x = mw * TS <= BW ? (mw * TS - BW) / 2 : Math.max(0, Math.min(mw * TS - BW, tx));
   cam.y = mh * TS <= BH ? (mh * TS - BH) / 2 : Math.max(0, Math.min(mh * TS - BH, ty));
   if (curMap !== 'v' && edit) {
-    const avail = BH - ($('editPanel').offsetHeight + 12) / S;
-    cam.x = (mw * TS - BW) / 2;
-    cam.y = (mh * TS - avail) / 2;
+    const a = editArea();
+    cam.x = (mw * TS - a.w / S) / 2;
+    cam.y = (mh * TS - a.h / S) / 2;
   }
   cam.x = Math.round(cam.x); cam.y = Math.round(cam.y);
   g.fillStyle = curMap === 'v' ? '#3f8f4a' : '#211d2e'; g.fillRect(0, 0, BW, BH);
@@ -1636,6 +1717,8 @@ $('chatForm').onsubmit = e => {
   say(text);
   sendChat(text, null);
 };
+$('zoomIn').onclick = () => zoom(1);
+$('zoomOut').onclick = () => zoom(-1);
 $('btnSound').onclick = () => { muted = !muted; $('btnSound').textContent = muted ? '🔇' : '🔊'; if (!muted) { initAudio(); SFX.click(); } };
 $('btnInvite').onclick = () => { SFX.click(); openInvite(); };
 $('btnPeople').onclick = () => { SFX.click(); openPeople(); };
