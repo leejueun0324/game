@@ -27,7 +27,7 @@
   #money { font-size: 14px; font-weight: 800; color: #c0792f; margin-top: 2px; }
   #money.neg { color: #d9534f; }
   .hbtns { display: flex; gap: 6px; }
-  .mini { font-family: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .mini { font-family: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   #stage { position: relative; width: 100%; aspect-ratio: 480 / 360; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 20px rgba(150, 95, 60, 0.18); background: #f6e3cf; }
   canvas#cv { width: 100%; height: 100%; display: block; cursor: pointer; }
   .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px; margin-top: 10px; }
@@ -137,7 +137,8 @@
     </div>
     <ul class="help">
       <li>배부름·기분·청결·체력·건강을 챙기고 스트레스를 관리하세요.</li>
-      <li>💼 부모 탭에서 일해 돈을 벌어요. 일하는 동안엔 아이를 돌볼 수 없어요. 매일 밤 생활비가 빠져나가요.</li>
+      <li>👨 아빠는 매일 자동으로 출근해 월급을 벌어 오고, 퇴근하면 육아를 도와요. 야근·휴가도 정할 수 있어요.</li>
+      <li>👩 엄마(나)도 일해서 돈을 벌 수 있어요. 일하는 동안엔 아이를 돌볼 수 없어요. 매일 밤 생활비가 빠져나가요.</li>
       <li>🏫 13살부터 학원에 등록하면 매일 학교가 끝나고 자동으로 다녀요.</li>
       <li>🛍️ 쇼핑에서 산 물건은 방에 놓이고, 새로운 활동이 생겨요.</li>
       <li>가장 많이 한 활동이 아이의 꿈이 돼요.</li>
@@ -194,20 +195,21 @@ const STAT_INFO = [
 const GROW_KEYS = [['int', '📚'], ['str', '💪'], ['art', '🎨'], ['kind', '💗'], ['social', '🤝']];
 const CATS = [
   ['meal', '🍚 식사'], ['care', '🧼 돌봄'], ['study', '📚 공부'], ['academy', '🏫 학원'], ['sport', '⚽ 운동'],
-  ['art', '🎨 예술'], ['play', '🧸 놀이'], ['shop', '🛍️ 쇼핑'], ['parent', '💼 부모'],
+  ['art', '🎨 예술'], ['play', '🧸 놀이'], ['shop', '🛍️ 쇼핑'], ['parent', '👩 엄마 일'], ['dad', '👨 아빠'],
 ];
 const TAB_NOTE = {
   academy: () => S.age < 13
     ? '🔒 13살(중학생)부터 학원에 등록할 수 있어요. 그 전에는 📚공부·⚽운동·🎨예술 탭의 일일 수업을 이용하세요.'
     : `최대 2곳까지 등록할 수 있어요. 학교가 끝나면 등록한 학원에 자동으로 가고, 갈 때마다 학원비가 나가요. (지금 ${S.enrolled.length}/2)`,
   shop: () => '산 물건은 방에 놓이고, 새로운 활동이나 매일 효과가 생겨요.',
-  parent: () => `일하는 동안에는 아이를 돌볼 수 없어요. 회사에 다닐수록 승진해서 월급이 올라요. (현재 ${RANKS[rankOf()]})`,
+  parent: () => `매일 밤 생활비 ${won(livingCost())}이 나가요. 엄마가 일하는 동안에는 아이를 돌볼 수 없어요. 회사에 다닐수록 승진해서 월급이 올라요. (엄마 직급: ${RANKS[rankOf()]})`,
+  dad: () => dadStatus(),
 };
 const RANKS = ['사원', '대리', '과장', '차장', '부장', '임원'];
 
 let S = null;
 let speed = 1, paused = false, tickTimer = 0;
-let anim = null, particles = [], bubble = null;
+let anim = null, particles = [], bubble = null, dadBubble = null, dadAnim = null;
 let wander = 0, wanderTarget = 0, blinkT = 3;
 let curTab = 'meal';
 let maker = { gender: 'girl', style: 'long', skin: SKINS[0], hair: HAIRS[1], eye: EYES[0], previewAge: 10 };
@@ -254,7 +256,7 @@ function newGame(name, look) {
     sick: false, sleeping: false, school: false, schoolDone: false, activity: null,
     mess: [], used: {}, pet: false, poopTimer: -1,
     moodSum: 0, moodN: 0, yMoodSum: 0, yMoodN: 0,
-    log: [], over: false,
+    log: [], over: false, dad: newDad(),
   };
 }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
@@ -368,6 +370,9 @@ const ACTIONS = [
   { id: 'allowance', cat: 'shop', name: '용돈 주기', emoji: '💵', min: 7, cost: 10000, fx: { mood: 12, social: 1 }, anim: 'happy', lines: ['감사합니다!'] },
 
   // ---- 부모 (돈 벌기) ----
+  { id: 'dad_plan', cat: 'dad', special: 'dadplan', name: () => S.dad.plan === 'overtime' ? '야근 그만하고 칼퇴' : '아빠 야근하기', emoji: () => S.dad.plan === 'overtime' ? '🏃' : '🌃' },
+  { id: 'dad_vac', cat: 'dad', special: 'dadvac', name: '아빠 하루 휴가', emoji: '🏖️' },
+  { id: 'dad_tonic', cat: 'dad', special: 'dadtonic', name: '아빠 홍삼 챙겨주기', emoji: '💪', cost: 20000 },
   { id: 'job_part', cat: 'parent', special: 'work', name: '단기 알바', emoji: '🧾', job: { hours: 1, pay: 15000, kind: 'part' } },
   { id: 'job_home', cat: 'parent', special: 'work', name: '재택 근무', emoji: '🏠', job: { hours: 2, pay: 35000, kind: 'home' } },
   { id: 'job_office', cat: 'parent', special: 'work', name: '회사 출근', emoji: '🏢', job: { hours: 6, pay: 100000, kind: 'office' } },
@@ -379,6 +384,9 @@ const SPECIAL_DESC = {
   sleep: () => S.sleeping ? '기분 −12 (억지로 깨움)' : '체력 회복 · 스트레스 감소',
   med: () => S.sick ? '병 치료 · 건강 +25 (약값 1만원)' : '건강 +10 · 기분 −6 (3만원)',
   clothes: () => '옷 색깔이 바뀌어요 · 기분 +15',
+  dadplan: () => S.dad.plan === 'overtime' ? '18시에 퇴근해서 저녁에 육아를 도와요' : '매일 월급 +5만원, 대신 21시에 퇴근해서 육아를 거의 못 해요',
+  dadvac: () => `월급 없이 하루 종일 집에서 육아 · 남은 휴가 ${S.dad.vacLeft}일`,
+  dadtonic: () => `아빠 체력 100으로 회복 · 지금 ${Math.round(S.dad.energy)}`,
 };
 const ACT_OUT_TEXT = {
   english: '영어 수업에 갔어요', science: '과학 실험 교실에 갔어요', library: '독서실에서 공부 중',
@@ -432,7 +440,19 @@ function blockReason(a) {
     if (!S.enrolled.includes(a.id) && S.enrolled.length >= 2) return '최대 2곳까지';
     return null;
   }
-  if (S.work) return '부모님 일하는 중';
+  if (a.special === 'dadplan') return null;
+  if (a.special === 'dadvac') {
+    if (S.dad.vacation) return '휴가 신청됨 ✓';
+    if (S.dad.vacLeft <= 0) return '휴가를 다 썼어요';
+    return null;
+  }
+  if (a.special === 'dadtonic') {
+    if (S.dad.state === 'work') return '아빠가 회사에 있어요';
+    if (S.dad.energy >= 90) return '아빠 쌩쌩해요';
+    if (S.money < a.cost) return '돈이 부족해요';
+    return null;
+  }
+  if (S.work) return '엄마가 일하는 중';
   if (a.special === 'work') {
     const k = a.job.kind;
     if (S.used[a.id]) return '조금 뒤에';
@@ -464,7 +484,16 @@ function runAction(a) {
   const st = S.st;
   let ok = true;
 
-  if (a.special === 'enroll') {
+  if (a.special === 'dadplan') {
+    S.dad.plan = S.dad.plan === 'overtime' ? 'home' : 'overtime';
+    addLog(S.dad.plan === 'overtime' ? '👨 아빠가 매일 야근하기로 했어요. (+5만원, 21시 퇴근)' : '👨 아빠가 칼퇴하고 육아하기로 했어요!');
+  } else if (a.special === 'dadvac') {
+    S.dad.vacation = true; S.dad.vacLeft--;
+    addLog(S.dad.state === 'work' || S.hour >= 8 ? '🏖️ 아빠가 내일 휴가를 냈어요! 하루 종일 육아해요.' : '🏖️ 아빠가 오늘 휴가를 냈어요! 하루 종일 육아해요.');
+  } else if (a.special === 'dadtonic') {
+    spend(a.cost); S.dad.energy = 100; S.dad.drinks = (S.dad.drinks || 0) + 1;
+    addLog(`💪 아빠가 홍삼을 먹고 기운이 났어요! (−${won(a.cost)})`); dadSay('힘이 난다! 더 놀아 줄게!');
+  } else if (a.special === 'enroll') {
     const i = S.enrolled.indexOf(a.id);
     if (i >= 0) { S.enrolled.splice(i, 1); addLog(`🏫 ${a.name}을(를) 그만뒀어요.`); }
     else { S.enrolled.push(a.id); addLog(`🏫 ${a.name}에 등록했어요! (하루 ${won(a.fee)})`); if (!away() && !S.sleeping) say(pick(['열심히 다닐게요!', '또 학원이에요…?'])); }
@@ -561,6 +590,94 @@ function startNextAcademy() {
   addLog(`${a.emoji} ${a.name}에 갔어요 (−${won(a.fee)})`);
 }
 
+// =====================================================================
+// 아빠: 자동으로 출근해서 돈을 벌고, 퇴근하면 육아를 도와요
+// =====================================================================
+function newDad() {
+  return { state: 'home', plan: 'home', energy: 100, days: 0, earned: 0, helps: 0, today: 0, vacation: false, vacToday: false, vacLeft: 5, backAt: 18 };
+}
+const dadRank = () => Math.min(RANKS.length - 1, Math.floor(S.dad.days / 3));
+const dadPay = () => Math.round(75000 * (1 + 0.2 * dadRank()) / 1000) * 1000 + (S.dad.plan === 'overtime' ? 50000 : 0);
+function dadSay(text, sec = 2.6) { dadBubble = { text, t: sec }; }
+function dadStatus() {
+  const d = S.dad;
+  const where = d.state === 'work' ? `회사에서 일하는 중 (${d.backAt}시 퇴근 예정)` : d.state === 'sleep' ? '자는 중' : d.vacToday ? '휴가 중 · 하루 종일 육아' : '집에서 육아 중';
+  return `👨 아빠는 매일 8시에 자동으로 출근하고, 퇴근하면 아이에게 필요한 걸 알아서 챙겨요. 지금: ${where} · 직급 ${RANKS[dadRank()]} · 일당 ${won(dadPay())} · 체력 ${Math.round(d.energy)} · 오늘 육아 ${d.today}번`;
+}
+function kidFree() { return !away() && !S.sleeping && !S.activity && !S.over; }
+
+function dadTick() {
+  const d = S.dad, h = S.hour;
+  if (d.state === 'sleep' && h === 6) { d.state = 'home'; d.energy = 100; }
+  if (d.state === 'home' && h === 8) {
+    if (d.vacation) { d.vacation = false; d.vacToday = true; addLog('🏖️ 오늘은 아빠 휴가! 하루 종일 같이 있어요.'); if (kidFree()) dadSay('오늘은 아빠랑 하루 종일 놀자!'); }
+    else {
+      d.state = 'work'; d.backAt = d.plan === 'overtime' ? 21 : 18;
+      addLog('👨 아빠가 회사에 출근했어요.');
+      if (kidFree()) { say(S.age < 3 ? '빠빠! (가지 마요)' : '아빠 다녀오세요!'); if (S.age < 7) S.st.mood -= 2; }
+    }
+  }
+  if (d.state === 'work') {
+    d.energy -= d.plan === 'overtime' ? 4 : 3;
+    if (h + 1 >= d.backAt) {
+      const pay = dadPay(); earn(pay); d.earned += pay;
+      const before = dadRank(); d.days++;
+      d.state = 'home'; d.energy = Math.max(15, d.energy);
+      addLog(`👨 아빠 퇴근! 오늘 일당 +${won(pay)}`);
+      if (dadRank() > before) addLog(`🎉 아빠가 ${RANKS[dadRank()]}(으)로 승진했어요!`);
+      if (kidFree()) { S.st.mood += 6; say(S.age < 3 ? '빠빠! 빠빠!' : S.age < 13 ? '아빠 왔다!!' : '아빠 오셨어요?'); }
+      dadSay('아빠 왔다~!');
+      return;
+    }
+  }
+  if (d.state === 'home' && (h >= 23 || h < 6)) {
+    d.state = 'sleep';
+    if (d.vacToday) d.vacToday = false;
+    return;
+  }
+  if (d.state === 'home' && (h >= 18 || h < 8 || d.vacToday)) dadHelp();
+}
+
+function dadHelp() {
+  const d = S.dad, st = S.st;
+  if (!kidFree() || d.energy < 15) {
+    if (d.energy < 15 && kidFree() && Math.random() < 0.3) dadSay('아빠 너무 피곤해… 💤');
+    return;
+  }
+  const baby = S.age < 3;
+  let msg, pose = 'hold', prop = null, kidSay = null;
+  if (S.sick && S.money >= 10000) {
+    spend(10000); S.sick = false; st.health += 20; msg = '약을 먹였어요 (−10,000원)'; prop = '💊'; kidSay = '으, 써…';
+  } else if (st.hunger < 50) {
+    if (S.age >= 3) spend(3000);
+    st.hunger += 35; st.mood += 3;
+    msg = S.age < 1 ? '분유를 먹였어요' : baby ? '이유식을 먹였어요' : '저녁밥을 차려 줬어요';
+    prop = S.age < 1 ? '🍼' : baby ? '🥄' : '🍚'; anim = { type: 'eat', t: 1.3, prop };
+  } else if (S.mess.length) {
+    st.clean += 6 * S.mess.length; S.mess = []; msg = baby ? '기저귀를 갈아 줬어요' : '방을 치웠어요'; prop = baby ? '🧷' : '🧹';
+  } else if (st.clean < 45) {
+    st.clean += 40; st.mood += 2; msg = baby ? '목욕을 시켜 줬어요' : '씻겨 줬어요'; prop = '🧽'; anim = { type: 'wash', t: 1.3 }; burst('🫧', 6);
+  } else if (S.hour >= 21 && st.energy < 45) {
+    S.sleeping = true; msg = baby ? '자장가를 불러 재웠어요' : '잘 자라고 불을 꺼 줬어요'; prop = '🌙';
+  } else if (st.mood < 60 || st.stress > 50) {
+    st.mood += 15; st.stress -= 8; S.gr.kind += gain(0.5);
+    msg = baby ? '비행기를 태워 줬어요' : S.age < 13 ? '몸으로 신나게 놀아 줬어요' : '진로 고민을 들어 줬어요';
+    pose = 'up'; anim = { type: 'happy', t: 1.3 }; burst('💕', 5); kidSay = baby ? '꺄르르!' : S.age < 13 ? '아빠 최고!' : '고마워요, 아빠.';
+  } else if (S.age < 8) {
+    S.gr.int += gain(1); st.mood += 5; msg = '책을 읽어 줬어요'; prop = '📖';
+  } else if (S.age < 13) {
+    S.gr.str += gain(1.5); st.mood += 6; st.energy -= 5; msg = '캐치볼을 해 줬어요'; prop = '⚾'; pose = 'up';
+  } else {
+    st.stress -= 8; S.gr.kind += gain(0.5); S.gr.social += gain(0.5); msg = '같이 산책하며 이야기했어요'; pose = 'down';
+  }
+  d.energy -= 10; d.helps++; d.today++;
+  dadAnim = { pose, prop, t: 1.6 };
+  dadSay(msg.replace('줬어요', '줄게~').replace('먹였어요', '먹자~').replace('재웠어요', '재워 줄게').replace('차려 줬어요', '차려 줄게').replace('치웠어요', '치울게').replace('이야기했어요', '이야기하자'));
+  if (kidSay) setTimeout(() => say(kidSay, 1.8), 700);
+  addLog(`👨 아빠가 ${msg}`);
+  fixStats();
+}
+
 function tick() {
   const st = S.st, stage = stageOf(S.age), night = isNight();
 
@@ -614,6 +731,7 @@ function tick() {
     }
   }
   startNextAcademy();
+  dadTick();
 
   // 부모 일
   if (S.work) {
@@ -713,7 +831,7 @@ function newYear() {
   if (S.items.dog) S.gr.kind = clamp(S.gr.kind + gain(2));
   if (S.items.phone) S.gr.social = clamp(S.gr.social + gain(1.5));
   S.yMoodSum = 0; S.yMoodN = 0;
-  S.schoolDone = false; S.school = false; S.acQueue = []; S.acDone = false; S.jobDone = {};
+  S.schoolDone = false; S.school = false; S.acQueue = []; S.acDone = false; S.jobDone = {}; S.dad.today = 0;
   S.age++;
   if (S.age >= END_AGE) { ending(); return; }
   earn(30000);
@@ -779,7 +897,9 @@ function statLines() {
   return GROW_KEYS.map(([k, ic]) => `${ic} ${NAMES[k]}: <b>${Math.round(S.gr[k])}</b>`).join('<br>') +
     `<br>😊 평균 기분: <b>${avg}</b>` +
     (sp ? `<br>⭐ 가장 많이 한 활동: <b>${SPEC_NAME[sp[0]]} (${sp[1]}회)</b>` : '') +
-    `<br>💼 부모 직급: <b>${RANKS[rankOf()]}</b> · 번 돈 <b>${won(S.earned)}</b> · 쓴 돈 <b>${won(S.spent)}</b>` +
+    `<br>👨 아빠: <b>${RANKS[dadRank()]}</b> · 번 돈 <b>${won(S.dad.earned)}</b> · 육아 <b>${S.dad.helps}번</b>` +
+    `<br>👩 엄마: <b>${RANKS[rankOf()]}</b> · 번 돈 <b>${won(S.earned - S.dad.earned)}</b>` +
+    `<br>🧾 쓴 돈: <b>${won(S.spent)}</b>` +
     `<br>💰 남은 돈: <b>${won(S.money)}</b>`;
 }
 function showEndPic() {
@@ -836,6 +956,7 @@ function needOf(a) {
     case 'med': return S.sick;
     case 'hug': case 'talk': return st.mood < 30 || st.stress > 70;
     case 'job_part': case 'job_home': case 'job_office': return S.money < 30000;
+    case 'dad_tonic': return S.dad.energy < 20 && S.dad.state !== 'work';
   }
   return false;
 }
@@ -850,7 +971,7 @@ function render() {
   else if (S.activity) where = ` · ${S.activity.name} (${S.activity.left}시간)`;
   if (S.work) where += ` · 💼 ${S.work.name} (${S.work.left}시간)`;
   $('clock').textContent = `${ampm} ${h12}시${where}`;
-  $('money').textContent = `💰 ${won(S.money)} · 생활비 ${won(livingCost())}/일 · ${RANKS[rankOf()]}`;
+  $('money').textContent = `💰 ${won(S.money)} · 👨 아빠 ${S.dad.state === 'work' ? '회사' : S.dad.state === 'sleep' ? '취침' : '집'}`;
   $('money').classList.toggle('neg', S.money < 0);
   for (const s of STAT_INFO) {
     const v = Math.round(S.st[s.k]);
@@ -965,6 +1086,7 @@ $('againBtn').addEventListener('click', () => { $('endOv').classList.add('hidden
 
 function begin(state) {
   S = state;
+  if (!S.dad) S.dad = newDad();
   particles = []; bubble = null; anim = null; tickTimer = 0; lastActHTML = ''; curTab = 'meal';
   $('startOv').classList.add('hidden');
   if (!S.log.length) addLog(`👶 ${nm()} 태어났어요! 잘 부탁해요.`);
@@ -1678,13 +1800,14 @@ function exprNow() {
   return 'sad';
 }
 
-function drawBubble(head) {
-  if (!bubble) return;
+function drawBubble(head, b = bubble, color = '#ffffff') {
+  if (!b) return;
+  const bubble = b;
   ctx.font = 'bold 14px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
   const w = ctx.measureText(bubble.text).width + 22;
   const x = clamp(head.hx - w / 2, 6, W - w - 6), y = Math.max(6, head.top - 40);
   ctx.globalAlpha = Math.min(1, bubble.t * 3);
-  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#e0c9b6'; ctx.lineWidth = 1.5;
+  ctx.fillStyle = color; ctx.strokeStyle = '#e0c9b6'; ctx.lineWidth = 1.5;
   rr(x, y, w, 30, 12); ctx.fill(); ctx.stroke();
   const tx = clamp(head.hx, x + 12, x + w - 12);
   ctx.beginPath(); ctx.moveTo(tx - 6, y + 29); ctx.lineTo(tx, y + 38); ctx.lineTo(tx + 6, y + 29); ctx.fill();
@@ -1739,6 +1862,8 @@ function loop(now) {
     while (tickTimer >= HOUR_MS && !S.over) { tickTimer -= HOUR_MS; tick(); render(); }
     if (anim) { anim.t -= dt; if (anim.t <= 0) anim = null; }
     if (bubble) { bubble.t -= dt; if (bubble.t <= 0) bubble = null; }
+    if (dadBubble) { dadBubble.t -= dt; if (dadBubble.t <= 0) dadBubble = null; }
+    if (dadAnim) { dadAnim.t -= dt; if (dadAnim.t <= 0) dadAnim = null; }
     blinkT -= dt; if (blinkT < -0.13) blinkT = rand(2.5, 4.5);
     if (!S.sleeping && S.age >= 1 && !anim && !S.activity) {
       if (Math.abs(wanderTarget - wander) < 1 && Math.random() < 0.008) wanderTarget = rand(-100, 50);
@@ -1752,7 +1877,14 @@ function loop(now) {
   drawRoom(t);
   if (S) {
     drawMess();
-    let head = null;
+    let head = null, dadHead = null;
+    if (S.dad.state === 'home') {
+      const da = dadAnim;
+      const tired = S.dad.energy < 15;
+      dadHead = drawPerson(292, FEET, { age: 34, gender: 'boy', skin: S.skin, hair: '#2a2230', style: 'side', eye: EYES[1], top: '#6f86b3' },
+        { t, pose: da ? da.pose : 'down', prop: da ? da.prop : null, expr: da ? 'grin' : tired ? 'tired' : 'smile',
+          bob: da && da.pose === 'up' ? -Math.abs(Math.sin(t * 6)) * 4 : Math.sin(t * 2 + 1) * 0.6, blink: (t + 1.3) % 4.2 < 0.12, lookX: -1 });
+    }
     if (S.sleeping) head = drawSleeping(t);
     else if (away()) drawAwayCard(t);
     else {
@@ -1782,8 +1914,10 @@ function loop(now) {
     if (d > 0) { ctx.fillStyle = `rgba(20,16,50,${d * (S.sleeping ? 0.45 : 0.2)})`; ctx.fillRect(0, 0, W, H); }
     drawParticles(dt);
     if (head) drawBubble(head);
+    if (dadHead) drawBubble({ ...dadHead, top: dadHead.top - (bubble && head ? 34 : 0) }, dadBubble, '#eef4ff');
     if (S.activity && !S.activity.out && !S.sleeping) chip(`${S.activity.emoji} ${S.activity.name} 중 · ${S.activity.left}시간`, 10, 10);
-    if (S.work) chip(`${S.work.emoji} 부모님 ${S.work.name} 중 · ${S.work.left}시간`, W - 10, 10, true);
+    if (S.work) chip(`${S.work.emoji} 엄마 ${S.work.name} 중 · ${S.work.left}시간`, W - 10, 10, true);
+    if (S.dad.state === 'work') chip(`🏢 아빠 회사 · ${S.dad.backAt}시 퇴근`, W - 10, S.work ? 40 : 10, true);
     if (paused) {
       ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#fff'; ctx.font = 'bold 28px sans-serif'; ctx.textAlign = 'center';
