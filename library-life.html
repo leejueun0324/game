@@ -181,6 +181,14 @@ const LABEL = {
 const MAJORS = ['org', 'svc', 'dig', 'edu', 'arc'];
 const COLOR = { org: '#3a7bd5', svc: '#2e9e6b', dig: '#7b5cd6', edu: '#e08a2c', arc: '#8c6b4a', hp: '#e05a7a', stress: '#c0392b', social: '#2fa3b5', exp: '#b38b1d', prep: '#555f9e' };
 const MONTHS = [[3, 4, 5, 6], [9, 10, 11, 12]];
+const TURNS = 8;        // 한 학기 = 16주, 2주 단위로 8번 행동
+const ACT_SCALE = 0.55; // 행동 횟수가 늘어난 만큼 한 번의 효과는 작게
+const monthOf = s => MONTHS[s.sem - 1][Math.floor(Math.min(s.turn, TURNS - 1) / 2)];
+function scaleFx(fx) {
+  const o = {};
+  for (const k in fx) { const v = fx[k]; if (!v) continue; o[k] = Math.sign(v) * Math.max(1, Math.round(Math.abs(v) * ACT_SCALE)); }
+  return o;
+}
 
 const TRAITS = {
   bookworm: { name: '📖 책벌레', desc: '독서·교육 +12, 자료조직 +6', fx: { edu: 12, org: 6 }, avatar: { m: '👨‍🎓', f: '👩‍🎓' } },
@@ -394,8 +402,8 @@ function applyFx(s, fx) {
 
 function whenText(s) {
   if (s.done) return '졸업';
-  const m = MONTHS[s.sem - 1][Math.min(s.turn, 3)];
-  return `${s.year}학년 ${s.sem}학기 · ${m}월`;
+  const t = Math.min(s.turn, TURNS - 1);
+  return `${s.year}학년 ${s.sem}학기 · ${monthOf(s)}월 ${t % 2 ? '3~4' : '1~2'}주`;
 }
 
 function addLog(html) {
@@ -425,7 +433,7 @@ function render() {
   else {
     const groups = {};
     availableActions(S).forEach(a => { (groups[a.group] = groups[a.group] || []).push(a); });
-    let html = `<h2>이번 달에는 무엇을 할까? <span style="font-weight:500">(${Math.min(S.turn + 1, 4)}/4)</span></h2>`;
+    let html = `<h2>이번 2주 동안 무엇을 할까? <span style="font-weight:500">(${Math.min(S.turn + 1, TURNS)}/${TURNS})</span></h2>`;
     for (const g in groups) {
       html += `<h3>${g}</h3><div class="btns">` + groups[g].map(a => {
         const ok = !a.need || a.need(S);
@@ -480,7 +488,7 @@ function doAction(id) {
     queue({ emoji: '💳', title: '잔고 부족', body: '<p>통장 잔고가 부족하다… 다른 걸 해보자.</p>' });
     nextModal(); return;
   }
-  const res = applyFx(S, a.fx);
+  const res = applyFx(S, scaleFx(a.fx));
   if (a.study) S.studyCount++;
   addLog(`<b>${a.name}</b> — ${res}`);
 
@@ -499,33 +507,40 @@ function doAction(id) {
 
   S.turn++;
   fixedOrRandomEvent();
-  if (S.turn >= 4) queue(() => endSemester());
+  if (S.turn >= TURNS) queue(() => endSemester());
   render();
   nextModal();
 }
 
 function fixedOrRandomEvent() {
-  const month = MONTHS[S.sem - 1][S.turn - 1];
-  // 고정 이벤트
+  const prev = S.turn - 1;
+  const month = MONTHS[S.sem - 1][Math.floor(prev / 2)];
+  // 중간고사 (4월·10월 말)
+  if (prev === 3) { queue(midterm()); return; }
+  // 각 달의 전반(1~2주)에는 무작위 사건만, 고정 이벤트는 후반(3~4주)에
+  if (prev % 2 === 0) { if (Math.random() < 0.3) randomEvent(); return; }
   if (S.sem === 1 && month === 5) { queue(festival()); return; }
-  if (S.sem === 2 && month === 10) { queue(fieldTrip()); return; }
+  if (S.sem === 2 && month === 9) { queue(fieldTrip()); return; }
   if (S.sem === 2 && month === 11 && S.year >= 2) { queue(conference()); return; }
-  if (S.year === 4 && S.sem === 1 && month === 4 && S.teacher) { queue(practicum()); return; }
+  if (S.year === 4 && S.sem === 1 && month === 6 && S.teacher) { queue(practicum()); return; }
   // 무작위 이벤트
-  if (Math.random() < 0.45) {
-    const r = Math.random();
-    if (r < 0.22) queue(professorEvent());
-    else if (r < 0.27 && S.year >= 2) queue(lectureEvent());
-    else if (r < 0.6) queue(quizEvent());
-    else queue(eventModal(pickOne(EVENTS)));
-  }
+  if (Math.random() < 0.3) randomEvent();
+}
+function randomEvent() {
+  const r = Math.random();
+  if (r < 0.22) queue(professorEvent());
+  else if (r < 0.27 && S.year >= 2) queue(lectureEvent());
+  else if (r < 0.6) queue(quizEvent());
+  else queue(eventModal(pickOne(EVENTS)));
 }
 
 function eventModal(e) {
   return {
     emoji: e.emoji, title: e.title, body: `<p>${e.body}</p>`,
     choices: e.choices.map(c => ({ label: c.label, sub: fxSub(c.fx), fn: () => {
-      const r = applyFx(S, c.fx); addLog(`${e.emoji} ${e.title}: ${c.label}${r ? ' — ' + r : ''}`);
+      let r = applyFx(S, c.fx);
+      if (c.after) r += (r ? ' · ' : '') + c.after();
+      addLog(`${e.emoji} ${e.title}: ${c.label}${r ? ' — ' + r : ''}`);
     } }))
   };
 }
@@ -563,6 +578,12 @@ function lectureEvent() {
     { label: '용기 내서 질문한다', fx: { svc: 3, social: 3, stress: 4 } },
     { label: '과제 때문에 못 갔다', fx: { stress: 3 } } ] });
 }
+function midterm() {
+  return eventModal({ emoji: '✍️', title: '중간고사 기간', body: `${S.sem === 1 ? '4월' : '10월'} 말, 중간고사가 다가왔다. 중앙도서관 열람실 자리 잡기 전쟁이 시작됐다.`, choices: [
+    { label: '열람실에서 밤샘 공부', fx: { hp: -10, stress: 10 }, after: () => { S.bonusGpa += 0.2; return '<span class="up">학점 보너스</span>'; } },
+    { label: '평소 실력으로 본다', fx: { stress: 4 } },
+    { label: '이번 중간은 내려놓는다…', fx: { stress: -8 }, after: () => { S.bonusGpa -= 0.25; return '<span class="down">학점 감점</span>'; } } ] });
+}
 function festival() {
   return eventModal({ emoji: '🎆', title: '대동제 시즌', body: '캠퍼스가 축제로 들썩인다. 학과에서도 부스를 연다고 한다.', choices: [
     { label: '학과 주점 운영 돕기', fx: { social: 10, money: 10, hp: -10 } },
@@ -588,7 +609,7 @@ function practicum() {
 }
 
 function endSemester() {
-  let g = 2.2 + S.studyCount * 0.45 + (avgMajor(S) / 100) * 0.6 + S.bonusGpa + rand(-0.15, 0.15);
+  let g = 2.2 + S.studyCount * 0.24 + (avgMajor(S) / 100) * 0.6 + S.bonusGpa + rand(-0.15, 0.15);
   if (S.stress >= 80 || S.burnout) g -= 0.4;
   if (S.hp < 20) g -= 0.2;
   g = Math.round(clamp(g, 0, 4.5) * 100) / 100;
@@ -741,7 +762,7 @@ function startScreen() {
     addLog(`🎒 ${esc(name)}, 문헌정보학과 입학! (${TRAITS[pick.trait].name}) · 지도교수 ${S.advisor} 교수님`);
     $('modalBg').classList.add('hidden');
     render();
-    queue({ emoji: '🎉', title: '개강총회', body: `<p>학과 개강총회. 학과장 박광헌 교수님의 환영 인사와 함께 동기·선배들을 만났다.</p><p>“${esc(name)} 학생, 반가워요! 지도교수는 <b>${S.advisor} 교수님</b>이에요.” 조교 선배가 알려준다. “문정과는 졸업하면 정사서 2급 자격증이 나와!”</p><p>한 학기는 4달. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>`, choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
+    queue({ emoji: '🎉', title: '개강총회', body: `<p>학과 개강총회. 학과장 박광헌 교수님의 환영 인사와 함께 동기·선배들을 만났다.</p><p>“${esc(name)} 학생, 반가워요! 지도교수는 <b>${S.advisor} 교수님</b>이에요.” 조교 선배가 알려준다. “문정과는 졸업하면 정사서 2급 자격증이 나와!”</p><p>한 학기는 16주. 2주마다 할 일을 하나씩 고른다(학기당 8번). 4월·10월 말에는 중간고사도 있다. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>`, choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
     nextModal();
   };
   $('modalBg').classList.remove('hidden');
