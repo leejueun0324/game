@@ -262,7 +262,7 @@ body.portrait #bRun { order:-1; }
     <div class="or">또는</div>
     <label>방 코드 <input id="roomCode" maxlength="6" placeholder="예: AB12C" style="text-transform:uppercase"></label>
     <button class="go alt" id="btnJoin">참가하기</button>
-    <p class="note hidden" id="coopBlocked" style="color:#ffb0b0">이 링크(Claude에 올린 페이지)에서는 브라우저끼리 직접 연결하는 기능이 막혀 있어서 협동 모드가 동작하지 않아요. 협동은 게임 파일을 일반 웹 호스팅(예: GitHub Pages, Netlify)에 올린 주소에서 할 수 있어요.</p>
+    <p class="note hidden" id="coopBlocked" style="color:#ffe9a8">Claude 링크에서 함께 하려면 친구들이 이 링크를 볼 수 있어야 해요. 방장은 링크 소유자나 편집·참여 권한이 있는 사람이 맡아 주세요.</p>
     <p class="note">인터넷 연결이 필요해요. 브라우저끼리 직접 연결(WebRTC)되며, 일부 회사·학교 와이파이에서는 연결이 막힐 수 있어요.</p>
   </div>
   <button id="btnBack2">← 모드 선택</button>
@@ -2189,7 +2189,7 @@ const UI = {
     document.querySelectorAll('[data-cards]').forEach(b => b.onclick = () => this.openCards());
     document.querySelectorAll('[data-rel]').forEach(b => b.onclick = () => this.openRelations());
     $('btnSolo').onclick = () => { G.mode = 'solo'; this.openCharSelect(); };
-    $('btnCoop').onclick = () => { this.show('coopSel'); if (/claude|anthropic/.test(location.hostname)) { $('coopBlocked').classList.remove('hidden'); $('btnHost').disabled = $('btnJoin').disabled = true; } };
+    $('btnCoop').onclick = () => { NET.detectRoom(); this.show('coopSel'); if (NET.useRoom) $('coopBlocked').classList.remove('hidden'); };
     $('btnBack1').onclick = () => this.show('cover'); $('btnBack2').onclick = () => this.show('modeSel'); $('btnBack3').onclick = () => this.show('modeSel');
     $('btnHost').onclick = () => NET.host($('nick').value.trim() || '플레이어');
     $('btnJoin').onclick = () => NET.join($('roomCode').value.trim().toUpperCase(), $('nick').value.trim() || '플레이어');
@@ -2643,24 +2643,25 @@ const NET = {
     if (m.t === 'ending') UI.ending();
   },
   applySnap(s) {
-    for (const a of s.u) { const u = unitById(a[0]); if (!u) continue;
+    if (s.u) for (const a of s.u) { const u = unitById(a[0]); if (!u) continue;
       if (u !== G.me) { u.x = a[1]; u.z = a[2]; u.face = a[3]; u.speed = a[6]; u.fl = a[13]; if (a[7]) u.atkAnim = 1; } else if (a[5] !== 'active' || u.state !== 'active') { u.x = a[1]; u.z = a[2]; }
       u.hp = a[4]; u.state = a[5]; u.absent = !!a[8]; u.hidden = a[9] ? 1 : 0; u.downT = a[10]; u.reviveT = a[12]; if (u.weapon !== (a[11] || null)) setWeapon(u, a[11] || null); }
-    const seen = new Set();
+    if (s.z) { const seen = new Set();
     for (const a of s.z) { seen.add(a[0]); let z = this.zModels[a[0]];
       if (!z) { const model = a[1] === 'agent' ? makeAgent() : a[1] === 'mimic' ? makeMimic() : a[1] === 'n1' ? makeNumberOne() : makeZombie(a[1]); scene.add(model);
         z = this.zModels[a[0]] = { id: a[0], kind: a[1], model, r: ZDEF[a[1]].r }; G.zombies.push(z); }
       Object.assign(z, { fl: a[13], x: a[2], z: a[3], face: a[4], hp: a[5], maxHp: a[6], stun: a[7], mark: a[8], confused: a[9], root: a[10], speedNow: a[11] }); if (a[12]) z.atkAnim = 1; }
-    for (const id in this.zModels) if (!seen.has(+id)) { scene.remove(this.zModels[id].model); G.zombies = G.zombies.filter(z => z !== this.zModels[id]); delete this.zModels[id]; }
-    const pseen = new Set();
+    for (const id in this.zModels) if (!seen.has(+id)) { scene.remove(this.zModels[id].model); G.zombies = G.zombies.filter(z => z !== this.zModels[id]); delete this.zModels[id]; } }
+    if (s.p) { const pseen = new Set();
     for (const a of s.p) { pseen.add(a[0]); if (!this.pModels[a[0]]) { const p = dropPickup(a[1], a[2], a[3], { mission: a[4] || undefined, fl: a[5] }); G.nextId--; p.id = a[0]; p.remote = true; this.pModels[a[0]] = p; } }
-    for (const id in this.pModels) if (!pseen.has(+id)) { scene.remove(this.pModels[id].mesh); G.pickups = G.pickups.filter(p => p !== this.pModels[id]); delete this.pModels[id]; }
-    STORY.interacts = s.it.map(a => ({ id: a[0], x: a[1], z: a[2], label: a[3], used: !a[4], r: 2.4 }));
+    for (const id in this.pModels) if (!pseen.has(+id)) { scene.remove(this.pModels[id].mesh); G.pickups = G.pickups.filter(p => p !== this.pModels[id]); delete this.pModels[id]; } }
+    if (s.it) STORY.interacts = s.it.map(a => ({ id: a[0], x: a[1], z: a[2], label: a[3], used: !a[4], r: 2.4 }));
+    if (!s.q) { for (const ev of s.ev || []) this.applyEvent(ev); return; }
     const qChanged = G.chapterIdx !== s.q[0] || G.questIdx !== s.q[1] || G.qprog !== s.q[2];
     G.chapterIdx = s.q[0]; G.questIdx = s.q[1]; G.qprog = s.q[2]; STORY.questOverride = s.q[3];
     G.inv = s.inv; G.buffs = s.buffs; G.missionsDone = s.md; if (G.night !== s.night) setNight(s.night);
     if (qChanged) { UI.refreshQuest(); UI.refreshInv(); }
-    for (const ev of s.ev) this.applyEvent(ev);
+    for (const ev of s.ev || []) this.applyEvent(ev);
   },
   applyEvent(ev) {
     if (ev.e === 'fx') { const f = Object.assign({}, ev.f); f.t = 0; G.fx.push(f); }
@@ -2681,6 +2682,104 @@ const NET = {
     const u = G.me; this.send({ t: 'in', x: u.x, z: u.z, face: u.face, speed: u.speed || 0, fl: u.fl || 0 });
   },
 };
+
+// ============================================================
+//  Claude 링크(아티팩트) 안: room 기능으로 실시간 협동
+//  - 방장 → 모두: 'h' 토픽 (스냅샷 조각, 이벤트), 로비/시작은 방장 presence
+//  - 참가자 → 방장: presence (이름·캐릭터·위치·행동 큐)
+// ============================================================
+const ROOMNET = {
+  api: null, R: null, seq: 0, acts: [], lastSeq: {}, started: false, zbuf: {}, tick: 0,
+  async ready() { for (let i = 0; i < 100 && this.api === null && NET.roomPending; i++) await new Promise(r => setTimeout(r, 100)); return this.api; },
+  async host(name) {
+    const api = await this.ready(); if (!api) return NET.status('이 화면에서는 협동 연결을 쓸 수 없어요 (로그인이 필요하거나 권한이 없어요)');
+    NET.role = 'host'; NET.pid = 'host'; NET.code = Math.random().toString(36).slice(2, 7).toUpperCase(); NET.players = [{ pid: 'host', name, ch: null }];
+    NET.openLobby(); NET.status('방을 여는 중…');
+    try { this.R = await api.join('la-' + NET.code.toLowerCase()); } catch (e) { return NET.status('방을 열 수 없어요: ' + (e.code || e.message)); }
+    this.R.presence({ h: 1, name, players: NET.players, started: 0 });
+    this.R.onPeers(ch => this.hostPeers(ch.peers), e => NET.status('연결 오류: ' + e.code));
+    NET.status('방이 열렸어요. 친구에게 방 코드를 알려주세요.');
+  },
+  hostPeers(peers) {
+    const here = new Set();
+    for (const p of peers) {
+      if (p.sameTab || !p.presence || !p.presence.c) continue; const pid = p.peer; here.add(pid); const P = p.presence;
+      let pl = NET.players.find(q => q.pid === pid);
+      if (!pl) { pl = { pid, name: String(P.name || '친구').slice(0, 12), ch: null }; NET.players.push(pl); this.lastSeq[pid] = 0; this.pushLobby(); }
+      if (P.ch && P.ch !== pl.ch && CHAR[P.ch] && !NET.players.some(q => q.ch === P.ch && q.pid !== pid) && !G.running) { pl.ch = P.ch; this.pushLobby(); }
+      if (G.running && P.st) NET.onHost(pid, Object.assign({ t: 'in' }, P.st));
+      if (Array.isArray(P.acts)) for (const a of P.acts) if (a && a.n > (this.lastSeq[pid] || 0)) { this.lastSeq[pid] = a.n; NET.onHost(pid, a.m); }
+    }
+    for (const pl of NET.players.slice()) if (pl.pid !== 'host' && !here.has(pl.pid)) NET.leave(pl.pid);
+  },
+  pushLobby() { NET.renderLobby(); if (this.R) this.R.presence({ players: NET.players.map(p => ({ pid: p.pid, name: p.name, ch: p.ch })), started: this.started ? 1 : 0 }); },
+  async join(code, name) {
+    const api = await this.ready(); if (!api) return NET.status('이 화면에서는 협동 연결을 쓸 수 없어요 (로그인이 필요하거나 권한이 없어요)');
+    if (!code) return NET.status('방 코드를 입력하세요');
+    NET.role = 'client'; NET.code = code; NET.name = name; NET.openLobby(); NET.status('접속 중…');
+    try { this.R = await api.join('la-' + code.toLowerCase()); } catch (e) { return NET.status('방에 들어갈 수 없어요: ' + (e.code || e.message)); }
+    this.R.presence({ c: 1, name, ch: null, acts: [], st: null });
+    this.R.onPeers(ch => this.clientPeers(ch.peers), e => NET.status('연결 오류: ' + e.code));
+    this.R.on('h', msg => this.onHostMsg(msg.data));
+  },
+  clientPeers(peers) {
+    const me = peers.find(p => p.isMe && p.sameTab); if (me) NET.pid = me.peer;
+    const h = peers.find(p => p.presence && p.presence.h);
+    if (!h) { if (!this.waitShown) { this.waitShown = true; NET.status('방장을 기다리는 중… (방 코드를 확인하세요)'); } return; }
+    const pl = (h.presence.players || []).map(p => ({ pid: p.pid, name: String(p.name || '').slice(0, 12), ch: CHAR[p.ch] ? p.ch : null }));
+    const key = JSON.stringify(pl) + NET.pid; if (!G.running && key !== this.lastLobby) { this.lastLobby = key; NET.onClient({ t: 'lobby', players: pl }); }
+    if (h.presence.started && !this.started) { this.started = true; NET.onClient({ t: 'start', players: pl }); }
+  },
+  onHostMsg(d) {
+    if (!d || typeof d !== 'object') return;
+    if (d.t === 'ending') return UI.ending();
+    if (d.t !== 'snap' || !G.running) return;
+    if (d.k === 'z') { const b = this.zbuf[d.id] = this.zbuf[d.id] || []; b[d.i] = d.z;
+      if (b.filter(Boolean).length === d.n) { NET.applySnap({ z: [].concat(...b) }); for (const k in this.zbuf) if (+k <= d.id) delete this.zbuf[k]; } return; }
+    NET.applySnap(d);
+  },
+  // 참가자 → 방장
+  send(m) {
+    if (!this.R) return;
+    if (m.t === 'hello') return;
+    if (m.t === 'pick') return void this.R.presence({ ch: m.ch });
+    if (m.t === 'in') return void this.R.presence({ st: { x: +m.x.toFixed(2), z: +m.z.toFixed(2), face: +m.face.toFixed(2), speed: +(m.speed || 0).toFixed(1), fl: m.fl || 0 } });
+    if (m.t === 'chat') m = Object.assign({}, m, { text: String(m.text).slice(0, 200) });
+    this.acts.push({ n: ++this.seq, m }); if (this.acts.length > 8) this.acts.shift();
+    this.R.presence({ acts: this.acts });
+  },
+  // 방장 → 모두
+  broadcast(m) {
+    if (!this.R) return;
+    if (m.t === 'lobby') return this.pushLobby();
+    if (m.t === 'start') { this.started = true; return this.pushLobby(); }
+    if (m.t === 'ending') return void this.R.emit('h', { t: 'ending' }).catch(() => {});
+  },
+  hostTick(dt) {
+    NET.snapT -= dt; if (NET.snapT > 0 || !this.R) return; NET.snapT = 0.15; this.tick++;
+    const r = v => Math.round(v * 10) / 10, emit = d => this.R.emit('h', d).catch(() => {});
+    const a = { t: 'snap', k: 'a', u: G.units.map(u => [u.id, r(u.x), r(u.z), r(u.face), Math.round(u.hp), u.state, r(u.speed || 0), u.atkAnim > 0 ? 1 : 0, u.absent ? 1 : 0, u.hidden > 0 ? 1 : 0, Math.round(u.downT), u.weapon || '', r(u.reviveT), u.fl || 0]),
+      q: [G.chapterIdx, G.questIdx, G.qprog, STORY.questOverride || null], inv: G.inv, night: G.night, buffs: G.buffs, md: G.missionsDone, ev: [] };
+    let evs = NET.events; NET.events = [];
+    const fit = [], rest = []; let size = JSON.stringify(a).length;
+    for (const ev of evs) { const l = JSON.stringify(ev).length; if (size + l < 3600) { fit.push(ev); size += l; } else rest.push(ev); }
+    a.ev = fit; emit(a);
+    while (rest.length) { const part = []; let sz = 40; while (rest.length && sz + JSON.stringify(rest[0]).length < 3600) { const e = rest.shift(); sz += JSON.stringify(e).length; part.push(e); } if (!part.length) rest.shift(); else emit({ t: 'snap', k: 'e', ev: part }); }
+    const zs = G.zombies.map(z => [z.id, z.kind, r(z.x), r(z.z), r(z.face), Math.round(z.hp), z.maxHp, z.stun > 0 ? 1 : 0, z.mark > 0 ? 1 : 0, z.confused > 0 ? 1 : 0, z.root > 0 ? 1 : 0, r(z.speedNow || 0), z.atkAnim > 0 ? 1 : 0, z.fl || 0]);
+    const n = Math.max(1, Math.ceil(zs.length / 45));
+    for (let i = 0; i < n; i++) emit({ t: 'snap', k: 'z', id: this.tick, i, n, z: zs.slice(i * 45, i * 45 + 45) });
+    if (this.tick % 3 === 0) emit({ t: 'snap', k: 'p', p: G.pickups.slice(0, 40).map(p => [p.id, p.type, r(p.x), r(p.z), p.mission || '', p.fl || 0]),
+      it: STORY.allInteracts().slice(0, 20).map(i => [i.id, r(i.x), r(i.z), String(i.label).slice(0, 24), !i.used && (!i.enabled || i.enabled()) ? 1 : 0]) });
+  },
+};
+// NET이 room 전송을 쓰도록 연결
+['host', 'join', 'send', 'broadcast', 'hostTick'].forEach(k => { const orig = NET[k].bind(NET); NET[k] = function (...a) { return (NET.useRoom ? ROOMNET[k].apply(ROOMNET, a) : orig(...a)); }; });
+NET.detectRoom = function () {
+  if (NET.useRoom || !(window.claude && typeof window.claude.use === 'function')) return;
+  NET.useRoom = true; NET.roomPending = true; ROOMNET.api = null;
+  window.claude.use('room').then(r => { ROOMNET.api = r || false; NET.roomPending = false; }).catch(() => { ROOMNET.api = false; NET.roomPending = false; });
+};
+NET.detectRoom(); window.addEventListener('load', () => NET.detectRoom());
 
 'use strict';
 // ============================================================

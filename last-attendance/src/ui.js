@@ -42,7 +42,7 @@ const UI = {
     document.querySelectorAll('[data-cards]').forEach(b => b.onclick = () => this.openCards());
     document.querySelectorAll('[data-rel]').forEach(b => b.onclick = () => this.openRelations());
     $('btnSolo').onclick = () => { G.mode = 'solo'; this.openCharSelect(); };
-    $('btnCoop').onclick = () => { this.show('coopSel'); if (/claude|anthropic/.test(location.hostname)) { $('coopBlocked').classList.remove('hidden'); $('btnHost').disabled = $('btnJoin').disabled = true; } };
+    $('btnCoop').onclick = () => { NET.detectRoom(); this.show('coopSel'); if (NET.useRoom) $('coopBlocked').classList.remove('hidden'); };
     $('btnBack1').onclick = () => this.show('cover'); $('btnBack2').onclick = () => this.show('modeSel'); $('btnBack3').onclick = () => this.show('modeSel');
     $('btnHost').onclick = () => NET.host($('nick').value.trim() || '플레이어');
     $('btnJoin').onclick = () => NET.join($('roomCode').value.trim().toUpperCase(), $('nick').value.trim() || '플레이어');
