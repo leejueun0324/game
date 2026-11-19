@@ -151,6 +151,31 @@ td:first-child{font-family:'Gowun Batang',serif;font-weight:700;white-space:nowr
 .lot .poem{font-family:'Gowun Batang',serif;font-size:17px;margin:10px 0;white-space:pre-line;color:#fff}
 .lot .detail{font-size:14px;text-align:left;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;color:var(--body)}
 
+/* 신살 */
+.sals{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sal{background:var(--panel2);border-radius:14px;padding:14px 16px;border-left:3px solid var(--line)}
+.sal.good{border-left-color:#9be29e}.sal.mid{border-left-color:var(--gold)}.sal.bad{border-left-color:#ff8a6a}
+.sal .nm{font-family:'Gowun Batang',serif;font-size:18px;font-weight:700;color:#fff}
+.sal .hz{font-size:13px;color:var(--muted);margin-left:4px}
+.sal .wh{font-size:12px;color:var(--gold);margin:2px 0 6px}
+.sal p{font-size:14px;line-height:1.65}
+.badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;margin-left:6px;vertical-align:middle;font-family:'Noto Sans KR'}
+.badge.good{background:rgba(155,226,158,.15);color:#9be29e}.badge.mid{background:rgba(231,183,102,.15);color:var(--gold)}.badge.bad{background:rgba(255,138,106,.15);color:#ffb08a}
+/* 대운 상세 */
+.dd{padding:14px 0;border-bottom:1px dashed var(--line)}
+.dd:last-child{border-bottom:none}
+.dd .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.dd .ag{font-family:'Gowun Batang',serif;font-size:18px;color:var(--gold);font-weight:700}
+.dd .gz2{font-family:'Gowun Batang',serif;font-size:16px;color:#fff}
+.dd.now{background:linear-gradient(90deg,rgba(231,183,102,.1),transparent);border-radius:12px;padding:14px 12px;border-bottom:none;margin-bottom:1px}
+.dd p{font-size:14.5px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tg2{font-size:12px;background:var(--panel2);border-radius:99px;padding:2px 10px;color:var(--body)}
+.tg2.hot{background:rgba(255,107,74,.18);color:#ffc2b0}
+.mt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.mt .card .t{color:var(--gold)}
+.mt .card p,.mt .card li{font-size:14px}
+@media(max-width:600px){.sals,.mt{grid-template-columns:1fr}}
 footer{text-align:center;color:var(--muted);font-size:13px;margin-top:30px;line-height:1.8}
 footer a{color:var(--muted)}
 .hide{display:none!important}
@@ -235,24 +260,47 @@ footer a{color:var(--muted)}
     </section>
 
     <section>
-      <h2><span class="n">5</span>분야별 풀이</h2>
+      <h2><span class="n">5</span>신살 — 내 사주에 있는 살(煞)과 귀인</h2>
+      <p style="margin-bottom:14px">살은 무서운 게 아니라 <b>강하게 튀는 개성</b>이에요. 잘 쓰면 재능이 되고, 모르고 지나치면 조심할 점이 돼요.</p>
+      <div class="sals" id="sals"></div>
+      <div class="note" id="salNote"></div>
+    </section>
+
+    <section>
+      <h2><span class="n">6</span>잘 맞는 직업 · 적성</h2>
+      <div id="jobs"></div>
+    </section>
+
+    <section>
+      <h2><span class="n">7</span>연애 · 결혼운</h2>
+      <div id="love"></div>
+    </section>
+
+    <section>
+      <h2><span class="n">8</span>나와 잘 맞는 궁합</h2>
+      <div id="bestMatch"></div>
+    </section>
+
+    <section>
+      <h2><span class="n">9</span>재물 · 건강 · 인간관계</h2>
       <div id="fields"></div>
     </section>
 
     <section>
-      <h2><span class="n">6</span>대운 — 10년마다 바뀌는 큰 흐름</h2>
+      <h2><span class="n">10</span>나이별 운세 — 10년마다 바뀌는 대운</h2>
       <p style="margin-bottom:14px" id="daeunIntro"></p>
       <div class="tl" id="daeun"></div>
       <p style="margin-top:14px" id="daeunSum"></p>
+      <div id="daeunDetail" style="margin-top:8px"></div>
     </section>
 
     <section>
-      <h2><span class="n">7</span>가까운 몇 년의 운세</h2>
+      <h2><span class="n">11</span>해마다 보는 운세 (앞으로 10년)</h2>
       <div id="years"></div>
     </section>
 
     <section>
-      <h2><span class="n">8</span>오늘의 운세</h2>
+      <h2><span class="n">12</span>오늘의 운세</h2>
       <p class="muted" id="todayMeta" style="font-size:14px;margin-bottom:6px"></p>
       <p id="todayText" style="margin-bottom:10px"></p>
       <div id="todayScores"></div>
@@ -260,7 +308,7 @@ footer a{color:var(--muted)}
     </section>
 
     <section>
-      <h2><span class="n">9</span>나에게 좋은 기운</h2>
+      <h2><span class="n">13</span>나에게 좋은 기운</h2>
       <p style="margin-bottom:14px" id="luckyIntro"></p>
       <div class="lucky" id="lucky"></div>
       <ul style="margin-top:14px" id="luckyTips"></ul>
@@ -543,8 +591,147 @@ const TODAY_TXT=[
  '도움의 손길이 닿는 날. 배우고 읽고 계획하기에 좋아요. 윗사람의 조언에 귀 기울여 보세요.'
 ];
 
+// ===================== 신살 · 직업 · 연애 데이터 =====================
+const GROUP4=b=>[[8,0,4],[2,6,10],[5,9,1],[11,3,7]].findIndex(g=>g.includes(b)); // 신자진·인오술·사유축·해묘미
+const DOHWA=[9,3,6,0], YEOKMA=[2,8,11,5], HWAGAE=[4,10,1,7];
+const CHEONEUL=[[1,7],[0,8],[11,9],[11,9],[1,7],[0,8],[1,7],[2,6],[5,3],[5,3]];
+const MUNCHANG=[5,6,8,9,8,9,11,0,2,3];
+const YANGIN={0:3,2:6,4:6,6:9,8:0};
+const HONGYEOM=[6,6,2,7,4,4,10,9,0,8];
+const BAEKHO=['甲辰','乙未','丙戌','丁丑','戊辰','壬戌','癸丑'];
+const GOEGANG=['庚辰','庚戌','壬辰','壬戌','戊戌'];
+const WONJIN=[[0,7],[1,6],[2,9],[3,8],[4,11],[5,10]];
+const POS_MEAN={'년주':'조상·어린 시절','월주':'부모·사회','일주':'나·배우자','시주':'자녀·말년'};
+const SAL={
+ cheoneul:{n:'천을귀인',h:'天乙貴人',k:'good',d:'사주에서 가장 좋은 길신이에요. 어려울 때마다 <b>도와주는 귀인</b>이 나타나고 위기를 넘기는 힘이 있어요. 인복이 좋은 사주예요.'},
+ munchang:{n:'문창귀인',h:'文昌貴人',k:'good',d:'<b>총명함과 글재주</b>의 별이에요. 공부·시험·글쓰기에 강하고 배우는 속도가 빨라요.'},
+ dohwa:{n:'도화살',h:'桃花煞',k:'mid',d:'복숭아꽃처럼 <b>사람을 끄는 매력</b>이에요. 인기가 많고 예술·방송·서비스 분야에서 큰 무기가 돼요. 다만 이성 문제로 구설이 생기지 않게 조심하세요.'},
+ hongyeom:{n:'홍염살',h:'紅艶煞',k:'mid',d:'겉으로 다 드러나지 않는 <b>은근한 매력과 분위기</b>예요. 감정이 풍부하고 예술 감각이 좋아요. 감정에 휩쓸리는 연애는 조심하세요.'},
+ yeokma:{n:'역마살',h:'驛馬煞',k:'mid',d:'<b>움직임과 변화</b>의 별이에요. 여행·이사·해외·출장과 인연이 깊고, 넓게 다닐 때 운이 열려요. 한곳에 정착하는 건 늦어질 수 있어요.'},
+ hwagae:{n:'화개살',h:'華蓋煞',k:'mid',d:'<b>예술·학문·종교</b>의 별이에요. 혼자 깊이 파고드는 집중력과 감수성이 뛰어나요. 가끔 외로움을 크게 느낄 수 있어요.'},
+ yangin:{n:'양인살',h:'羊刃煞',k:'bad',d:'칼날처럼 <b>강한 추진력과 승부욕</b>이에요. 의료·법·군경·스포츠에서 큰 힘이 되지만, 성급함으로 인한 다툼이나 다침을 조심하세요.'},
+ baekho:{n:'백호살',h:'白虎煞',k:'bad',d:'호랑이처럼 <b>강하고 센 기운</b>이에요. 전문 분야에서 큰 성과를 내는 힘이 되지만, 사고·수술수로 보기도 하니 안전과 건강검진을 챙기세요.'},
+ goegang:{n:'괴강살',h:'魁罡煞',k:'mid',d:'<b>카리스마와 리더십</b>의 별이에요. 결단력이 강하고 큰일을 맡을 그릇이지만, 극단으로 치우치지 않게 균형이 필요해요.'},
+ hyeonchim:{n:'현침살',h:'懸針煞',k:'mid',d:'바늘처럼 <b>예리한 감각</b>이에요. 손재주와 분석력이 좋아 의료·디자인·IT에 잘 맞아요. 말이 날카로워지지 않게 조심하세요.'},
+ wonjin:{n:'원진살',h:'怨嗔煞',k:'bad',d:'<b>이유 없이 미워지고 서운해지는</b> 기운이에요. 예민해지고 감정 기복이 생길 수 있어요. 가까운 사람과 마음을 자주 나누면 풀려요.'},
+ chung:{n:'충',h:'沖',k:'bad',d:'두 자리가 <b>서로 부딪히는</b> 기운이에요. 변화와 이동이 많은 역동적인 삶이에요. 해당 자리의 인연(가족·직장)이 자주 바뀔 수 있어요.'},
+ gongmang:{n:'공망',h:'空亡',k:'mid',d:'<b>비어 있는</b> 자리예요. 그 자리의 인연이 약하거나 늦게 오지만, 대신 물질보다 <b>정신적인 가치</b>를 중요하게 여겨요.'}
+};
+function findSal(s,dm){
+  const P=[['년주',s.year],['월주',s.month],['일주',s.day],['시주',s.hour]].filter(x=>x[1]);
+  const out=[];
+  const add=(key,pl)=>{pl=[...new Set(pl)]; if(pl.length) out.push({...SAL[key],where:pl});};
+  const at=f=>P.filter(([n,p])=>f(p,n)).map(x=>x[0]);
+  add('cheoneul',at(p=>CHEONEUL[dm].includes(p[1])));
+  add('munchang',at(p=>p[1]===MUNCHANG[dm]));
+  [['dohwa',DOHWA],['yeokma',YEOKMA],['hwagae',HWAGAE]].forEach(([k,t])=>{
+    const tg=[t[GROUP4(s.year[1])],t[GROUP4(s.day[1])]];
+    add(k,at(p=>tg.includes(p[1])));
+  });
+  add('hongyeom',at(p=>p[1]===HONGYEOM[dm]));
+  if(YANGIN[dm]!==undefined) add('yangin',at(p=>p[1]===YANGIN[dm]));
+  add('baekho',at(p=>BAEKHO.includes(gzH(p))));
+  add('goegang',at((p,n)=>n==='일주'&&GOEGANG.includes(gzH(p))));
+  const hcF=p=>[0,7].includes(p[0])||[3,6,8].includes(p[1]);
+  const hc=P.reduce((a,[n,p])=>a+([0,7].includes(p[0])?1:0)+([3,6,8].includes(p[1])?1:0),0);
+  if(hc>=2) add('hyeonchim',at(hcF));
+  const wj=[],ch=[];
+  for(let i=0;i<P.length;i++)for(let k=i+1;k<P.length;k++){
+    const a=P[i][1][1],b=P[k][1][1];
+    if(WONJIN.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a))) wj.push(P[i][0],P[k][0]);
+    if(mod(a-b,12)===6) ch.push(P[i][0],P[k][0]);
+  }
+  add('wonjin',wj); add('chung',ch);
+  const xun=Math.floor(pillarIdx(s.day)/10), voidB=[(xun*10+10)%12,(xun*10+11)%12];
+  add('gongmang',at((p,n)=>n!=='일주'&&voidB.includes(p[1])));
+  return out;
+}
+const JOB_TOP=[
+ ['창업가','프리랜서','운동선수·트레이너','영업 전문가','자영업','팀 리더'],
+ ['콘텐츠 크리에이터','디자이너','작가','강사','기획자','마케터','요리사'],
+ ['사업가','금융·투자 전문가','회계사','무역·유통','부동산 전문가','MD·바이어'],
+ ['공무원','법조인','대기업 관리직','경찰·군인','의료인','행정 전문가'],
+ ['연구원','교사·교수','사서·기록관리사','편집자','상담사','약사·한의사']
+];
+const ELEMENT_JOB=[
+ ['교육','출판·문구','패션·섬유','조경·원예','아동·복지'],
+ ['IT·전자','방송·광고','뷰티','에너지·조명','엔터테인먼트'],
+ ['부동산','건설·인테리어','농업·식품','중개·컨설팅','호텔·숙박'],
+ ['금융','법률','기계·자동차','반도체·하드웨어','의료기기'],
+ ['무역·물류','여행','외식·음료','심리·상담','연구·데이터']
+];
+const AVOID=[
+ '지시만 따르고 내 의견이 반영되지 않는 곳에서는 금방 지쳐요.',
+ '규칙이 지나치게 딱딱하고 표현을 막는 조직은 답답하게 느껴져요.',
+ '성과가 보이지 않고 보상이 불분명한 일은 오래 버티기 어려워요.',
+ '체계 없이 매일 바뀌는 환경이나 불안정한 수입 구조는 스트레스가 커요.',
+ '숫자 압박만 큰 실적 위주의 일은 기운을 빨리 소모시켜요.'
+];
+const LOVE_STYLE=[
+ '좋아하면 <b>직진하는 리더형</b> 연애예요. 연인을 이끌고 지켜 주려 하지만, 고집 때문에 다툼이 생기기도 해요.',
+ '<b>다정하게 맞춰 주는</b> 연애예요. 함께하는 시간을 중요하게 여기고, 상대에게 자연스럽게 기대요.',
+ '표현이 확실하고 <b>열정적인</b> 연애예요. 금방 불타오르지만 식는 것도 빨라서 꾸준함이 숙제예요.',
+ '한 사람을 깊고 따뜻하게 챙기는 <b>헌신형</b> 연애예요. 겉으로는 차분해도 마음은 누구보다 뜨거워요.',
+ '무뚝뚝하지만 한번 마음 주면 오래 가는 <b>듬직한</b> 연애예요. 쉽게 흔들리지 않는 믿음을 줘요.',
+ '현실적이고 <b>세심하게 챙기는</b> 연애예요. 상대의 생활까지 꼼꼼히 돌봐 줘요.',
+ '의리 있고 <b>화끈한</b> 연애예요. 좋고 싫음이 분명해서 밀당보다 솔직함을 좋아해요.',
+ '취향이 확실하고 <b>눈이 높은</b> 편이에요. 섬세한 배려를 원하고, 분위기 있는 연애를 좋아해요.',
+ '<b>자유롭고 쿨한</b> 연애예요. 구속을 싫어하고 대화가 잘 통하는 사람에게 끌려요.',
+ '<b>감성적이고 로맨틱한</b> 연애예요. 상대의 마음을 잘 읽고 작은 이벤트로 감동을 줘요.'
+];
+const LOVE_CARE=[
+ '자기 생각만 옳다고 밀어붙이면 상대가 지쳐요. 한 번 더 물어보는 연습을 하세요.',
+ '맞춰 주다 지치면 한꺼번에 터질 수 있어요. 싫은 건 그때그때 말하세요.',
+ '처음의 열정만큼 꾸준한 관심이 중요해요. 작은 기념일을 챙겨 보세요.',
+ '서운함을 속으로 쌓아 두다 한 번에 식을 수 있어요. 마음을 말로 꺼내세요.',
+ '표현이 적어 상대가 사랑받지 못한다고 느낄 수 있어요. 말 한마디가 큰 힘이 돼요.',
+ '걱정이 잔소리가 되지 않게 조심하세요. 믿고 맡기는 것도 사랑이에요.',
+ '말이 직설적이라 상처를 줄 수 있어요. 부드러운 표현을 한 번 더 고르세요.',
+ '작은 말에 상처받고 오래 기억하는 편이에요. 상대의 진심을 먼저 봐 주세요.',
+ '자유를 너무 강조하면 상대가 불안해해요. 연락과 약속을 꾸준히 지키세요.',
+ '혼자 상상하며 불안해하지 말고, 궁금하면 직접 물어보세요.'
+];
+const SPOUSE=[
+ '<b>친구 같은 연인</b>이 잘 맞아요. 서로 대등하게 의지하는 관계가 편하지만, 경쟁심이 생기지 않게 조심하세요.',
+ '내가 챙겨 주고 웃게 해 주는 관계가 잘 맞아요. <b>표현이 많고 귀여운 매력</b>의 상대에게 끌려요.',
+ '<b>현실적이고 생활력 있는</b> 상대가 잘 맞아요. 함께 계획을 세우고 꾸려 가는 안정적인 관계예요.',
+ '<b>듬직하고 책임감 있는</b>, 존경할 수 있는 상대가 잘 맞아요. 나를 바로잡아 주는 사람에게 마음이 가요.',
+ '나를 이해하고 보살펴 주는 <b>포근한</b> 상대가 잘 맞아요. 대화가 잘 통하고 배울 점이 많은 사람이 좋아요.'
+];
+const REL_SHORT=['자신감·경쟁','표현·재능','재물·결과','책임·명예','배움·도움'];
+const STAGE=[
+ ['친구 관계가 넓어지고 자기 주장이 강해지는 시기예요. 경쟁심을 공부의 원동력으로 쓰면 좋아요.',
+  '끼와 재능이 드러나는 시기예요. 예체능, 발표, 동아리에서 두각을 나타내요.',
+  '현실 감각이 일찍 생겨 용돈·아르바이트에 관심이 커져요. 공부보다 놀거리에 마음이 가지 않게 조절하세요.',
+  '규칙과 책임을 배우는 시기예요. 임원 같은 역할을 맡거나 시험 운이 좋지만 부담도 커요.',
+  '공부 운이 가장 좋은 시기예요. 부모님과 선생님의 도움을 많이 받아요.'],
+ ['독립과 경쟁의 시기예요. 창업·이직 욕구가 커지고 동료가 힘이 되지만, 돈 거래는 조심하세요.',
+  '재능으로 먹고사는 시기예요. 콘텐츠·기술·말로 성과를 내고, 하고 싶은 일이 많아져요.',
+  '돈과 성과가 따르는 시기예요. 일이 많아 바쁘지만 그만큼 통장이 불어나요.',
+  '직장과 명예의 시기예요. 승진하거나 안정적인 자리를 얻고, 사회적으로 인정받아요.',
+  '공부·자격·문서의 시기예요. 대학원·자격증·집 계약처럼 문서로 남는 일이 잘 풀려요.'],
+ ['내 이름을 걸고 움직이는 시기예요. 사람이 모이지만 그만큼 지출도 커요.',
+  '경험을 가르치고 나누는 시기예요. 강의·멘토·취미가 새 수입이 되기도 해요.',
+  '재물을 거두는 시기예요. 투자·부동산에 관심이 생기고, 건강과의 균형이 중요해요.',
+  '책임 있는 자리에 오르는 시기예요. 관리자·리더 역할을 맡고, 스트레스 관리가 필수예요.',
+  '안정과 내실의 시기예요. 배움으로 제2의 인생을 준비하고 문서 재산이 늘어요.'],
+ ['친구·형제와 어울리며 활기 있게 지내는 시기예요.',
+  '취미와 먹는 복이 있는 여유로운 시기예요. 자녀·후배를 키우는 기쁨이 커요.',
+  '모아 둔 재산을 관리하고 누리는 시기예요.',
+  '존경받는 어른의 자리예요. 명예가 따르지만 건강검진은 꼭 챙기세요.',
+  '배움과 휴식이 함께하는 평온한 시기예요. 자손의 도움을 받아요.']
+];
+const YEAR_SHORT=[
+ '사람이 모이고 자신감이 오르는 해. 경쟁과 지출은 조심.',
+ '재능과 표현이 빛나는 해. 새로운 시도에 좋아요. 말조심.',
+ '돈과 성과가 들어오는 해. 욕심보다 실속을 챙기세요.',
+ '책임과 자리 변화의 해. 인정받지만 건강 관리는 필수.',
+ '공부·문서·도움의 해. 계획을 실행으로 옮기는 게 관건.'
+];
+
 // ===================== 렌더링 헬퍼 =====================
 const $=id=>document.getElementById(id);
+const josa=(w,a,b)=>{const c=w.charCodeAt(w.length-1);return w+((c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28)?a:b);};
 const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
 const gzH=([s,b])=>STEM_H[s]+BR_H[b];
 const gzK=([s,b])=>STEM_K[s]+BR_K[b];
@@ -660,56 +847,159 @@ $('formMe').addEventListener('submit',e=>{
   $('tgTable').innerHTML=gOrder.map(g=>`<tr><td>${TG_NAMES[g].join('·')}</td><td>${groups[g].length?groups[g].join(' '):'없음'}</td><td>${TG_MEAN[g]} `+
     (gw[g]===0?TG_EMPTY[g]:gw[g]>=3?'<b>아주 강해서</b> 사주의 중심이 되는 힘이에요.':gw[g]===2?'적당히 있어서 잘 쓰이는 힘이에요.':'조금 있어서 필요할 때 꺼내 쓰는 힘이에요.')+`</td></tr>`).join('');
 
-  // --- 5. 분야별
   const top=gOrder[0], gl=g=>gw[g];
   const loveG=male?2:3, loveEl=mod(dmEl+(male?2:3),5);
-  let f=`<h3>📚 공부 · 진로</h3><p>${REL_NAME[top]} 기운이 가장 강해요. ${CAREER[top][1]}</p>
-    <ul><li>잘 맞는 분야: ${CAREER[top][0]}</li>`;
-  if(gOrder[1]!==top&&gl(gOrder[1])>0) f+=`<li>함께 살리면 좋은 분야: ${CAREER[gOrder[1]][0]}</li>`;
-  f+=`<li>팁: ${gl(1)?'배운 걸 <b>글이나 결과물로 남기는 습관</b>을 들이면 더 빛나요.':'생각을 <b>말이나 글로 꺼내 보는 연습</b>이 가장 큰 무기가 돼요.'}</li></ul>`;
-  f+=`<h3>💬 인간관계</h3><p>`+(gl(0)>=3?'비견·겁재가 많아서 <b>또래 친구, 동기, 모임</b>과 인연이 깊어요. 다만 가까운 사람과 비교하거나 서운함을 오래 담아 둘 수 있어요. 서운한 건 그때그때 가볍게 말하는 게 좋아요.'
-     :gl(4)>=3?'인성이 강해서 <b>윗사람, 선생님, 선배</b>의 사랑을 잘 받아요. 다만 받는 데 익숙해지지 않도록 먼저 챙겨 주는 연습을 해 보세요.'
-     :gl(1)>=3?'식상이 강해서 <b>말이 재밌고 분위기를 띄우는</b> 사람이에요. 다만 솔직한 한마디가 상처가 되지 않게 조심하세요.'
-     :'관계를 넓게 맺기보다 <b>믿을 만한 사람 몇 명과 깊게</b> 지내는 편이에요. 오래 갈수록 진가가 드러나는 사람이에요.')+`</p>`;
-  f+=`<h3>💕 연애</h3><p>${male?'남성':'여성'} 사주에서 ${REL_NAME[loveG]}(${EL_NAME[loveEl]} 기운)은 이성을 뜻해요. `+
-     (gl(loveG)===0?`사주에 이 기운이 비어 있어 연애보다 내 일에 집중하는 시기가 길 수 있어요. 대신 인연이 오면 <b>${EL_NAME[loveEl]} 기운이 강한 사람</b>에게 크게 끌려요.`
-      :gl(loveG)>=3?`이 기운이 많아서 <b>인기가 많고 인연이 자주</b> 찾아와요. 그만큼 신중하게 고르는 눈이 중요해요.`
-      :`${EL_NAME[loveEl]} 기운의 사람에게 끌리기 쉬워요. 나와 다른 점을 채워 주는 관계예요. 자존심 싸움이 되지 않도록 한발 물러서는 연습이 도움이 돼요.`)+`</p>`;
-  f+=`<h3>💰 재물</h3><p>`+(gl(2)===0?`사주에 재성(${EL_NAME[mod(dmEl+2,5)]})이 없어서 <b>돈이 모이기보다 나가기 쉬워요.</b> 하고 싶은 일에 쓰는 돈이 많을 수 있어요. 대운에서 ${EL_NAME[mod(dmEl+2,5)]} 기운이 들어올 때 재물운이 크게 좋아져요.`
+  const badEl=strong?[dmEl,mod(dmEl-1,5)]:[mod(dmEl+3,5),mod(dmEl+2,5)];
+  const clamp=v=>Math.max(1,Math.min(5,Math.round(v)));
+  const scoreEls=els=>{let v=3; if(els.includes(L)) v++; if(L2!==L&&els.includes(L2)) v++; v-=els.filter(e=>badEl.includes(e)).length*0.75; return v;};
+  const du=calcDaeun(s,male);
+  const yeokB=[YEOKMA[GROUP4(s.year[1])],YEOKMA[GROUP4(s.day[1])]];
+
+  // --- 5. 신살
+  const sals=findSal(s,dm), has=n=>sals.some(x=>x.n===n);
+  const KIND={good:'길신',mid:'양면',bad:'주의'};
+  $('sals').innerHTML=sals.length?sals.map(x=>`<div class="sal ${x.k}"><div class="nm">${x.n}<span class="hz">${x.h}</span><span class="badge ${x.k}">${KIND[x.k]}</span></div><div class="wh">📍 ${x.where.map(w=>`${w}(${POS_MEAN[w]})`).join(', ')}</div><p>${x.d}</p></div>`).join('')
+    :'<p>특별히 튀는 살이 없는 <b>순한 사주</b>예요. 큰 굴곡 없이 무난하게 흘러가는 편이에요.</p>';
+  const goodS=sals.filter(x=>x.k==='good').map(x=>x.n), badS=sals.filter(x=>x.k==='bad').map(x=>x.n);
+  $('salNote').innerHTML=`💡 ${goodS.length?`<b>${josa(goodS.join('·'),'이','가')}</b> 있어 위기 때 도움을 받는 복이 있어요. `:''}`+
+    (badS.length?`${badS.join('·')} 같은 살은 겁낼 필요 없이 '조심 신호'로만 기억하세요. 잘 쓰면 전문 분야에서 강한 힘으로 바뀌어요.`:'조심해야 할 큰 흉살이 없는 편이에요.')+
+    (inp.h===null?' (시간을 몰라 시주의 살은 빠져 있어요.)':'');
+
+  // --- 6. 직업
+  const style=gl(3)>=2&&gl(3)>=gl(1)?['조직형','체계가 잡힌 회사·기관에서 차근차근 올라갈 때 가장 안정적이에요.']
+    :gl(0)+gl(1)>=4?['독립형','지시받기보다 내 방식대로 일할 때 능력이 터져요. 프리랜서·창업도 잘 맞아요.']
+    :gl(4)>=3?['전문가형','한 분야를 깊게 파서 자격과 실력으로 인정받는 길이 잘 맞아요.']
+    :['균형형','조직과 개인 작업 모두 무난해요. 조직에서 배우고 나중에 독립하는 흐름이 좋아요.'];
+  const salJobs=[];
+  if(has('역마살')) salJobs.push('<b>역마살</b> → 해외·무역·여행·항공·물류·영업처럼 움직이는 일');
+  if(has('화개살')) salJobs.push('<b>화개살</b> → 예술·연구·종교·상담처럼 깊이 파는 일');
+  if(has('문창귀인')) salJobs.push('<b>문창귀인</b> → 교육·글쓰기·연구·시험으로 들어가는 직업');
+  if(has('도화살')||has('홍염살')) salJobs.push('<b>도화·홍염</b> → 방송·연예·뷰티·패션·서비스처럼 사람 앞에 서는 일');
+  if(has('양인살')||has('백호살')||has('괴강살')) salJobs.push('<b>양인·백호·괴강</b> → 의료·법조·군경·스포츠처럼 강한 결단이 필요한 일');
+  if(has('현침살')) salJobs.push('<b>현침살</b> → 의료·디자인·IT·정밀기술처럼 예리한 손과 눈이 필요한 일');
+  const second=gOrder[1];
+  const picks=[...new Set([...JOB_TOP[top].slice(0,4),...(gl(second)>0?JOB_TOP[second].slice(0,3):[])])];
+  let j=`<p>${REL_NAME[top]} 기운이 가장 강하고, 도움 되는 기운은 <b class="c${L}">${EL_NAME[L]}(${EL_H[L]})</b> 기운이에요. ${CAREER[top][1]}</p>
+    <h3>추천 직업</h3><div class="chips" style="margin-top:4px">${picks.map(x=>`<span class="chip"><b>${x}</b></span>`).join('')}</div>
+    <div class="mt" style="margin-top:14px">
+      <div class="card"><div class="t">🧩 일하는 스타일 — ${style[0]}</div><p>${style[1]}</p></div>
+      <div class="card"><div class="t">🏢 운이 트이는 업종 (${EL_NAME[L]} 기운)</div><p>${ELEMENT_JOB[L].join(', ')}</p></div>
+    </div>
+    <h3>십신으로 본 적성</h3><ul><li><b>${REL_NAME[top]}</b> 중심: ${CAREER[top][0]}</li>${gl(second)>0?`<li><b>${REL_NAME[second]}</b> 보조: ${CAREER[second][0]}</li>`:''}</ul>`;
+  if(salJobs.length) j+=`<h3>신살로 본 적성</h3><ul>${salJobs.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+  j+=`<h3>피하면 좋은 환경</h3><p>${AVOID[top]}</p>`;
+  $('jobs').innerHTML=j;
+
+  // --- 7. 연애
+  const spouseRel=rel(dmEl,BR_EL[s.day[1]]);
+  const dohwaB=[DOHWA[GROUP4(s.year[1])],DOHWA[GROUP4(s.day[1])]];
+  const loveYears=[];
+  for(let k=0;k<15;k++){
+    const Y=now.getFullYear()+k, yp=yearPillar(Y); let sig=0; const why=[];
+    if(stemEl(yp[0])===loveEl||BR_EL[yp[1]]===loveEl){sig++;why.push('이성의 기운');}
+    if(BR_6HAP(yp[1],s.day[1])){sig++;why.push('배우자 자리 합');}
+    if(dohwaB.includes(yp[1])){sig++;why.push('도화');}
+    if(STEM_HAP(yp[0],dm)){sig++;why.push('일간 합');}
+    if(mod(yp[1]-s.day[1],12)===6) sig--;
+    if(sig>=1) loveYears.push({Y,sig,why,age:Y-inp.y});
+  }
+  const loveDu=du.list.filter(x=>x.from>=14&&x.from<=44&&[stemEl(x.p[0]),BR_EL[x.p[1]]].includes(loveEl));
+  let lv=`<p>${LOVE_STYLE[dm]}</p>
+    <div class="mt">
+      <div class="card"><div class="t">💘 이성운의 세기</div><p>${male?'남성':'여성'} 사주에서 이성은 <b>${REL_NAME[loveG]}(${EL_NAME[loveEl]})</b>이에요. `+
+      (gl(loveG)===0?'사주에 비어 있어 <b>늦게 피는 인연</b>이에요. 서두르기보다 운이 들어오는 해를 노리세요.':gl(loveG)>=3?'많이 있어 <b>인연이 자주</b> 찾아와요. 고르는 눈이 중요해요.':'적당히 있어 <b>자연스럽게 인연이</b> 이어지는 편이에요.')+
+      (has('도화살')?' 도화살까지 있어 <b>이성에게 인기가 많아요.</b>':'')+(has('홍염살')?' 홍염살이 있어 <b>은근한 매력</b>으로 마음을 끌어요.':'')+`</p></div>
+      <div class="card"><div class="t">💑 잘 맞는 배우자상</div><p>배우자 자리(일지)에 <b>${josa(tenGod(dm,s.day[1],true),'이','가')}</b> 있어요. ${SPOUSE[spouseRel]}</p></div>
+    </div>
+    <h3>연애할 때 조심할 점</h3><p>${LOVE_CARE[dm]}${has('원진살')?' 원진살이 있어 가까운 사이일수록 <b>사소한 말에 서운함</b>이 커질 수 있어요.':''}${has('충')?' 사주에 충이 있어 <b>만남과 이별이 극적으로</b> 오갈 수 있으니 큰 결정은 천천히 하세요.':''}</p>`;
+  const hotLove=loveYears.filter(x=>x.sig>=2);
+  lv+='<h3>연애운이 들어오는 해</h3>'+(loveYears.length?`<div class="tags">${loveYears.slice(0,10).map(x=>`<span class="tg2${x.sig>=2?' hot':''}">${x.sig>=2?'🔥':'💕'} ${x.Y}년 · 만 ${x.age}세</span>`).join('')}</div>
+    <p style="margin-top:8px">${hotLove.length?`특히 <b>${hotLove.slice(0,3).map(x=>`${x.Y}년(${x.why.join('·')})`).join(', ')}</b>은 인연운이 강하게 들어오는 해예요.`:'큰 파도보다 잔잔한 인연이 이어지는 흐름이에요.'}</p>`
+    :'<p>앞으로 몇 년은 연애보다 나에게 집중하는 시기예요.</p>');
+  const marry=loveYears.filter(x=>x.sig>=2&&x.age>=26&&x.age<=42);
+  lv+=`<h3>결혼운</h3><p>${marry.length?`결혼이나 깊은 약속을 하기 좋은 해는 <b>${marry.slice(0,3).map(x=>`${x.Y}년(만 ${x.age}세)`).join(', ')}</b>이에요.`:'가까운 15년 안에서 결혼 시기를 콕 집기보다, 연애운이 들어오는 해에 만난 인연을 오래 지켜보는 게 좋아요.'}`+
+    (loveDu.length?` 대운으로 보면 <b>${loveDu.map(x=>`${x.from}~${x.from+9}세`).join(', ')}</b> 대운에 이성의 기운이 들어와 인연이 깊어져요.`:'')+`</p>`;
+  $('love').innerHTML=lv;
+
+  // --- 8. 잘 맞는 궁합
+  const yb=s.year[1];
+  const hap6=mod(1-yb,12), samG=SAMHAP.find(g=>g.slice(0,3).includes(yb)).slice(0,3).filter(b=>b!==yb);
+  const chungB=(yb+6)%12, wjP=WONJIN.find(p=>p.includes(yb)), wjB=wjP[0]===yb?wjP[1]:wjP[0];
+  const goodB=[hap6,...samG], near=[];
+  for(let y=s.sy-8;y<=s.sy+8;y++){ if(y===s.sy) continue; const b=mod(y-4,12); if(goodB.includes(b)) near.push(`${y}년생(${ANIMAL[b]}띠)`); }
+  const hapStem=(dm+5)%10, dayHap=mod(1-s.day[1],12);
+  $('bestMatch').innerHTML=`<div class="mt">
+      <div class="card good"><div class="t">💚 잘 맞는 띠</div><p><b>${ANIMAL[hap6]}띠</b> — 육합, 가장 편안한 짝<br><b>${samG.map(b=>ANIMAL[b]+'띠').join(', ')}</b> — 삼합, 같은 목표를 향하는 팀</p></div>
+      <div class="card bad"><div class="t">🧡 부딪히기 쉬운 띠</div><p><b>${ANIMAL[chungB]}띠</b> — 충, 정반대라 끌리지만 다툼도 많아요<br><b>${ANIMAL[wjB]}띠</b> — 원진, 이유 없는 서운함이 쌓이기 쉬워요</p></div>
+    </div>
+    <h3>나이로 보면</h3><p>내 나이 앞뒤로 잘 맞는 출생연도예요 (입춘 기준): ${near.map(x=>`<b>${x}</b>`).join(', ')}</p>
+    <h3>사람 유형으로 보면</h3><ul>
+      <li><b>${STEM_K[hapStem]}${EL_K[stemEl(hapStem)]}(${STEM_H[hapStem]}) 일간</b> — '${DM[hapStem].name}' 같은 사람. 나와 <b>천간합</b>을 이루어 처음부터 묘하게 끌리는 천생연분 짝이에요.</li>
+      <li><b>${[L*2,L*2+1].map(x=>STEM_K[x]+EL_K[stemEl(x)]).join('·')} 일간</b> — ${EL_NAME[L]} 기운이 강한 사람. 내 사주에 필요한 기운을 채워 줘서 <b>함께 있으면 운이 좋아지는</b> 사람이에요.</li>
+      <li><b>일지가 ${BR_H[dayHap]}(${BR_K[dayHap]})인 사람</b> — 배우자 자리끼리 합이라 <b>생활 궁합</b>이 좋아요.</li>
+      <li>성격으로는 ${SPOUSE[spouseRel].replace(/<\/?b>/g,'').split('.')[0]}.</li></ul>
+    <p class="muted" style="font-size:13px;margin-top:10px">상대의 생년월일을 알면 위의 '궁합' 탭에서 점수로 확인해 보세요.</p>`;
+
+  // --- 9. 재물·건강·관계
+  let f=`<h3>💰 재물</h3><p>`+(gl(2)===0?`사주에 재성(${EL_NAME[mod(dmEl+2,5)]})이 없어서 <b>돈이 모이기보다 나가기 쉬워요.</b> 하고 싶은 일에 쓰는 돈이 많을 수 있어요. 대운에서 ${EL_NAME[mod(dmEl+2,5)]} 기운이 들어올 때 재물운이 크게 좋아져요.`
      :gl(2)>=3?'재성이 많아서 <b>돈 버는 감각</b>이 있어요. 다만 일이 많아 몸이 지치기 쉬우니 욕심을 조절하세요.'
-     :'재성이 적당히 있어 <b>꾸준히 모으는 힘</b>이 있어요. 큰 한 방보다 차곡차곡 쌓는 방식이 잘 맞아요.')+`</p><ul><li>지금 할 일: 작게라도 용돈·지출 기록하기, 자동 저축 만들어 두기</li></ul>`;
-  f+=`<h3>🌿 건강</h3><p>${HEALTH[order[0]]}</p>`;
+     :'재성이 적당히 있어 <b>꾸준히 모으는 힘</b>이 있어요. 큰 한 방보다 차곡차곡 쌓는 방식이 잘 맞아요.')+`</p><ul><li>지금 할 일: 작게라도 지출 기록하기, 자동 저축 만들어 두기</li></ul>`;
+  f+=`<h3>🌿 건강</h3><p>${HEALTH[order[0]]}${missing.length?` 비어 있는 ${missing.map(i=>EL_NAME[i]).join('·')} 기운과 관련된 곳도 가끔 점검해 주세요.`:''}</p>`;
+  f+=`<h3>💬 인간관계</h3><p>`+(gl(0)>=3?'비견·겁재가 많아서 <b>또래 친구, 동기, 모임</b>과 인연이 깊어요. 다만 가까운 사람과 비교하거나 서운함을 오래 담아 둘 수 있어요. 서운한 건 그때그때 가볍게 말하는 게 좋아요.'
+     :gl(4)>=3?'인성이 강해서 <b>윗사람, 선생님, 선배</b>의 사랑을 잘 받아요. 받는 데 익숙해지지 않도록 먼저 챙겨 주는 연습을 해 보세요.'
+     :gl(1)>=3?'식상이 강해서 <b>말이 재밌고 분위기를 띄우는</b> 사람이에요. 솔직한 한마디가 상처가 되지 않게 조심하세요.'
+     :'관계를 넓게 맺기보다 <b>믿을 만한 사람 몇 명과 깊게</b> 지내는 편이에요. 오래 갈수록 진가가 드러나요.')+(has('천을귀인')?' 천을귀인이 있어 <b>결정적인 순간에 도와주는 사람</b>이 꼭 나타나요.':'')+`</p>`;
   $('fields').innerHTML=f;
 
-  // --- 6. 대운
-  const du=calcDaeun(s,male);
+  // --- 10. 대운 (나이별)
   let nowIdx=-1;
-  $('daeunIntro').textContent=`${du.start}살부터 10년 단위로 ${du.fwd?'순서대로(순행)':'거꾸로(역행)'} 흘러가요. 금빛 칸이 지금이에요.`;
+  du.list.forEach((x,i)=>{if(age>=x.from&&age<x.from+10) nowIdx=i;});
+  $('daeunIntro').innerHTML=`${du.start}살부터 10년 단위로 ${du.fwd?'순서대로(순행)':'거꾸로(역행)'} 흘러가요. 금빛 칸이 지금이에요. <span class="muted" style="font-size:13px">(대운 나이는 전통 방식인 세는 나이 기준)</span>`;
+  const duScore=du.list.map(x=>clamp(scoreEls([stemEl(x.p[0]),BR_EL[x.p[1]]])));
   $('daeun').innerHTML=du.list.map((x,i)=>{
-    const isNow=age>=x.from&&age<x.from+10; if(isNow) nowIdx=i;
     const r=rel(dmEl,stemEl(x.p[0]));
-    const goodLuck=[stemEl(x.p[0]),BR_EL[x.p[1]]].some(e=>e===L||e===L2);
     const to=i===7?'세~':`~${x.from+9}세`;
-    return `<div class="c${isNow?' now':''}"><div class="age">${x.from}${to}${isNow?' · 지금':''}</div><div class="gz">${gzH(x.p)}</div><div class="d">${DAEUN_D[r][goodLuck?0:1]}</div></div>`;
+    return `<div class="c${i===nowIdx?' now':''}"><div class="age">${x.from}${to}${i===nowIdx?' · 지금':''}</div><div class="gz">${gzH(x.p)}</div><div class="stars">${stars(duScore[i])}</div><div class="d">${DAEUN_D[r][duScore[i]>=3?0:1]}</div></div>`;
   }).join('');
-  const goodCount=du.list.map(x=>[stemEl(x.p[0]),BR_EL[x.p[1]]].some(e=>e===L||e===L2)?1:0);
-  const early=goodCount.slice(0,4).reduce((a,b)=>a+b,0), late=goodCount.slice(4).reduce((a,b)=>a+b,0);
-  $('daeunSum').innerHTML='한마디로 '+(late>early?`<b>젊을 땐 배우고 부딪히며 크고, 나이 들수록 더 안정되는 '뒤로 갈수록 좋아지는' 사주</b>예요.`
-    :early>late?`<b>젊은 시절에 기회가 많이 오는 사주</b>예요. 일찍 온 기회를 잘 쌓아 두면 평생의 밑천이 돼요.`
-    :`<b>오르막과 쉼이 고르게 이어지는 사주</b>예요. 좋은 대운에 힘껏 달리고 쉬는 대운에 내실을 다지세요.`);
+  const early=duScore.slice(0,4).reduce((a,b)=>a+b,0), late=duScore.slice(4).reduce((a,b)=>a+b,0);
+  const bestI=duScore.indexOf(Math.max(...duScore));
+  $('daeunSum').innerHTML='한마디로 '+(late>early+1?`<b>젊을 땐 배우고 부딪히며 크고, 나이 들수록 더 안정되는 '뒤로 갈수록 좋아지는' 사주</b>예요.`
+    :early>late+1?`<b>젊은 시절에 기회가 많이 오는 사주</b>예요. 일찍 온 기회를 잘 쌓아 두면 평생의 밑천이 돼요.`
+    :`<b>오르막과 쉼이 고르게 이어지는 사주</b>예요. 좋은 대운에 힘껏 달리고 쉬는 대운에 내실을 다지세요.`)+
+    ` 가장 힘이 실리는 때는 <b>${du.list[bestI].from}~${du.list[bestI].from+9}세</b>예요.`;
+  $('daeunDetail').innerHTML='<h3>대운별 자세한 풀이</h3>'+du.list.map((x,i)=>{
+    const rs=rel(dmEl,stemEl(x.p[0])), rb=rel(dmEl,BR_EL[x.p[1]]), els=[stemEl(x.p[0]),BR_EL[x.p[1]]], sc=duScore[i];
+    const ev=[];
+    if(mod(x.p[1]-s.day[1],12)===6) ev.push(['⚠️ 배우자 자리 충 — 이사·이직·관계 변화',1]);
+    if(BR_6HAP(x.p[1],s.day[1])) ev.push(['💞 배우자 자리 합 — 좋은 인연·안정',0]);
+    if(mod(x.p[1]-s.month[1],12)===6) ev.push(['🔄 월지 충 — 직장·환경의 큰 변화',1]);
+    if(STEM_HAP(x.p[0],dm)) ev.push(['🤝 일간 합 — 귀인과 인연',0]);
+    if(els.includes(loveEl)&&x.from>=14&&x.from<=44) ev.push(['💕 이성운이 강한 대운',0]);
+    if(els.includes(mod(dmEl+2,5))&&x.from>=20) ev.push(['💰 재물운',0]);
+    if(els.includes(L)&&missing.includes(L)) ev.push([`✨ 없던 ${EL_NAME[L]} 기운이 채워짐`,0]);
+    if(yeokB.includes(x.p[1])) ev.push(['🚚 역마 — 이동·해외 기회',0]);
+    const st=x.from<=22?0:x.from<=42?1:x.from<=62?2:3;
+    const stage=['어린 시절 · 학창 시절','청년기 · 진로와 사랑','중년기 · 결실과 책임','노년기 · 여유와 정리'][st];
+    return `<div class="dd${i===nowIdx?' now':''}"><div class="hd"><span class="ag">${x.from}~${x.from+9}세</span><span class="gz2">${gzH(x.p)} ${gzK(x.p)}</span><span class="stars">${stars(sc)}</span>${i===nowIdx?'<span class="badge mid">지금</span>':''}</div>
+      <div class="muted" style="font-size:13px">${stage} · 천간 ${tenGod(dm,x.p[0],false)} / 지지 ${tenGod(dm,x.p[1],true)}</div>
+      <p>${STAGE[st][rs]} 바탕에는 <b>${REL_SHORT[rb]}</b>의 기운이 깔려 있어요.${sc>=4?' 전체적으로 <b>힘이 실리는 좋은 대운</b>이에요.':sc<=2?' 무리하지 말고 <b>내실을 다지는 대운</b>이에요.':''}</p>
+      ${ev.length?`<div class="tags">${ev.map(e=>`<span class="tg2${e[1]?' hot':''}">${e[0]}</span>`).join('')}</div>`:''}</div>`;
+  }).join('');
 
-  // --- 7. 연도별
+  // --- 11. 해마다
   let yh='';
-  for(let k=0;k<4;k++){
-    const Y=now.getFullYear()+k, yp=yearPillar(Y), r=rel(dmEl,stemEl(yp[0]));
-    const els=[stemEl(yp[0]),BR_EL[yp[1]]];
-    let sc=3+(els.includes(L)?1:0)+(els.includes(L2)?1:0)-(els.every(e=>e===order[0]&&c[e]>=3)?1:0);
-    let extra='';
-    if(mod(yp[1]-s.year[1],12)===6){sc--;extra=` ${ANIMAL[s.year[1]]}띠와 충(沖)하는 해라 이사·이직 같은 변동수가 있어요.`;}
-    else if(BR_6HAP(yp[1],s.year[1])){sc++;extra=` ${ANIMAL[s.year[1]]}띠와 합(合)이 드는 해라 좋은 인연이 따라요.`;}
-    if(els.includes(L)&&missing.includes(L)) extra+=` 사주에 없던 <b>${EL_NAME[L]}(${EL_H[L]}) 기운</b>이 들어와 부족한 부분을 채워 줘요.`;
-    sc=Math.max(1,Math.min(5,sc));
-    yh+=`<div class="year"><div class="y">${Y} <small>${gzK(yp)}년${k===0?' · 올해':''}</small><span class="stars">${stars(sc)}</span></div><div class="txt">${YEAR_TXT[r]}${extra}</div></div>`;
+  for(let k=0;k<10;k++){
+    const Y=now.getFullYear()+k, yp=yearPillar(Y), r=rel(dmEl,stemEl(yp[0])), els=[stemEl(yp[0]),BR_EL[yp[1]]];
+    let sc=scoreEls(els); const tags=[];
+    if(mod(yp[1]-s.year[1],12)===6){sc--;tags.push([`⚠️ ${ANIMAL[s.year[1]]}띠 충 — 변동수`,1]);}
+    else if(BR_6HAP(yp[1],s.year[1])){sc++;tags.push([`🤝 ${ANIMAL[s.year[1]]}띠 합`,0]);}
+    if(mod(yp[1]-s.day[1],12)===6) tags.push(['🔄 일지 충 — 이사·관계 변화',1]);
+    const ly=loveYears.find(z=>z.Y===Y); if(ly) tags.push([ly.sig>=2?'🔥 연애운 강함':'💕 연애운',0]);
+    if(els.includes(mod(dmEl+2,5))) tags.push(['💰 재물운',0]);
+    if(els.includes(mod(dmEl-1,5))) tags.push(['📚 문서·공부운',0]);
+    if(yeokB.includes(yp[1])) tags.push(['🚚 이동·여행',0]);
+    if(els.includes(L)&&missing.includes(L)) tags.push([`✨ 부족한 ${EL_NAME[L]} 보충`,0]);
+    yh+=`<div class="year"><div class="y">${Y} <small>${gzK(yp)}년 · 만 ${Y-inp.y}세${k===0?' · 올해':''}</small><span class="stars">${stars(clamp(sc))}</span></div><div class="txt">${k<3?YEAR_TXT[r]:YEAR_SHORT[r]}${tags.length?`<div class="tags">${tags.map(t=>`<span class="tg2${t[1]?' hot':''}">${t[0]}</span>`).join('')}</div>`:''}</div></div>`;
   }
   $('years').innerHTML=yh;
 
