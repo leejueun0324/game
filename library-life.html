@@ -138,6 +138,31 @@
   .prof-list { margin: 0; padding: 0; list-style: none; }
   .prof-list li { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
   .prof-list li span { display: block; color: var(--muted); font-size: 12.5px; }
+  .palette { display: flex; flex-wrap: wrap; gap: 6px; }
+  .palette button {
+    font: inherit; font-size: 12.5px; cursor: pointer; padding: 5px 9px; border-radius: 99px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+  }
+  .palette button.sel { background: var(--accent); color: var(--paper); border-color: var(--accent); font-weight: 700; }
+  .palette button:disabled { opacity: .4; cursor: not-allowed; }
+  .tt { display: grid; grid-template-columns: 34px repeat(5, 1fr); gap: 4px; margin-top: 12px; }
+  .tt .hd { text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); align-self: center; }
+  .tt button.cell {
+    font: inherit; font-size: 11.5px; line-height: 1.25; min-height: 52px; padding: 4px 3px; cursor: pointer;
+    border-radius: 8px; border: 1px solid var(--line); color: var(--ink); word-break: keep-all; overflow-wrap: anywhere;
+  }
+  .tt button.cell:hover { outline: 2px solid var(--accent); }
+  .tt button.cell.now { outline: 3px solid var(--accent); transform: scale(1.06); }
+  .tt button.cell.past { opacity: .45; }
+  .busy .palette, .busy .tt, .busy .run { pointer-events: none; }
+  .g-study { background: color-mix(in srgb, #3a7bd5 16%, var(--paper)); }
+  .g-act { background: color-mix(in srgb, #e08a2c 18%, var(--paper)); }
+  .g-rest { background: color-mix(in srgb, #2e9e6b 16%, var(--paper)); }
+  .tt-sum { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .run { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .run button { flex: 1 1 200px; font: inherit; cursor: pointer; border-radius: 10px; padding: 10px 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .run button.primary { background: var(--accent); color: var(--paper); border-color: var(--accent); font-weight: 800; }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 4px 0 8px; }
   .note { font-size: 12px; color: var(--muted); margin-top: 24px; text-align: center; }
   table.tr { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
   table.tr td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
@@ -181,14 +206,18 @@ const LABEL = {
 const MAJORS = ['org', 'svc', 'dig', 'edu', 'arc'];
 const COLOR = { org: '#3a7bd5', svc: '#2e9e6b', dig: '#7b5cd6', edu: '#e08a2c', arc: '#8c6b4a', hp: '#e05a7a', stress: '#c0392b', social: '#2fa3b5', exp: '#b38b1d', prep: '#555f9e' };
 const MONTHS = [[3, 4, 5, 6], [9, 10, 11, 12]];
-const TURNS = 8;        // 한 학기 = 16주, 2주 단위로 8번 행동
-const ACT_SCALE = 0.55; // 행동 횟수가 늘어난 만큼 한 번의 효과는 작게
-const monthOf = s => MONTHS[s.sem - 1][Math.floor(Math.min(s.turn, TURNS - 1) / 2)];
+const TURNS = 16;       // 한 학기 = 16주
+const DAYS = ['월', '화', '수', '목', '금'];
+const PERIODS = ['오전', '오후'];
+const SLOTS = DAYS.length * PERIODS.length; // 일주일에 10칸
+const SLOT_SCALE = 0.0275; // 칸 하나의 효과 (기본 효과 × 이 값)
+const monthOf = s => MONTHS[s.sem - 1][Math.floor(Math.min(s.turn, TURNS - 1) / 4)];
 function scaleFx(fx) {
   const o = {};
-  for (const k in fx) { const v = fx[k]; if (!v) continue; o[k] = Math.sign(v) * Math.max(1, Math.round(Math.abs(v) * ACT_SCALE)); }
+  for (const k in fx) if (fx[k]) o[k] = fx[k] * SLOT_SCALE;
   return o;
 }
+const fmt1 = v => (Math.round(v * 10) / 10).toString();
 
 const TRAITS = {
   bookworm: { name: '📖 책벌레', desc: '독서·교육 +12, 자료조직 +6', fx: { edu: 12, org: 6 }, avatar: { m: '👨‍🎓', f: '👩‍🎓' } },
@@ -281,7 +310,10 @@ const ACTIONS = [
   { group: '활동', id: 'contest', name: '공모전·프로젝트', desc: '데이터·독서 공모전 참가', fx: { dig: 4, edu: 2, exp: 5, stress: 8, hp: -4 } },
   { group: '활동', id: 'exam', name: '임용·공무원 시험공부', desc: '3학년부터 가능', fx: { prep: 8, stress: 9, hp: -4 }, need: s => s.year >= 3 },
   { group: '휴식', id: 'rest', name: '자취방에서 휴식', desc: '푹 자고 일어나기', fx: { hp: 18, stress: -15 } },
-  { group: '휴식', id: 'play', name: '친구들과 놀기', desc: '동성로 나들이', fx: { stress: -22, social: 4, money: -15, hp: -2 } }
+  { group: '놀기', id: 'play', name: '동성로 나들이', desc: '친구들과 시내 구경', fx: { stress: -22, social: 4, money: -15, hp: -2 } },
+  { group: '놀기', id: 'drink', name: '술자리', desc: '동기·선배들과 한잔 (너무 잦으면 숙취!)', fx: { stress: -26, social: 7, money: -20, hp: -7 } },
+  { group: '놀기', id: 'pcroom', name: 'PC방', desc: '친구들과 게임 한 판', fx: { stress: -20, social: 2, dig: 1, money: -8, hp: -4 } },
+  { group: '놀기', id: 'karaoke', name: '노래방', desc: '스트레스는 고음으로 날린다', fx: { stress: -22, social: 3, money: -10, hp: -2 } }
 ];
 
 // 방학 선택지
@@ -392,10 +424,9 @@ function applyFx(s, fx) {
     // 인싸 특성: 스트레스 증가 20% 감소
     if (k === 'stress' && v > 0 && s.trait === 'insider') v = Math.round(v * 0.8);
     s[k] += v;
-    if (k === 'money') s[k] = Math.round(s[k]);
-    else s[k] = clamp(s[k], 0, 100);
+    if (k !== 'money') s[k] = clamp(s[k], 0, 100);
     const good = k === 'stress' ? v < 0 : v > 0;
-    parts.push(`<span class="${good ? 'up' : 'down'}">${LABEL[k]} ${v > 0 ? '+' : ''}${v}${k === 'money' ? '만원' : ''}</span>`);
+    parts.push(`<span class="${good ? 'up' : 'down'}">${LABEL[k]} ${v > 0 ? '+' : ''}${fmt1(v)}${k === 'money' ? '만원' : ''}</span>`);
   }
   return parts.join(' · ');
 }
@@ -403,7 +434,7 @@ function applyFx(s, fx) {
 function whenText(s) {
   if (s.done) return '졸업';
   const t = Math.min(s.turn, TURNS - 1);
-  return `${s.year}학년 ${s.sem}학기 · ${monthOf(s)}월 ${t % 2 ? '3~4' : '1~2'}주`;
+  return `${s.year}학년 ${s.sem}학기 · ${monthOf(s)}월 ${t % 4 + 1}주차`;
 }
 
 function addLog(html) {
@@ -416,7 +447,7 @@ function render() {
   if (!S) return;
   $('when').textContent = whenText(S);
   const tr = TRAITS[S.trait];
-  const bar = k => `<div class="stat"><div class="row"><span>${LABEL[k]}</span><b>${S[k]}</b></div><div class="bar"><i style="width:${S[k]}%;background:${COLOR[k]}"></i></div></div>`;
+  const bar = k => `<div class="stat"><div class="row"><span>${LABEL[k]}</span><b>${Math.round(S[k])}</b></div><div class="bar"><i style="width:${S[k]}%;background:${COLOR[k]}"></i></div></div>`;
   $('side').innerHTML = `
     <div class="profile"><div class="avatar">${avatarOf(S)}</div>
       <div><b>${esc(S.name)}</b><div class="sub">문헌정보학과 ${GENDERS[S.gender] || ''} · ${tr.name}${S.teacher ? ' · 교직 이수' : ''}</div>${S.advisor ? `<div class="sub">지도교수: ${S.advisor} 교수님</div>` : ''}
@@ -425,24 +456,45 @@ function render() {
     <h2 style="margin-top:14px">컨디션</h2>${bar('hp')}${bar('stress')}
     <h2 style="margin-top:14px">스펙</h2>${bar('social')}${bar('exp')}${bar('prep')}
     <div class="kv">
-      <div><span>돈</span><b>${S.money}만원</b></div>
+      <div><span>돈</span><b>${Math.round(S.money)}만원</b></div>
       <div><span>평균 학점</span><b>${S.gpas.length ? avgGpa(S).toFixed(2) : '-'} / 4.5</b></div>
     </div>`;
 
   if (S.done) { $('actions').innerHTML = '<h2>졸업을 축하합니다 🎓</h2><p>‘처음부터’를 눌러 다시 시작할 수 있어요.</p>'; }
   else {
+    normalizeSchedule();
+    const acts = availableActions(S);
+    const okActs = acts.filter(x => !x.need || x.need(S));
+    if (!okActs.find(x => x.id === brush)) brush = okActs[0].id;
     const groups = {};
-    availableActions(S).forEach(a => { (groups[a.group] = groups[a.group] || []).push(a); });
-    let html = `<h2>이번 2주 동안 무엇을 할까? <span style="font-weight:500">(${Math.min(S.turn + 1, TURNS)}/${TURNS})</span></h2>`;
+    acts.forEach(x => { if (x.id === 'teach' && !x.need(S)) return; (groups[x.group] = groups[x.group] || []).push(x); });
+    const gCls = g => g === '전공 공부' ? 'g-study' : (g === '휴식' || g === '놀기') ? 'g-rest' : 'g-act';
+    let html = `<h2>${monthOf(S)}월 ${S.turn % 4 + 1}주차 시간표 <span style="font-weight:500">(${S.turn + 1}/${TURNS}주)</span></h2>
+      <p class="hint">① 아래에서 활동을 고르고 ② 시간표 칸을 눌러 채운 뒤 ③ ‘이번 주 보내기’. 시간표는 다음 주에도 그대로 이어진다.</p>`;
     for (const g in groups) {
-      html += `<h3>${g}</h3><div class="btns">` + groups[g].map(a => {
-        const ok = !a.need || a.need(S);
-        if (!ok && a.id === 'teach') return '';
-        return `<button class="act" data-id="${a.id}" ${ok ? '' : 'disabled'}><b>${a.name}</b><small>${a.desc}</small></button>`;
+      html += `<h3>${g}</h3><div class="palette">` + groups[g].map(x => {
+        const ok = !x.need || x.need(S);
+        return `<button data-brush="${x.id}" class="${x.id === brush ? 'sel' : ''}" ${ok ? '' : 'disabled'} title="${x.desc}">${x.name}</button>`;
       }).join('') + '</div>';
     }
+    html += `<div class="tt"><div></div>${DAYS.map(d => `<div class="hd">${d}</div>`).join('')}`;
+    PERIODS.forEach((pd, r) => {
+      html += `<div class="hd">${pd}</div>`;
+      DAYS.forEach((d, c) => {
+        const i = r * DAYS.length + c, x = acts.find(y => y.id === S.schedule[i]);
+        html += `<button class="cell ${gCls(x.group)}" data-slot="${i}" title="${d} ${pd}: ${x.name}">${x.name}</button>`;
+      });
+    });
+    html += '</div>';
+    const cnt = { '전공 공부': 0, '활동': 0, '휴식': 0, '놀기': 0 };
+    S.schedule.forEach(id => cnt[acts.find(y => y.id === id).group]++);
+    html += `<div class="tt-sum">이번 주: 공부 ${cnt['전공 공부']}칸 · 활동 ${cnt['활동']}칸 · 휴식 ${cnt['휴식']}칸 · 놀기 ${cnt['놀기']}칸</div>
+      <div class="run"><button id="fillBtn">선택한 활동으로 전부 채우기</button><button class="primary" id="weekBtn">▶ 이번 주 보내기</button></div>`;
     $('actions').innerHTML = html;
-    $('actions').querySelectorAll('button.act').forEach(b => b.onclick = () => doAction(b.dataset.id));
+    $('actions').querySelectorAll('[data-brush]').forEach(b => b.onclick = () => { brush = b.dataset.brush; render(); });
+    $('actions').querySelectorAll('[data-slot]').forEach(b => b.onclick = () => { S.schedule[+b.dataset.slot] = brush; render(); });
+    $('fillBtn').onclick = () => { S.schedule = Array(SLOTS).fill(brush); render(); };
+    $('weekBtn').onclick = playWeek;
   }
   $('log').innerHTML = S.log.map(l => `<p><span class="t">${l.t}</span>${l.h}</p>`).join('');
 }
@@ -481,50 +533,102 @@ function fxSub(fx) {
 }
 
 // ================= 게임 진행 =================
-function doAction(id) {
-  const a = availableActions(S).find(x => x.id === id);
-  if (!a || (a.need && !a.need(S))) return;
-  if (a.fx.money < 0 && S.money + a.fx.money < 0) {
-    queue({ emoji: '💳', title: '잔고 부족', body: '<p>통장 잔고가 부족하다… 다른 걸 해보자.</p>' });
-    nextModal(); return;
+let brush = null;
+const isStudyId = id => /^c\d\d_\d$/.test(id) || id === 'teach';
+// 시간표를 지금 학기에 맞게 정리 (학기가 바뀌면 과목도 바뀐다)
+function normalizeSchedule() {
+  const subj = studyList(S), acts = availableActions(S);
+  const ok = id => { const x = acts.find(y => y.id === id); return x && (!x.need || x.need(S)); };
+  if (!Array.isArray(S.schedule) || S.schedule.length !== SLOTS) {
+    // 기본 시간표: 오전은 전공 수업, 오후는 공부·근로·동아리·휴식
+    S.schedule = [...DAYS.map((_, i) => subj[i % subj.length].id), subj[0].id, 'work', subj[1 % subj.length].id, 'club', 'rest'];
   }
-  const res = applyFx(S, scaleFx(a.fx));
-  if (a.study) S.studyCount++;
-  addLog(`<b>${a.name}</b> — ${res}`);
+  let k = 0;
+  S.schedule = S.schedule.map(id => ok(id) ? id : isStudyId(id) ? subj[k++ % subj.length].id : 'rest');
+}
+
+function runWeek() {
+  const acts = availableActions(S);
+  const before = {}; for (const k in LABEL) before[k] = S[k];
+  let study = 0;
+  S.schedule.forEach(id => {
+    const x = acts.find(y => y.id === id);
+    if (!x || (x.need && !x.need(S))) return;
+    applyFx(S, scaleFx(x.fx));
+    if (x.study) study++;
+  });
+  S.studyCount += study;
+  const drinks = S.schedule.filter(id => id === 'drink').length;
+  if (drinks >= 3) {
+    S.studyCount = Math.max(0, S.studyCount - 2);
+    applyFx(S, { hp: -4, stress: 3 });
+    addLog(`🍺 술자리가 ${drinks}번… 숙취로 다음 날 수업에 집중하지 못했다. (공부 2칸 무효 · 체력 -4)`);
+  }
+  const diff = Object.keys(LABEL).map(k => {
+    const d = S[k] - before[k];
+    if (Math.abs(d) < 0.05) return '';
+    const good = k === 'stress' ? d < 0 : d > 0;
+    return `<span class="${good ? 'up' : 'down'}">${LABEL[k]} ${d > 0 ? '+' : ''}${fmt1(d)}</span>`;
+  }).filter(Boolean).join(' · ');
+  addLog(`📅 <b>한 주 마무리</b> (공부 ${study}칸) — ${diff || '변화 없음'}`);
 
   // 컨디션 체크
+  if (S.money < 0) {
+    S.money = 0; applyFx(S, { stress: 5 });
+    addLog('💳 통장이 바닥났다… 이번 주는 라면으로 버텼다. 스트레스 +5');
+  }
   if (S.hp <= 0) {
-    S.hp = 25; S.studyCount = Math.max(0, S.studyCount - 1);
+    S.hp = 25; S.studyCount = Math.max(0, S.studyCount - SLOTS);
     const r = applyFx(S, { money: -10, stress: 5 });
     addLog(`🚑 과로로 쓰러졌다. 병원 신세… ${r}`);
-    queue({ emoji: '🚑', title: '쓰러졌다!', body: '<p>무리하다가 결국 몸살이 났다. 수업도 몇 번 빠지게 됐다.</p><p>체력 관리도 실력이다.</p>' });
+    queue({ emoji: '🚑', title: '쓰러졌다!', body: '<p>무리하다가 결국 몸살이 났다. 일주일 내내 수업을 빠졌다.</p><p>시간표에 휴식 칸을 꼭 넣자!</p>' });
   } else if (S.stress >= 100) {
     S.stress = 70;
     addLog('🔥 번아웃이 왔다. 아무것도 손에 잡히지 않는다.');
-    queue({ emoji: '🔥', title: '번아웃', body: '<p>스트레스가 한계에 달했다. 이번 학기 성적에 영향이 있을지도…</p>' });
+    queue({ emoji: '🔥', title: '번아웃', body: '<p>스트레스가 한계에 달했다. 이번 학기 성적에 영향이 있을지도…</p><p>시간표에 휴식을 늘려 보자.</p>' });
     S.burnout = true;
   }
-
   S.turn++;
   fixedOrRandomEvent();
   if (S.turn >= TURNS) queue(() => endSemester());
-  render();
-  nextModal();
+}
+
+// 한 주를 월요일 오전부터 금요일 오후까지 한 칸씩 보여 주며 진행
+let busy = false;
+function playWeek() {
+  if (busy) return;
+  busy = true;
+  $('actions').classList.add('busy');
+  $('weekBtn').textContent = '⏳ 한 주를 보내는 중…';
+  const order = [];
+  DAYS.forEach((_, c) => PERIODS.forEach((_, r) => order.push(r * DAYS.length + c)));
+  let i = 0;
+  const step = () => {
+    $('actions').querySelectorAll('[data-slot]').forEach(el => {
+      const k = order.indexOf(+el.dataset.slot);
+      el.classList.toggle('now', k === i);
+      el.classList.toggle('past', k < i);
+    });
+    if (i++ < order.length) setTimeout(step, 220);
+    else {
+      busy = false;
+      $('actions').classList.remove('busy');
+      runWeek();
+      render();
+      nextModal();
+    }
+  };
+  step();
 }
 
 function fixedOrRandomEvent() {
-  const prev = S.turn - 1;
-  const month = MONTHS[S.sem - 1][Math.floor(prev / 2)];
-  // 중간고사 (4월·10월 말)
-  if (prev === 3) { queue(midterm()); return; }
-  // 각 달의 전반(1~2주)에는 무작위 사건만, 고정 이벤트는 후반(3~4주)에
-  if (prev % 2 === 0) { if (Math.random() < 0.3) randomEvent(); return; }
-  if (S.sem === 1 && month === 5) { queue(festival()); return; }
-  if (S.sem === 2 && month === 9) { queue(fieldTrip()); return; }
-  if (S.sem === 2 && month === 11 && S.year >= 2) { queue(conference()); return; }
-  if (S.year === 4 && S.sem === 1 && month === 6 && S.teacher) { queue(practicum()); return; }
-  // 무작위 이벤트
-  if (Math.random() < 0.3) randomEvent();
+  const w = S.turn - 1; // 방금 끝난 주 (0~15)
+  if (w === 7) { queue(midterm()); return; }                                   // 4월·10월 4주차
+  if (S.sem === 1 && w === 9) { queue(festival()); return; }                   // 5월 2주차
+  if (S.sem === 2 && w === 3) { queue(fieldTrip()); return; }                  // 9월 4주차
+  if (S.sem === 2 && w === 10 && S.year >= 2) { queue(conference()); return; } // 11월 3주차
+  if (S.year === 4 && S.sem === 1 && w === 13 && S.teacher) { queue(practicum()); return; } // 6월 2주차
+  if (w < TURNS - 1 && Math.random() < 0.15) randomEvent();
 }
 function randomEvent() {
   const r = Math.random();
@@ -609,13 +713,13 @@ function practicum() {
 }
 
 function endSemester() {
-  let g = 2.2 + S.studyCount * 0.24 + (avgMajor(S) / 100) * 0.6 + S.bonusGpa + rand(-0.15, 0.15);
+  let g = 2.2 + (S.studyCount / (TURNS * SLOTS)) * 1.92 + (avgMajor(S) / 100) * 0.6 + S.bonusGpa + rand(-0.15, 0.15);
   if (S.stress >= 80 || S.burnout) g -= 0.4;
   if (S.hp < 20) g -= 0.2;
   g = Math.round(clamp(g, 0, 4.5) * 100) / 100;
   S.gpas.push(g);
   const label = `${S.year}학년 ${S.sem}학기`;
-  addLog(`📄 <b>${label} 성적: ${g.toFixed(2)}</b> (공부한 달 ${S.studyCount}번)`);
+  addLog(`📄 <b>${label} 성적: ${g.toFixed(2)}</b> (공부 ${S.studyCount}칸 / ${TURNS * SLOTS}칸)`);
   S.studyCount = 0; S.bonusGpa = 0; S.burnout = false;
   const comment = g >= 4.2 ? '과탑을 노려볼 만하다!' : g >= 3.5 ? '꽤 괜찮은 성적이다.' : g >= 2.5 ? '조금 더 분발하자.' : '학사경고는 피했지만… 위험하다.';
 
@@ -702,7 +806,7 @@ function graduation() {
   const [emoji, title, text] = ENDINGS[key](S);
   addLog(`🎓 졸업! 엔딩: <b>${title}</b>`);
   render();
-  const rows = [...MAJORS, 'social', 'exp', 'prep'].map(k => `<tr><td>${LABEL[k]}</td><td>${S[k]}</td></tr>`).join('');
+  const rows = [...MAJORS, 'social', 'exp', 'prep'].map(k => `<tr><td>${LABEL[k]}</td><td>${Math.round(S[k])}</td></tr>`).join('');
   const gp = S.gpas.map((g, i) => `${Math.floor(i / 2) + 1}-${i % 2 + 1}: ${g.toFixed(2)}`).join(' · ');
   try { localStorage.removeItem('lis-sim-save'); } catch (e) {}
   return {
@@ -762,7 +866,7 @@ function startScreen() {
     addLog(`🎒 ${esc(name)}, 문헌정보학과 입학! (${TRAITS[pick.trait].name}) · 지도교수 ${S.advisor} 교수님`);
     $('modalBg').classList.add('hidden');
     render();
-    queue({ emoji: '🎉', title: '개강총회', body: `<p>학과 개강총회. 학과장 박광헌 교수님의 환영 인사와 함께 동기·선배들을 만났다.</p><p>“${esc(name)} 학생, 반가워요! 지도교수는 <b>${S.advisor} 교수님</b>이에요.” 조교 선배가 알려준다. “문정과는 졸업하면 정사서 2급 자격증이 나와!”</p><p>한 학기는 16주. 2주마다 할 일을 하나씩 고른다(학기당 8번). 4월·10월 말에는 중간고사도 있다. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>`, choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
+    queue({ emoji: '🎉', title: '개강총회', body: `<p>학과 개강총회. 학과장 박광헌 교수님의 환영 인사와 함께 동기·선배들을 만났다.</p><p>“${esc(name)} 학생, 반가워요! 지도교수는 <b>${S.advisor} 교수님</b>이에요.” 조교 선배가 알려준다. “문정과는 졸업하면 정사서 2급 자격증이 나와!”</p><p>한 학기는 16주. 매주 월~금 오전·오후, 일주일에 10칸의 시간표를 짜서 보낸다. 4월·10월 말에는 중간고사도 있다. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>`, choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
     nextModal();
   };
   $('modalBg').classList.remove('hidden');
