@@ -176,15 +176,53 @@ const TRAITS = {
 };
 
 
-// 학기별 전공 과목 (실제 교과과정을 아는 학기는 여기에 등록, 나머지는 기본 과목)
+// 학기별 전공 과목 (대구대 문헌정보학과 학업 로드맵 기준)
 const CURRICULUM = {
   '1-1': [
-    { id: 'c11a', name: '도서관 문화사', desc: '도서관의 탄생과 역사', fx: { arc: 3, edu: 3, stress: 4, hp: -3 } },
-    { id: 'c11b', name: '문헌정보학의 이해', desc: '문헌정보학 입문', fx: { org: 2, svc: 2, dig: 1, edu: 1, stress: 4, hp: -3 } }
+    { id: 'c11_0', name: '도서관문화사', desc: '기초 · 교육 · 도서관의 역사', fx: { arc: 3, edu: 3, stress: 5, hp: -3 } },
+    { id: 'c11_1', name: '문헌정보학이해', desc: '기초 · 교육 · 문헌정보학 입문', fx: { org: 2, svc: 2, dig: 1, edu: 1, stress: 5, hp: -3 } }
   ],
   '1-2': [
-    { id: 'c12a', name: '지능정보사회와 정보활용', desc: 'AI 시대의 정보 탐색·활용', fx: { dig: 4, svc: 2, stress: 5, hp: -3 } },
-    { id: 'c12b', name: '장서관리론', desc: '자료 선정·수집·평가', fx: { org: 4, edu: 2, stress: 5, hp: -3 } }
+    { id: 'c12_0', name: '장서관리론', desc: '기초 · 경영 · 자료 선정·수집·평가', fx: { org: 4, edu: 2, stress: 5, hp: -3 } },
+    { id: 'c12_1', name: '지능정보사회와정보활용', desc: '기초 · IT · 서비스러닝', fx: { dig: 4, svc: 2, stress: 5, hp: -3 } }
+  ],
+  '2-1': [
+    { id: 'c21_0', name: '공공도서관경영', desc: '심화 · 경영', fx: { svc: 4, edu: 2, stress: 5, hp: -3 } },
+    { id: 'c21_1', name: '독서지도', desc: '심화 · 교육 · 서비스러닝', fx: { edu: 6, stress: 5, hp: -3 } },
+    { id: 'c21_2', name: '목록법이해', desc: '심화 · 목록 규칙의 기초', fx: { org: 6, stress: 5, hp: -3 } },
+    { id: 'c21_3', name: '문헌정보학연구방법론', desc: '심화 · 경영 · 연구 설계', fx: { dig: 2, arc: 2, svc: 2, stress: 5, hp: -3 } },
+    { id: 'c21_4', name: '정보학개론', desc: '심화 · IT/시스템', fx: { dig: 5, org: 1, stress: 5, hp: -3 } }
+  ],
+  '2-2': [
+    { id: 'c22_0', name: '데이터베이스이해', desc: '심화 · IT/시스템', fx: { dig: 6, stress: 5, hp: -3 } },
+    { id: 'c22_1', name: '어린이서비스', desc: '심화 · 교육 · 봉사/실무', fx: { edu: 4, svc: 2, stress: 5, hp: -3 } },
+    { id: 'c22_2', name: '정보서비스론', desc: '심화 · 교육 · 참고봉사', fx: { svc: 6, stress: 5, hp: -3 } },
+    { id: 'c22_3', name: '자료분류론', desc: '교육 · KDC·DDC 분류', fx: { org: 6, stress: 5, hp: -3 } }
+  ],
+  '3-1': [
+    { id: 'c31_0', name: '대학도서관경영', desc: '심화 · 경영', fx: { svc: 4, org: 2, stress: 5, hp: -3 } },
+    { id: 'c31_1', name: '자동화목록법', desc: '심화 · IT/시스템 · MARC', fx: { org: 4, dig: 2, stress: 5, hp: -3 } },
+    { id: 'c31_2', name: '정보검색이해', desc: '심화 · IT/시스템', fx: { dig: 3, svc: 3, stress: 5, hp: -3 } },
+    { id: 'c31_3', name: '학교도서관운영', desc: '심화 · 교육 · 경영', fx: { edu: 4, svc: 2, stress: 5, hp: -3 } }
+  ],
+  '3-2': [
+    { id: 'c32_0', name: '도서관마케팅', desc: '심화 · 경영 · 창의설계', fx: { svc: 4, edu: 2, stress: 5, hp: -3 } },
+    { id: 'c32_1', name: '도서관프로그램운영', desc: '심화 · 교육 · 봉사/실무', fx: { edu: 4, svc: 2, stress: 5, hp: -3 } },
+    { id: 'c32_2', name: '자료분류특강', desc: '심화 · 교육 · 분류 심화', fx: { org: 6, stress: 5, hp: -3 } },
+    { id: 'c32_3', name: '정보이용형태', desc: '심화 · IT · 이용자 연구', fx: { svc: 3, dig: 3, stress: 5, hp: -3 } },
+    { id: 'c32_4', name: '취약계층서비스', desc: '심화 · 봉사/실무 · 서비스러닝', fx: { svc: 4, edu: 2, stress: 5, hp: -3 } }
+  ],
+  '4-1': [
+    { id: 'c41_0', name: '기록학개론', desc: '심화 · 자료전문가', fx: { arc: 8, stress: 5, hp: -3 } },
+    { id: 'c41_1', name: '도서관실무실습', desc: '심화 · 현장 실습 · 실무경력↑', fx: { org: 2, svc: 2, exp: 6, stress: 5, hp: -3 } },
+    { id: 'c41_2', name: '도서관정보정책', desc: '심화 · 경영', fx: { svc: 3, arc: 3, stress: 5, hp: -3 } },
+    { id: 'c41_3', name: '정보시스템개발', desc: '심화 · IT/시스템', fx: { dig: 6, stress: 5, hp: -3 } },
+    { id: 'c41_4', name: '지식정보큐레이션', desc: '심화 · IT · 디자인Thinking', fx: { edu: 3, dig: 3, stress: 5, hp: -3 } }
+  ],
+  '4-2': [
+    { id: 'c42_0', name: '계량정보학', desc: '심화 · IT/시스템', fx: { dig: 5, org: 1, stress: 5, hp: -3 } },
+    { id: 'c42_1', name: '메타데이터', desc: '심화 · IT/시스템', fx: { org: 3, dig: 3, stress: 5, hp: -3 } },
+    { id: 'c42_2', name: '전자출판론', desc: '심화 · 캡스톤디자인', fx: { edu: 3, dig: 3, stress: 5, hp: -3 } }
   ]
 };
 const DEFAULT_STUDY = [
@@ -217,6 +255,7 @@ const VACATIONS = [
   { id: 'academy', name: '시험 대비 특강', desc: '3학년부터 · 시험준비 +15', fx: { prep: 15, money: -40, stress: 12 }, need: s => s.year >= 3 },
   { id: 'parttime', name: '방학 내내 알바', desc: '돈 +90', fx: { money: 90, hp: -12, stress: 8 } },
   { id: 'reading', name: '독서 마라톤', desc: '책 50권 완독 도전', fx: { edu: 8, org: 2, stress: -8 } },
+  { id: 'cert', name: '컴퓨터활용능력 1급 준비', desc: '학과 추천 자격증 · 디지털·데이터, 경력', fx: { dig: 6, exp: 4, stress: 8, money: -10 } },
   { id: 'hackathon', name: '데이터 해커톤', desc: '디지털·데이터와 경력', fx: { dig: 8, exp: 5, stress: 8, hp: -5 } },
   { id: 'trip', name: '여행 가기', desc: '돈 -60, 스트레스 대폭 해소', fx: { money: -60, stress: -40, hp: 10, social: 4 } },
   { id: 'home', name: '본가에서 쉬기', desc: '집밥 먹고 회복', fx: { hp: 25, stress: -25, money: 15 } }
@@ -270,7 +309,7 @@ const CAREERS = {
   gov:     { name: '사서직 공무원', emoji: '🏢', check: s => s.prep >= 70 && s.svc >= 45 },
   teacher: { name: '사서교사', emoji: '🍎', check: s => s.teacher && s.prep >= 70 && s.edu >= 60 && avgGpa(s) >= 3.5, need: s => s.teacher },
   univ:    { name: '대학·전문도서관 사서', emoji: '🏫', check: s => s.exp >= 35 && s.org >= 55 && avgGpa(s) >= 3.3 },
-  arc:     { name: '기록관리 전문가', emoji: '🗄️', check: s => s.arc >= 65 && avgGpa(s) >= 3.5 },
+  arc:     { name: '기록관리 전문가', emoji: '🗄️', check: s => s.arc >= 50 && avgGpa(s) >= 3.5 },
   data:    { name: '데이터·IT 기업', emoji: '📊', check: s => s.dig >= 65 && s.exp >= 25 },
   pub:     { name: '출판·북큐레이터', emoji: '📖', check: s => s.edu >= 55 && s.social >= 45 },
   grad:    { name: '대학원 진학', emoji: '🎓', check: s => avgGpa(s) >= 4.0 && avgMajor(s) >= 55 }
@@ -445,6 +484,7 @@ function fixedOrRandomEvent() {
   // 고정 이벤트
   if (S.sem === 1 && month === 5) { queue(festival()); return; }
   if (S.sem === 2 && month === 10) { queue(fieldTrip()); return; }
+  if (S.sem === 2 && month === 11 && S.year >= 2) { queue(conference()); return; }
   if (S.year === 4 && S.sem === 1 && month === 4 && S.teacher) { queue(practicum()); return; }
   // 무작위 이벤트
   if (Math.random() < 0.4) {
@@ -482,8 +522,14 @@ function festival() {
     { label: '공연 보며 즐기기', fx: { stress: -18, money: -10 } },
     { label: '축제? 나는 도서관으로', fx: { org: 3, svc: 3, social: -3 } } ] });
 }
+function conference() {
+  return eventModal({ emoji: '🎤', title: '5개대학 문헌정보학과 학술연합제', body: '여러 대학 문헌정보학과 학생들이 모이는 학술연합제가 열린다.', choices: [
+    { label: '팀을 꾸려 발표자로 참가', fx: { svc: 3, dig: 3, exp: 5, social: 6, stress: 10, hp: -5 } },
+    { label: '청중으로 참석해 교류', fx: { social: 6, svc: 2, stress: -3 } },
+    { label: '이번엔 쉬어 간다', fx: { hp: 5 } } ] });
+}
 function fieldTrip() {
-  return eventModal({ emoji: '🚌', title: '학과 답사', body: '가을 학과 답사 행선지를 고를 수 있다.', choices: [
+  return eventModal({ emoji: '🚌', title: '문헌정보학기행', body: '학과 비교과 프로그램 ‘문헌정보학기행’! 이번 행선지를 고를 수 있다.', choices: [
     { label: '국립중앙도서관 견학 (서울)', fx: { svc: 5, org: 4, exp: 3, money: -15 } },
     { label: '대구 지역 공공도서관 탐방', fx: { svc: 4, edu: 4, exp: 2 } },
     { label: '기록관 견학', fx: { arc: 8, exp: 2, money: -5 } } ] });
@@ -570,7 +616,7 @@ function careerHint(k) {
     gov: '시험준비 70+, 정보서비스 45+',
     teacher: '시험준비 70+, 독서·교육 60+, 학점 3.5+',
     univ: '실무경력 35+, 자료조직 55+, 학점 3.3+',
-    arc: '기록관리 65+, 학점 3.5+',
+    arc: '기록관리 50+, 학점 3.5+',
     data: '디지털·데이터 65+, 실무경력 25+',
     pub: '독서·교육 55+, 인맥 45+',
     grad: '학점 4.0+, 전공 평균 55+'
@@ -608,7 +654,7 @@ function startScreen() {
   $('side').innerHTML = ''; $('actions').innerHTML = ''; $('log').innerHTML = ''; $('when').textContent = '';
   const box = $('modal');
   box.innerHTML = `<div class="emoji">🎒</div><h2>대구대학교 문헌정보학과에 입학했다!</h2>
-    <div class="body"><p>경산 캠퍼스에서의 4년. 매달 할 일을 고르고, 방학을 보내고, 졸업 후의 진로를 찾아보자.</p>
+    <div class="body"><p>교육목표는 ‘미래사회를 선도하는 지식정보 전문가’. 경산 캠퍼스에서의 4년. 매달 할 일을 고르고, 방학을 보내고, 졸업 후의 진로를 찾아보자.</p>
     <label>이름<input class="name" id="nameIn" maxlength="10" placeholder="이름을 입력하세요" value="새내기"></label>
     <p style="margin-bottom:6px">나는 어떤 신입생일까?</p></div><div class="choices" id="traitCh"></div>`;
   const wrap = $('traitCh');
