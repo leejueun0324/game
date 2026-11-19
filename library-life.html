@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>문정과 4년 라이프</title>
+<title>어서 와, 대구대학교 문헌정보학과는 처음이지?</title>
 <style>
   :root {
     --bg: #f4ede0;
@@ -125,6 +125,18 @@
     font: inherit; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--bg); color: var(--ink); margin: 6px 0 12px;
   }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 12px; }
+  .choice.sel { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+  .field-label { font-weight: 700; font-size: 14px; margin: 4px 0 0; }
+  .err { color: var(--bad); font-size: 13px; min-height: 1.2em; margin: 6px 0 0; }
+  button.go {
+    font: inherit; font-weight: 800; font-size: 16px; width: 100%; margin-top: 10px; padding: 12px;
+    border: none; border-radius: 10px; cursor: pointer; background: var(--accent); color: var(--paper);
+  }
+  button.go:hover { filter: brightness(1.08); }
+  .prof-list { margin: 0; padding: 0; list-style: none; }
+  .prof-list li { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .prof-list li span { display: block; color: var(--muted); font-size: 12.5px; }
   .note { font-size: 12px; color: var(--muted); margin-top: 24px; text-align: center; }
   table.tr { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
   table.tr td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
@@ -134,7 +146,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>📚 문정과 4년 라이프 <small>대구대학교 문헌정보학과 시뮬레이션</small></h1>
+    <h1>📚 어서 와, 대구대학교 문헌정보학과는 처음이지? <small>문헌정보학과 4년 생활 시뮬레이션</small></h1>
     <div class="when" id="when"></div>
   </header>
 
@@ -149,11 +161,12 @@
       <div class="tools">
         <button id="saveBtn">저장</button>
         <button id="loadBtn">불러오기</button>
+        <button id="profBtn">교수진</button>
         <button id="resetBtn">처음부터</button>
       </div>
     </section>
   </div>
-  <p class="note">팬메이드 시뮬레이션 게임입니다. 대구대학교 및 문헌정보학과의 공식 콘텐츠가 아니며, 등장하는 사건과 수치는 모두 허구입니다.</p>
+  <p class="note">팬메이드 시뮬레이션 게임입니다. 대구대학교 및 문헌정보학과의 공식 콘텐츠가 아닙니다. 교수님 성함·직위·담당 과목은 학과 홈페이지에 공개된 정보를 참고했으며, 게임 속 사건과 수치는 모두 허구입니다.</p>
 </div>
 
 <div class="modal-bg hidden" id="modalBg"><div class="modal" id="modal"></div></div>
@@ -169,11 +182,25 @@ const COLOR = { org: '#3a7bd5', svc: '#2e9e6b', dig: '#7b5cd6', edu: '#e08a2c', 
 const MONTHS = [[3, 4, 5, 6], [9, 10, 11, 12]];
 
 const TRAITS = {
-  bookworm: { name: '📖 책벌레', desc: '독서·교육 +12, 자료조직 +6', fx: { edu: 12, org: 6 }, avatar: '🤓' },
-  coder:    { name: '💻 컴퓨터 덕후', desc: '디지털·데이터 +15, 인맥 -3', fx: { dig: 15, social: -3 }, avatar: '🧑‍💻' },
-  insider:  { name: '🎉 인싸', desc: '인맥 +15, 스트레스 내성', fx: { social: 15 }, avatar: '😎' },
-  diligent: { name: '✏️ 성실파', desc: '체력 +10, 모든 전공 +3', fx: { hp: 10, org: 3, svc: 3, dig: 3, edu: 3, arc: 3 }, avatar: '🙂' }
+  bookworm: { name: '📖 책벌레', desc: '독서·교육 +12, 자료조직 +6', fx: { edu: 12, org: 6 }, avatar: { m: '👨‍🎓', f: '👩‍🎓' } },
+  coder:    { name: '💻 컴퓨터 덕후', desc: '디지털·데이터 +15, 인맥 -3', fx: { dig: 15, social: -3 }, avatar: { m: '👨‍💻', f: '👩‍💻' } },
+  insider:  { name: '🎉 인싸', desc: '인맥 +15, 스트레스 내성', fx: { social: 15 }, avatar: { m: '🙋‍♂️', f: '🙋‍♀️' } },
+  diligent: { name: '✏️ 성실파', desc: '체력 +10, 모든 전공 +3', fx: { hp: 10, org: 3, svc: 3, dig: 3, edu: 3, arc: 3 }, avatar: { m: '💁‍♂️', f: '💁‍♀️' } }
 };
+const GENDERS = { m: '남학생', f: '여학생' };
+function avatarOf(s) { return TRAITS[s.trait].avatar[s.gender] || TRAITS[s.trait].avatar.f; }
+
+// 교수진 (학과 홈페이지 교수진 페이지에 공개된 성함·직위·담당 과목)
+const PROFESSORS = [
+  { name: '김신영', title: '교수', subj: '정보서비스, 도서관경영', fx: { svc: 4, org: 1 } },
+  { name: '박광헌', title: '교수 · 학과장', subj: '학교도서관, 독서지도', fx: { edu: 4, svc: 1 } },
+  { name: '최예진', title: '교수', subj: '자료조직, 학술커뮤니케이션', fx: { org: 4, dig: 1 } },
+  { name: '장보성', title: '교수', subj: '정보학, 정보시스템개발, 정보검색, 데이터베이스, 정보이용행태분석', fx: { dig: 4, svc: 1 } },
+  { name: '윤희윤', title: '명예교수', subj: '도서관경영론, 도서관건축론, 도서관정책, 자료 분류', fx: { svc: 2, org: 2, arc: 1 }, emeritus: true },
+  { name: '곽병일', title: '겸임교수', subj: '정보이용형태론, 이용자서비스', fx: { svc: 3, dig: 1 } }
+];
+const FULLTIME = PROFESSORS.slice(0, 4);
+const profByName = n => PROFESSORS.find(p => p.name === n);
 
 
 // 학기별 전공 과목 (대구대 문헌정보학과 학업 로드맵 기준)
@@ -281,9 +308,6 @@ const EVENTS = [
   { emoji: '🤒', title: '환절기 감기', body: '목이 칼칼하더니 결국 감기에 걸렸다.', choices: [
     { label: '병원에 간다', fx: { money: -8, hp: 5 } },
     { label: '그냥 버틴다', fx: { hp: -12, stress: 6 } } ] },
-  { emoji: '🧑‍🏫', title: '교수님 면담', body: '지도교수님이 진로 면담을 하자고 부르셨다.', choices: [
-    { label: '진지하게 진로 상담', fx: { prep: 3, exp: 2, stress: -4 } },
-    { label: '대학원 이야기를 여쭤본다', fx: { arc: 3, dig: 3 } } ] },
   { emoji: '🗂️', title: '반납 도서 대란', body: '근로하던 친구가 아프다며 대신 반납 도서 정리를 부탁한다.', choices: [
     { label: '도와준다', fx: { org: 3, social: 5, hp: -5 } },
     { label: '미안하지만 거절', fx: { social: -3 } } ] },
@@ -338,9 +362,9 @@ function pick2() { const a = MAJORS.slice().sort(() => Math.random() - .5); retu
 function avgGpa(s) { return s.gpas.length ? s.gpas.reduce((a, b) => a + b, 0) / s.gpas.length : 0; }
 function avgMajor(s) { return MAJORS.reduce((a, k) => a + s[k], 0) / MAJORS.length; }
 
-function newState(name, trait) {
+function newState(name, gender, trait) {
   const s = {
-    name, trait, year: 1, sem: 1, turn: 0,
+    name, gender, trait, advisor: pickOne(FULLTIME).name, year: 1, sem: 1, turn: 0,
     org: 10, svc: 10, dig: 10, edu: 10, arc: 10,
     hp: 80, stress: 20, money: 100, social: 10, exp: 0, prep: 0,
     gpas: [], studyCount: 0, teacher: false, teacherAsked: false, career: null,
@@ -385,8 +409,8 @@ function render() {
   const tr = TRAITS[S.trait];
   const bar = k => `<div class="stat"><div class="row"><span>${LABEL[k]}</span><b>${S[k]}</b></div><div class="bar"><i style="width:${S[k]}%;background:${COLOR[k]}"></i></div></div>`;
   $('side').innerHTML = `
-    <div class="profile"><div class="avatar">${tr.avatar}</div>
-      <div><b>${esc(S.name)}</b><div class="sub">문헌정보학과 · ${tr.name}${S.teacher ? ' · 교직 이수' : ''}</div>
+    <div class="profile"><div class="avatar">${avatarOf(S)}</div>
+      <div><b>${esc(S.name)}</b><div class="sub">문헌정보학과 ${GENDERS[S.gender] || ''} · ${tr.name}${S.teacher ? ' · 교직 이수' : ''}</div>${S.advisor ? `<div class="sub">지도교수: ${S.advisor} 교수님</div>` : ''}
       ${S.career ? `<div class="sub">목표: ${CAREERS[S.career].emoji} ${CAREERS[S.career].name}</div>` : ''}</div></div>
     <h2>전공 능력</h2>${MAJORS.map(bar).join('')}
     <h2 style="margin-top:14px">컨디션</h2>${bar('hp')}${bar('stress')}
@@ -487,8 +511,11 @@ function fixedOrRandomEvent() {
   if (S.sem === 2 && month === 11 && S.year >= 2) { queue(conference()); return; }
   if (S.year === 4 && S.sem === 1 && month === 4 && S.teacher) { queue(practicum()); return; }
   // 무작위 이벤트
-  if (Math.random() < 0.4) {
-    if (Math.random() < 0.45) queue(quizEvent());
+  if (Math.random() < 0.45) {
+    const r = Math.random();
+    if (r < 0.22) queue(professorEvent());
+    else if (r < 0.27 && S.year >= 2) queue(lectureEvent());
+    else if (r < 0.6) queue(quizEvent());
     else queue(eventModal(pickOne(EVENTS)));
   }
 }
@@ -516,6 +543,25 @@ function quizEvent() {
   };
 }
 
+function professorEvent() {
+  const advisor = S.advisor && Math.random() < 0.5;
+  const p = advisor ? profByName(S.advisor) : pickOne(PROFESSORS.filter(x => !x.emeritus));
+  const who = `${p.name} ${p.title.replace(' · 학과장', '')}님`;
+  return eventModal({
+    emoji: '🧑‍🏫', title: advisor ? '지도교수 면담' : `${p.name} 교수님 연구실`,
+    body: `${advisor ? `지도교수 ${who}께서 면담을 하자고 부르셨다.` : `${who}의 연구실 앞을 지나가다 인사를 드렸다.`}<br><small style="color:var(--muted)">담당 과목: ${p.subj}</small>`,
+    choices: [
+      { label: '수업 내용 중 궁금했던 걸 여쭤본다', fx: Object.assign({ stress: 2 }, p.fx) },
+      { label: '진로 고민을 털어놓는다', fx: { prep: 3, exp: 2, stress: -5 } }
+    ] });
+}
+function lectureEvent() {
+  const p = profByName('윤희윤');
+  return eventModal({ emoji: '🎙️', title: `${p.name} 명예교수님 특강`, body: `학과에서 ${p.name} 명예교수님 특강이 열렸다.<br><small style="color:var(--muted)">담당 과목: ${p.subj}</small>`, choices: [
+    { label: '맨 앞자리에서 경청한다', fx: p.fx },
+    { label: '용기 내서 질문한다', fx: { svc: 3, social: 3, stress: 4 } },
+    { label: '과제 때문에 못 갔다', fx: { stress: 3 } } ] });
+}
 function festival() {
   return eventModal({ emoji: '🎆', title: '대동제 시즌', body: '캠퍼스가 축제로 들썩인다. 학과에서도 부스를 연다고 한다.', choices: [
     { label: '학과 주점 운영 돕기', fx: { social: 10, money: 10, hp: -10 } },
@@ -641,6 +687,7 @@ function graduation() {
     emoji, title: `엔딩 — ${title}`,
     body: `${missed ? `<p style="color:var(--warn)">목표였던 ‘${CAREERS[S.career].name}’은(는) 아쉽게 이루지 못했다. 하지만…</p>` : ''}
       <p>${text}</p>
+      ${S.advisor ? `<p>졸업식 날, 지도교수 ${S.advisor} 교수님께 감사 인사를 드렸다.</p>` : ''}
       <p><b>${esc(S.name)}</b> · 최종 평균 학점 <b>${avgGpa(S).toFixed(2)}</b></p>
       <p style="font-size:12px;color:var(--muted)">${gp}</p>
       <table class="tr">${rows}</table>`,
@@ -652,28 +699,57 @@ function graduation() {
 function startScreen() {
   S = null; pendingQueue = [];
   $('side').innerHTML = ''; $('actions').innerHTML = ''; $('log').innerHTML = ''; $('when').textContent = '';
+  const pick = { gender: null, trait: null };
   const box = $('modal');
-  box.innerHTML = `<div class="emoji">🎒</div><h2>대구대학교 문헌정보학과에 입학했다!</h2>
-    <div class="body"><p>교육목표는 ‘미래사회를 선도하는 지식정보 전문가’. 경산 캠퍼스에서의 4년. 매달 할 일을 고르고, 방학을 보내고, 졸업 후의 진로를 찾아보자.</p>
-    <label>이름<input class="name" id="nameIn" maxlength="10" placeholder="이름을 입력하세요" value="새내기"></label>
-    <p style="margin-bottom:6px">나는 어떤 신입생일까?</p></div><div class="choices" id="traitCh"></div>`;
-  const wrap = $('traitCh');
+  box.innerHTML = `<div class="emoji">🎒</div><h2>어서 와, 대구대학교 문헌정보학과는 처음이지?</h2>
+    <div class="body"><p>교육목표는 ‘미래사회를 선도하는 지식정보 전문가’. 경산 캠퍼스에서의 4년 동안 매달 할 일을 고르고, 방학을 보내고, 졸업 후의 진로를 찾아보자.</p>
+    <p class="field-label">이름</p>
+    <input class="name" id="nameIn" maxlength="10" placeholder="내 이름을 적어 주세요" autocomplete="off">
+    <p class="field-label">성별</p>
+    <div class="seg" id="genderCh"></div>
+    <p class="field-label">나는 어떤 신입생일까?</p></div>
+    <div class="choices" id="traitCh"></div>
+    <p class="err" id="startErr"></p>
+    <button class="go" id="goBtn">입학하기</button>`;
+  const select = (wrap, key, val, btn) => {
+    pick[key] = val;
+    wrap.querySelectorAll('.choice').forEach(x => x.classList.toggle('sel', x === btn));
+  };
+  const gWrap = $('genderCh');
+  Object.keys(GENDERS).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'choice'; b.style.textAlign = 'center';
+    b.textContent = (k === 'm' ? '🙋‍♂️ ' : '🙋‍♀️ ') + GENDERS[k];
+    b.onclick = () => select(gWrap, 'gender', k, b);
+    gWrap.appendChild(b);
+  });
+  const tWrap = $('traitCh');
   Object.keys(TRAITS).forEach(k => {
     const b = document.createElement('button');
     b.className = 'choice';
     b.innerHTML = `${TRAITS[k].name}<small>${TRAITS[k].desc}</small>`;
-    b.onclick = () => {
-      const name = ($('nameIn').value || '새내기').trim().slice(0, 10) || '새내기';
-      S = newState(name, k);
-      addLog(`🎒 ${esc(name)}, 문헌정보학과 입학! (${TRAITS[k].name})`);
-      $('modalBg').classList.add('hidden');
-      render();
-      queue({ emoji: '🎉', title: '개강총회', body: '<p>학과 개강총회에서 동기와 선배들을 만났다. “문정과는 졸업하면 정사서 2급 자격증이 나와!” 선배의 말에 눈이 반짝인다.</p><p>한 학기는 4달. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>', choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
-      nextModal();
-    };
-    wrap.appendChild(b);
+    b.onclick = () => select(tWrap, 'trait', k, b);
+    tWrap.appendChild(b);
   });
+  $('goBtn').onclick = () => {
+    const name = $('nameIn').value.trim().slice(0, 10);
+    const err = !name ? '이름을 적어 주세요.' : !pick.gender ? '성별을 골라 주세요.' : !pick.trait ? '신입생 유형을 골라 주세요.' : '';
+    $('startErr').textContent = err;
+    if (err) { if (!name) $('nameIn').focus(); return; }
+    S = newState(name, pick.gender, pick.trait);
+    addLog(`🎒 ${esc(name)}, 문헌정보학과 입학! (${TRAITS[pick.trait].name}) · 지도교수 ${S.advisor} 교수님`);
+    $('modalBg').classList.add('hidden');
+    render();
+    queue({ emoji: '🎉', title: '개강총회', body: `<p>학과 개강총회. 학과장 박광헌 교수님의 환영 인사와 함께 동기·선배들을 만났다.</p><p>“${esc(name)} 학생, 반가워요! 지도교수는 <b>${S.advisor} 교수님</b>이에요.” 조교 선배가 알려준다. “문정과는 졸업하면 정사서 2급 자격증이 나와!”</p><p>한 학기는 4달. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>`, choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
+    nextModal();
+  };
   $('modalBg').classList.remove('hidden');
+  $('nameIn').focus();
+}
+
+function showProfessors() {
+  queue({ emoji: '🧑‍🏫', title: '문헌정보학과 교수진', body: `<ul class="prof-list">${PROFESSORS.map(p => `<li><b>${p.name}</b> ${p.title}<span>담당 과목: ${p.subj}</span></li>`).join('')}</ul><p style="font-size:12px;color:var(--muted);margin-top:10px">출처: 대구대학교 문헌정보학과 홈페이지 교수진 페이지</p>` });
+  nextModal();
 }
 
 function save() {
@@ -694,6 +770,7 @@ function toast(msg) {
 
 $('saveBtn').onclick = save;
 $('loadBtn').onclick = load;
+$('profBtn').onclick = showProfessors;
 $('resetBtn').onclick = () => {
   queue({ emoji: '⚠️', title: '처음부터 다시 할까요?', body: '<p>저장하지 않은 진행은 사라집니다.</p>', choices: [
     { label: '네, 새로 시작', fn: () => setTimeout(startScreen, 0) }, { label: '취소' } ] });
