@@ -3,7 +3,9 @@
 import os
 here = os.path.dirname(os.path.abspath(__file__)); src = os.path.join(here, 'src')
 r = lambda f: open(os.path.join(src, f), encoding='utf-8').read()
-js = ['data.js', 'env.js', 'world.js', 'models.js', 'core.js', 'story.js', 'ui.js', 'net.js', 'main.js']
+EX = ['CopyShader.js','LuminosityHighPassShader.js','FXAAShader.js','EffectComposer.js','RenderPass.js','ShaderPass.js','UnrealBloomPass.js','Sky.js','BufferGeometryUtils.js','RoundedBoxGeometry.js']
+exjs = chr(10).join(r('vendor/ex/' + f) for f in EX)
+js = ['data.js', 'env.js', 'render.js', 'world.js', 'models.js', 'core.js', 'story.js', 'ui.js', 'net.js', 'main.js']
 html = f'''<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -18,6 +20,7 @@ html = f'''<!DOCTYPE html>
 {r('body.html')}
 <script>{r('vendor/three.min.js')}</script>
 <script>{r('vendor/peerjs.min.js')}</script>
+<script>{exjs}</script>
 <script>
 {chr(10).join(r(f) for f in js)}
 </script>
@@ -35,6 +38,7 @@ art = f'''<title>마지막 출석</title>
 {r('body.html')}
 <script>{r('vendor/three.min.js')}</script>
 <script>{r('vendor/peerjs.min.js')}</script>
+<script>{exjs}</script>
 <script>
 {chr(10).join(r(f) for f in js)}
 </script>

@@ -3,8 +3,11 @@
 //  3D 모델: 사람(캐릭터별 외형), 좀비, 위협 인물
 // ============================================================
 const SKIN = '#f1c9a5', HAIR = '#1e1714';
-function part(parent, x, y, z, w, h, d, color, opts) {
-  const m = new THREE.Mesh(BOXG, mat(color, opts)); m.scale.set(w, h, d); m.position.set(x, y, z); parent.add(m); return m;
+// 둥근 부품: 얇은 디테일은 각진 상자, 나머지는 모서리를 굴린 상자
+const RBG = new THREE.RoundedBoxGeometry(1, 1, 1, 2, 0.32), RBH = new THREE.RoundedBoxGeometry(1, 1, 1, 4, 0.46), SPH = new THREE.SphereGeometry(0.5, 14, 10);
+function part(parent, x, y, z, w, h, d, color, opts, geo) {
+  const g = geo || (Math.min(w, h, d) < 0.035 ? BOXG : RBG);
+  const m = new THREE.Mesh(g, mat(color, Object.assign({ roughness: 0.78 }, opts || {}))); m.scale.set(w, h, d); m.position.set(x, y, z); parent.add(m); return m;
 }
 function limb(parent, x, y, z) { const p = new THREE.Group(); p.position.set(x, y, z); parent.add(p); return p; }
 
@@ -21,7 +24,7 @@ function makeHuman(ch, opt) {
     if (bot.type === 'shorts') { const sl = bot.len || 0.36; part(L, 0, -sl / 2, 0, 0.2, sl, 0.22, bot.color); part(L, 0, -(sl + 0.84) / 2, 0, 0.16, 0.84 - sl, 0.17, skin); }
     else { part(L, 0, -0.42, 0, bot.type === 'cargo' ? 0.23 : 0.19, 0.84, 0.21, bot.color);
       if (bot.type === 'cargo') part(L, 0, -0.42, 0.0, 0.25, 0.16, 0.15, bot.color); if (bot.type === 'training') part(L, 0.1, -0.42, 0, 0.02, 0.8, 0.22, '#e8e8e8'); }
-    part(L, 0, -0.88, 0.04, 0.2, 0.1, 0.3, opt.shoe || ch.shoe || '#f0f0f0');
+    part(L, 0, -0.875, 0.05, 0.18, 0.12, 0.32, opt.shoe || ch.shoe || '#f0f0f0', { roughness: 0.6 }); part(L, 0, -0.93, 0.05, 0.19, 0.03, 0.33, '#e8e6e0');
   }
   // 몸통
   const torso = new THREE.Group(); torso.position.y = 0.92; body.add(torso);
@@ -39,17 +42,24 @@ function makeHuman(ch, opt) {
   // 팔
   const armC = top.type === 'cardigan' ? top.over : top.color;
   const armL = limb(torso, -sh / 2 - 0.07, 0.58, 0), armR = limb(torso, sh / 2 + 0.07, 0.58, 0);
-  for (const A of [armL, armR]) { part(A, 0, -0.28, 0, 0.13, 0.58, 0.15, armC); part(A, 0, -0.62, 0, 0.11, 0.12, 0.12, skin); }
+  for (const A of [armL, armR]) { part(A, 0, -0.28, 0, 0.125, 0.58, 0.14, armC); part(A, 0, -0.63, 0.01, 0.1, 0.14, 0.11, skin, { roughness: 0.62 }, RBH); }
   // 머리
   const head = new THREE.Group(); head.position.y = 1.62; body.add(head);
-  part(head, 0, 0.13, 0, 0.36, 0.38, 0.34, skin);
-  part(head, -0.08, 0.14, 0.175, 0.05, 0.05, 0.01, '#222'); part(head, 0.08, 0.14, 0.175, 0.05, 0.05, 0.01, '#222');
-  part(head, 0, 0.03, 0.175, 0.08, 0.02, 0.01, '#b5605a');
+  const skM = { roughness: 0.62 }, hc0 = opt.hair || ch.hairColor || HAIR;
+  part(body, 0, 1.6, 0, 0.12, 0.14, 0.12, skin, skM, SPH);                                         // 목
+  part(head, 0, 0.13, 0, 0.33, 0.39, 0.35, skin, skM, RBH);                                        // 얼굴(달걀형)
+  part(head, 0, 0.02, 0.03, 0.27, 0.2, 0.3, skin, skM, RBH);                                       // 턱선
+  [-1, 1].forEach(k => { part(head, k * 0.168, 0.12, 0, 0.04, 0.09, 0.06, skin, skM, SPH);        // 귀
+    part(head, k * 0.075, 0.145, 0.158, 0.065, 0.04, 0.03, '#f4f1ec', { roughness: 0.3 }, SPH);   // 흰자
+    part(head, k * 0.075, 0.145, 0.172, 0.034, 0.036, 0.012, '#2a1d16', { roughness: 0.15 }, SPH); // 눈동자
+    part(head, k * 0.078, 0.2, 0.165, 0.08, 0.016, 0.02, hc0, null, RBG); });                     // 눈썹
+  part(head, 0, 0.09, 0.18, 0.04, 0.07, 0.04, skin, skM, RBH);                                     // 코
+  part(head, 0, 0.025, 0.163, 0.075, 0.02, 0.02, '#b8665e', { roughness: 0.5 }, RBG);              // 입술
   // 머리카락
   const hc = opt.hair || ch.hairColor || HAIR, hl = ch.hairLen || 1;
-  if (ch.forehead) part(head, 0, 0.34, -0.04, 0.4, 0.09, 0.35, hc); else part(head, 0, 0.33, -0.02, 0.4, 0.1, 0.39, hc);   // 정수리
-  part(head, 0, 0.18, -0.19, 0.4, 0.3, 0.06, hc);                       // 뒤
-  part(head, -0.2, 0.2, -0.02, 0.04, 0.28, 0.36, hc); part(head, 0.2, 0.2, -0.02, 0.04, 0.28, 0.36, hc);
+  const hM = { roughness: 0.55 }; if (ch.forehead) part(head, 0, 0.3, -0.04, 0.38, 0.18, 0.37, hc, hM, RBH); else part(head, 0, 0.29, -0.01, 0.38, 0.2, 0.39, hc, hM, RBH);   // 정수리
+  part(head, 0, 0.17, -0.12, 0.37, 0.34, 0.16, hc, { roughness: 0.55 }, RBH);                       // 뒤
+  part(head, -0.175, 0.21, -0.03, 0.05, 0.2, 0.3, hc); part(head, 0.175, 0.21, -0.03, 0.05, 0.2, 0.3, hc);
   if (ch.hair === 'long') { const L = 0.62 * hl, S2 = 0.42 * hl; part(head, 0, 0.13 - L / 2, -0.2, 0.42, L, 0.08, hc); part(head, -0.21, 0.16 - S2 / 2, -0.05, 0.05, S2, 0.24, hc); part(head, 0.21, 0.16 - S2 / 2, -0.05, 0.05, S2, 0.24, hc); }
   if (ch.hair === 'bob') { part(head, 0, 0.02, -0.2, 0.44, 0.32, 0.08, hc); part(head, -0.22, 0.04, -0.02, 0.06, 0.3, 0.36, hc); part(head, 0.22, 0.04, -0.02, 0.06, 0.3, 0.36, hc); }
   if (ch.bangs) { const t = ch.bangs >= 2 ? 0.17 : ch.bangs < 1 ? 0.08 : 0.12; part(head, 0, 0.3 - t / 2 + 0.02, 0.17, 0.38, t, 0.05, hc); }

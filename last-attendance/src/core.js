@@ -17,7 +17,7 @@ function initRenderer() {
   renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('gl') });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   scene = new THREE.Scene(); scene.background = new THREE.Color('#9cc7e6'); scene.fog = new THREE.Fog('#9cc7e6', 60, 160);
-  camera = new THREE.PerspectiveCamera(50, 1, 0.5, 400);
+  camera = new THREE.PerspectiveCamera(50, 1, 0.3, 1600);
   hemi = new THREE.HemisphereLight('#ffffff', '#4a5a3a', 0.85); scene.add(hemi);
   sun = new THREE.DirectionalLight('#fff3dc', 0.7); sun.position.set(40, 80, 30); scene.add(sun);
   flash = new THREE.PointLight('#fff2c8', 0, 22, 1.6); scene.add(flash);
@@ -26,6 +26,7 @@ function initRenderer() {
   buildWorld(scene);
   shadowAll(scene, true, true);
   initEnv();
+  initPost();
   addEventListener('resize', onResize); onResize();
 }
 function onResize() {
@@ -33,6 +34,7 @@ function onResize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2); hud.width = w * dpr; hud.height = h * dpr; hud.style.width = w + 'px'; hud.style.height = h + 'px';
   hctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   document.body.classList.toggle('portrait', h > w);
+  if (typeof resizePost === 'function') resizePost();
 }
 // ---------------- 입력 ----------------
 const keys = {}, mouse = { x: 0, y: 0, down: false, world: { x: 0, z: 0 }, rdrag: null };

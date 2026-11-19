@@ -10,7 +10,7 @@ const MAP = { x0: -168, x1: 168, z0: -138, z1: 142 };
 const MATS = {};
 function mat(color, opts) {
   const k = color + JSON.stringify(opts || {});
-  if (!MATS[k]) MATS[k] = new THREE.MeshLambertMaterial(Object.assign({ color }, opts || {}));
+  if (!MATS[k]) MATS[k] = stdMat(Object.assign({ color, roughness: 0.82 }, opts || {}));
   return MATS[k];
 }
 const BOXG = new THREE.BoxGeometry(1, 1, 1);
@@ -65,22 +65,31 @@ const STYLE = {
   glass: { wall: '#9aa9b6', roof: '#59636e', parapet: '#c9d2da', trim: '#59636e' },
   white: { wall: '#e8e4dc', roof: '#6a7480', parapet: '#f5f2ec', trim: '#6a7480' },
 };
-const FACADE = {};
+const FACADE = {}, FROUGH = {};
+function facadeDraw(g, style, rough) {
+  const G = (c, r) => rough ? r : c;
+  if (style === 'glass') { g.fillStyle = G('#5d7d96', '#e0e0e0'); g.fillRect(0, 0, 64, 48); const gr = g.createLinearGradient(0, 6, 0, 36); gr.addColorStop(0, '#9fbfd6'); gr.addColorStop(1, '#5f86a4');
+    g.fillStyle = G(gr, '#202020'); g.fillRect(0, 6, 64, 30); g.fillStyle = G('#c9d0d6', '#b0b0b0'); g.fillRect(0, 36, 64, 12); g.fillRect(0, 0, 64, 6);
+    g.fillStyle = G('#3b4a58', '#606060'); for (let x = 0; x < 64; x += 16) g.fillRect(x, 6, 1.2, 30); g.fillRect(0, 20, 64, 0.8); return; }
+  const base = { brick: '#a8644a', redbrick: '#9c4a34', stone: '#d9ccb2', white: '#e8e4dc' }[style];
+  g.fillStyle = G(base, '#e8e8e8'); g.fillRect(0, 0, 64, 48);
+  if (!rough) { for (let i = 0; i < 900; i++) { g.fillStyle = `rgba(${Math.random() < 0.5 ? '0,0,0' : '255,255,255'},${Math.random() * 0.06})`; g.fillRect(Math.random() * 64, Math.random() * 48, 1 + Math.random() * 2, 0.5 + Math.random()); }
+    if (style === 'brick' || style === 'redbrick') { for (let y = 0; y < 48; y += 1.5) for (let x = ((y / 1.5) % 2) * 1.6; x < 64; x += 3.2) { g.fillStyle = `rgba(${90 + Math.random() * 60},${40 + Math.random() * 30},${30 + Math.random() * 20},.25)`; g.fillRect(x, y, 3, 1.3); } }
+    g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 44, 64, 0.6); }
+  g.fillStyle = G(style === 'stone' ? '#efe6d2' : '#e9e2d4', '#d0d0d0'); g.fillRect(0, 40, 64, 4);
+  g.fillStyle = G('#f2efe8', '#a0a0a0'); g.fillRect(13, 8.5, 38, 25);
+  g.fillStyle = G('rgba(0,0,0,.25)', '#a0a0a0'); g.fillRect(13, 33, 38, 1);
+  const gr = g.createLinearGradient(0, 11, 0, 31); gr.addColorStop(0, style === 'white' ? '#5d7590' : '#6f8fa8'); gr.addColorStop(1, style === 'white' ? '#2c3d50' : '#34506a');
+  g.fillStyle = G(gr, '#181818'); g.fillRect(16, 11, 15, 20); g.fillRect(33, 11, 15, 20);
+  g.fillStyle = G('#d8d4cc', '#909090'); g.fillRect(31, 11, 2, 20); g.fillRect(16, 20, 15, 0.8); g.fillRect(33, 20, 15, 0.8);
+  if (!rough && Math.random() < 1) { g.fillStyle = 'rgba(240,235,220,.35)'; g.fillRect(16, 11, 6, 20); }
+}
 function facadeTex(style) {
   if (FACADE[style]) return FACADE[style];
-  const c = document.createElement('canvas'); c.width = 128; c.height = 96; const g = c.getContext('2d'); g.scale(2, 2);
-  if (style === 'glass') { g.fillStyle = '#5d7d96'; g.fillRect(0, 0, 64, 48); g.fillStyle = '#86a9c4'; g.fillRect(0, 6, 64, 30); g.fillStyle = '#c9d6df'; g.fillRect(0, 36, 64, 12); g.fillRect(0, 0, 64, 6);
-    g.fillStyle = '#3b4a58'; for (let x = 0; x < 64; x += 16) g.fillRect(x, 6, 2, 30); g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(4, 8, 10, 12); }
-  else {
-    const base = { brick: '#a8644a', redbrick: '#9c4a34', stone: '#d9ccb2', white: '#e8e4dc' }[style];
-    g.fillStyle = base; g.fillRect(0, 0, 64, 48);
-    if (style === 'brick' || style === 'redbrick') { g.strokeStyle = 'rgba(0,0,0,.12)'; g.lineWidth = 1; for (let y = 0; y < 48; y += 4) { g.beginPath(); g.moveTo(0, y); g.lineTo(64, y); g.stroke(); for (let x = (y / 4) % 2 ? 0 : 4; x < 64; x += 8) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 4); g.stroke(); } } }
-    g.fillStyle = style === 'stone' ? '#efe6d2' : '#e9e2d4'; g.fillRect(0, 40, 64, 4);     // 층 띠
-    g.fillStyle = '#f2efe8'; g.fillRect(14, 9, 36, 24);                                   // 창틀
-    g.fillStyle = style === 'white' ? '#34495e' : '#41617a'; g.fillRect(17, 12, 14, 18); g.fillRect(33, 12, 14, 18);
-    g.fillStyle = 'rgba(255,255,255,.3)'; g.fillRect(18, 13, 4, 7); g.fillRect(34, 13, 4, 7);
-  }
-  const t = new THREE.CanvasTexture(c); t.anisotropy = 4; FACADE[style] = t; return t;
+  const c = document.createElement('canvas'); c.width = 256; c.height = 192; const g = c.getContext('2d'); g.scale(4, 4); facadeDraw(g, style, false);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 8; t.encoding = THREE.sRGBEncoding; FACADE[style] = t;
+  const c2 = document.createElement('canvas'); c2.width = 128; c2.height = 96; const g2 = c2.getContext('2d'); g2.scale(2, 2); facadeDraw(g2, style, true);
+  FROUGH[style] = new THREE.CanvasTexture(c2); return t;
 }
 let DISCG = null; const FXMESH_DISC = () => DISCG || (DISCG = new THREE.CircleGeometry(1, 24));
 const FMASK = {};
@@ -89,7 +98,7 @@ function facadeMask(style) {
   const c = document.createElement('canvas'); c.width = 128; c.height = 96; const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 128, 96);
   for (let ty = 0; ty < 2; ty++) for (let tx = 0; tx < 2; tx++) { const ox = tx * 64, oy = ty * 48;
     if (Math.random() < 0.55) { g.fillStyle = Math.random() < 0.5 ? '#ffd27a' : '#fff0c8'; if (style === 'glass') g.fillRect(ox, oy + 6, 64, 30); else { g.fillRect(ox + 17, oy + 12, 14, 18); g.fillRect(ox + 33, oy + 12, 14, 18); } } }
-  const t = new THREE.CanvasTexture(c); FMASK[style] = t; return t;
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; FMASK[style] = t; return t;
 }
 // doors: {side:'n'|'s'|'e'|'w', at, w}
 function building(scene, def) {
@@ -114,13 +123,14 @@ function building(scene, def) {
   // 외관: 스타일별 파사드 텍스처 (면마다 비율 맞춤)
   const faceMat = (len) => { const t = facadeTex(def.style || 'brick').clone(); t.needsUpdate = true; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(Math.max(1, Math.round(len / 4)), Math.max(1, Math.round(upH / 3)));
     const em = facadeMask(def.style || 'brick').clone(); em.needsUpdate = true; em.wrapS = em.wrapT = THREE.RepeatWrapping; em.repeat.set(t.repeat.x / 2, t.repeat.y / 2);
-    const m = new THREE.MeshLambertMaterial({ map: t, transparent: true, opacity: 1, emissive: new THREE.Color('#ffd9a0'), emissiveMap: em, emissiveIntensity: 0 }); ENV.facades.push(m); return m; };
-  const capM = new THREE.MeshLambertMaterial({ color: st.roof, transparent: true, opacity: 1 });
+    const rm = FROUGH[def.style || 'brick'].clone(); rm.needsUpdate = true; rm.wrapS = rm.wrapT = THREE.RepeatWrapping; rm.repeat.copy(t.repeat);
+    const m = stdMat({ map: t, roughnessMap: rm, roughness: 1, metalness: 0.05, transparent: true, opacity: 1, emissive: new THREE.Color('#ffd9a0'), emissiveMap: em, emissiveIntensity: 0 }); ENV.facades.push(m); return m; };
+  const capM = stdMat({ color: st.roof, roughness: 0.9, transparent: true, opacity: 1 });
   const um = new THREE.Mesh(BOXG, [faceMat(d), faceMat(d), capM, capM, faceMat(w), faceMat(w)]);
   um.scale.set(w + 0.2, upH, d + 0.2); um.position.set(x, H + upH / 2, z); up.add(um);
-  const roofM = new THREE.MeshLambertMaterial({ color: st.roof, transparent: true, opacity: 1 });
+  const roofM = stdMat({ color: st.roof, roughness: 0.9, transparent: true, opacity: 1 });
   const rf = new THREE.Mesh(BOXG, roofM); rf.scale.set(w + 0.8, 0.6, d + 0.8); rf.position.set(x, def.h + 0.3, z); up.add(rf);
-  if (st.parapet) { const pm = new THREE.MeshLambertMaterial({ color: st.parapet, transparent: true, opacity: 1 });
+  if (st.parapet) { const pm = stdMat({ color: st.parapet, roughness: 0.75, transparent: true, opacity: 1 });
     [[x, z0 - 0.3, w + 1, 0.4], [x, z1 + 0.3, w + 1, 0.4], [x0 - 0.3, z, 0.4, d + 1], [x1 + 0.3, z, 0.4, d + 1]].forEach(([px, pz, pw, pd]) => { const m = new THREE.Mesh(BOXG, pm); m.scale.set(pw, 1, pd); m.position.set(px, def.h + 0.9, pz); up.add(m); }); }
   // 1층 외벽 띠 / 입구 캐노피
   (def.doors || []).forEach(o => { if (o.side !== 's') return; const cx = x0 + o.at * w; const c = box(g, cx, 3.0, z1 + 1.2, o.w + 2.4, 0.25, 2.6, st.trim); });
@@ -227,20 +237,24 @@ function car(g, x, z, rot, color) {
 
 function buildWorld(scene) {
   // 땅 / 호수
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(MAP.x1 - MAP.x0 + 120, MAP.z1 - MAP.z0 + 120), new THREE.MeshLambertMaterial({ map: TEX.grass }));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(MAP.x1 - MAP.x0 + 120, MAP.z1 - MAP.z0 + 120), stdMat({ map: TEX.grass, roughness: 0.95 }));
   ground.rotation.x = -Math.PI / 2; ground.userData.noCast = true; scene.add(ground);
-  const flat = (x, z, w, d, c, y, rot, tex) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), tex ? new THREE.MeshLambertMaterial({ map: tex }) : mat(c)); m.rotation.x = -Math.PI / 2; if (rot) m.rotation.z = rot; m.position.set(x, y || 0.015, z); m.userData.noCast = true; scene.add(m); return m; };
+  const flat = (x, z, w, d, c, y, rot, tex) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), tex ? stdMat({ map: tex, roughness: 0.92 }) : mat(c)); m.rotation.x = -Math.PI / 2; if (rot) m.rotation.z = rot; m.position.set(x, y || 0.015, z); m.userData.noCast = true; scene.add(m); return m; };
   const texR = (t, rx, ry) => { const c = t.clone(); c.needsUpdate = true; c.repeat.set(rx, ry); return c; };
+  const wet = m => { ENV.wetMats.push({ m: m.material, r: m.material.roughness, c: m.material.color.clone() }); return m; };
+  ENV.wetMats = ENV.wetMats || [];
   // 호수 (지도 남서쪽)
-  WORLD.lakeTex = TEX.water;
-  [[-122, 92, 92, 100], [-66, 118, 26, 48]].forEach(([x, z, w, d]) => { const m = flat(x, z, w, d, '#3f7fb5', 0.02, 0, TEX.water); m.material.transparent = true; m.material.opacity = 0.92; solid(x, z, w, d, 'lake'); });
-  flat(-122, 92, 96, 104, '#c9b98a', 0.012);
+  WORLD.lakeTex = TEX.waterN.clone(); WORLD.lakeTex.needsUpdate = true; WORLD.lakeTex.repeat.set(12, 12);
+  const waterM = stdMat({ color: '#24465a', roughness: 0.06, metalness: 0.2, normalMap: WORLD.lakeTex, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.3, transparent: true, opacity: 0.94 });
+  [[-122, 92, 92, 100], [-66, 118, 26, 48]].forEach(([x, z, w, d]) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), waterM); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.02, z); m.userData.noCast = true; scene.add(m); solid(x, z, w, d, 'lake'); });
+  flat(-122, 92, 96, 104, '#a89a76', 0.012); flat(-122, 92, 93.4, 101.4, '#6b6a5c', 0.014);
   // 도로 (선분)
-  const dashes = [], walks = [], junc = {};
+  const dashes = [], walks = [], junc = {}, curbs = [];
   const seg = (pts, w, c) => { pts.forEach(([x, z], i) => { const k = Math.round(x) + ',' + Math.round(z); junc[k] = (junc[k] || 0) + (i === 0 || i === pts.length - 1 ? 1 : 2); });
     for (let i = 0; i < pts.length - 1; i++) { const [x1, z1] = pts[i], [x2, z2] = pts[i + 1], L = Math.hypot(x2 - x1, z2 - z1), rot = -Math.atan2(x2 - x1, z2 - z1);
-      flat((x1 + x2) / 2, (z1 + z2) / 2, w + 5.2, L + w * 0.6 + 4, null, 0.012, rot, texR(TEX.walk, (w + 5.2) / 2.2, (L + w) / 2.2));       // 인도
-      flat((x1 + x2) / 2, (z1 + z2) / 2, w, L + w * 0.6, null, 0.016, rot, texR(TEX.asphalt, w / 5, (L + w) / 5));                         // 도로
+      wet(flat((x1 + x2) / 2, (z1 + z2) / 2, w + 5.2, L + w * 0.6 + 4, null, 0.012, rot, texR(TEX.walk, (w + 5.2) / 2.2, (L + w) / 2.2)));       // 인도
+      wet(flat((x1 + x2) / 2, (z1 + z2) / 2, w, L + w * 0.6, null, 0.016, rot, texR(TEX.asphalt, w / 5, (L + w) / 5)));                         // 도로
+      [-1, 1].forEach(sd => curbs.push([(x1 + x2) / 2 - (z2 - z1) / L * sd * (w / 2 + 0.12), (z1 + z2) / 2 + (x2 - x1) / L * sd * (w / 2 + 0.12), L, rot]));
       [-1, 1].forEach(sd => { const nx = -(z2 - z1) / L * sd * (w / 2 - 0.25), nz = (x2 - x1) / L * sd * (w / 2 - 0.25); const m = flat((x1 + x2) / 2 + nx, (z1 + z2) / 2 + nz, 0.15, L, '#e9e6dc', 0.018, rot); });
       if (w >= 8) for (let d = 3; d < L - 2; d += 6) dashes.push([x1 + (x2 - x1) * d / L, z1 + (z2 - z1) * d / L, rot]);
       walks.push([x1, z1, x2, z2, w]); WORLD.roads.push([x1, z1, x2, z2, w]); } };
@@ -257,7 +271,10 @@ function buildWorld(scene) {
       [[x1, z1, 1], [x2, z2, -1]].forEach(([jx, jz, sg]) => { if ((junc[Math.round(jx) + ',' + Math.round(jz)] || 0) < 2) return; const cx = jx + ux * sg * (w / 2 + 3), cz = jz + uz * sg * (w / 2 + 3);
         for (let o = -w / 2 + 0.6; o < w / 2 - 0.3; o += 1.0) stripes.push([cx - uz * o, cz + ux * o, rot]); }); }
     const sg2 = new THREE.PlaneGeometry(0.5, 3), sm = new THREE.InstancedMesh(sg2, mat('#f4f2ea'), stripes.length);
-    stripes.forEach(([x, z, r], i) => { e.set(-Math.PI / 2, 0, r); q.setFromEuler(e); mx.compose(new THREE.Vector3(x, 0.021, z), q, new THREE.Vector3(1, 1, 1)); sm.setMatrixAt(i, mx); }); sm.userData.noCast = true; scene.add(sm); }
+    stripes.forEach(([x, z, r], i) => { e.set(-Math.PI / 2, 0, r); q.setFromEuler(e); mx.compose(new THREE.Vector3(x, 0.021, z), q, new THREE.Vector3(1, 1, 1)); sm.setMatrixAt(i, mx); }); sm.userData.noCast = true; scene.add(sm);
+    // 연석 (도로 가장자리 콘크리트 턱)
+    const cm = new THREE.InstancedMesh(new THREE.BoxGeometry(0.24, 0.16, 1), stdMat({ color: '#b9b5ac', roughness: 0.9 }), curbs.length);
+    curbs.forEach(([x, z, L, r], i) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -r); mx.compose(new THREE.Vector3(x, 0.08, z), q, new THREE.Vector3(1, 1, L)); cm.setMatrixAt(i, mx); }); cm.receiveShadow = true; scene.add(cm); }
   flat(24, -30, 30, 18, null, 0.017, 0, texR(TEX.walk, 12, 8)); flat(24, -30, 20, 10, '#6a9a4e', 0.018);       // 사랑광장
   const sq = textSprite('사랑광장', 2.2, '#fff'); sq.position.set(24, 3, -30); scene.add(sq);
   flat(-30, -50, 14, 12, '#b8ad97', 0.017); const fq = textSprite('자유광장', 2, '#fff'); fq.position.set(-30, 3, -50); scene.add(fq);
@@ -401,27 +418,46 @@ function buildWorld(scene) {
   for (const [x1, z1, x2, z2, w] of WORLD.roads) { const L = Math.hypot(x2 - x1, z2 - z1), nx = -(z2 - z1) / L, nz = (x2 - x1) / L;
     for (let d = 2; d < L - 2; d += 2.6) for (const sd of [-1, 1]) { if (rnd() < 0.35) continue; const off = w / 2 + 3.6 + rnd() * 0.6, x = x1 + (x2 - x1) * d / L + nx * sd * off, z = z1 + (z2 - z1) * d / L + nz * sd * off;
       if (blockedAt(x, z, 1.2) || nearRoad(x, z, 2.4) || Math.hypot(x - 24, z + 30) < 16) continue; bushes.push([x, z, 0.8 + rnd() * 0.6, rnd() * 6]); } }
-  // 나무·관목 인스턴스 생성 (바람에 흔들림)
-  { const mx = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), V = (a, b, c) => new THREE.Vector3(a, b, c);
-    const inst = (geo, matl, list, fn) => { if (!list.length) return; const im = new THREE.InstancedMesh(geo, matl, list.length); list.forEach((t, i) => { fn(t, mx); im.setMatrixAt(i, mx); }); im.castShadow = true; im.receiveShadow = true; scene.add(im); return im; };
+  // 나무·관목 인스턴스 생성 (잎 카드 + 바람에 흔들림)
+  { const mx = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), V = (a, b, c) => new THREE.Vector3(a, b, c), col = new THREE.Color();
+    const inst = (geo, matl, list, fn, depth) => { if (!list.length) return; const im = new THREE.InstancedMesh(geo, matl, list.length);
+      list.forEach((t, i) => { fn(t, mx); im.setMatrixAt(i, mx); if (depth) { const k = 0.82 + ((t[3] * 7.3) % 1) * 0.3; im.setColorAt(i, col.setRGB(k, k * (0.96 + ((t[3] * 3.1) % 1) * 0.08), k * 0.95)); } });
+      im.castShadow = true; im.receiveShadow = true; if (depth) im.customDepthMaterial = depth; scene.add(im); return im; };
     const all = [].concat(...Object.values(TREES));
-    inst(new THREE.CylinderGeometry(0.22, 0.38, 2.6, 7), mat('#5b3e2a'), all, ([x, z, s, r], m) => m.compose(V(x, 1.3 * s, z), q.setFromAxisAngle(up, r), V(s, s, s)));
-    const blob = new THREE.IcosahedronGeometry(2.2, 1), cone = new THREE.ConeGeometry(2.3, 4.6, 9);
-    const LEAF = { round: ['#4f8f3a', '#3f7a30', '#5d9c43'], cherry: ['#f4b6c8', '#f8cfdc', '#efa6bc'], autumn: ['#d9902e', '#c9752a', '#e5a843'] };
-    for (const type of ['round', 'cherry', 'autumn']) {
-      const L2 = TREES[type]; if (!L2.length) continue;
-      [[0, 3.9, 0, 1], [1.1, 4.7, 0.5, 0.62], [-0.9, 4.5, -0.6, 0.58]].forEach(([ox, oy, oz, k], j) =>
-        inst(blob, swayMaterial(LEAF[type][j]), L2, ([x, z, s, r], m) => { const c = Math.cos(r), sn = Math.sin(r); m.compose(V(x + (ox * c - oz * sn) * s, oy * s, z + (ox * sn + oz * c) * s), q.setFromAxisAngle(up, r), V(s * k, s * k * 0.9, s * k)); }));
-    }
-    [[3.6, 1, '#2f6a2a'], [5.4, 0.72, '#3a7a32'], [6.8, 0.46, '#448a3a']].forEach(([oy, k, col]) => inst(cone, swayMaterial(col), TREES.pine, ([x, z, s, r], m) => m.compose(V(x, oy * s, z), q.setFromAxisAngle(up, r), V(s * k, s * k, s * k))));
-    inst(new THREE.IcosahedronGeometry(1, 1), swayMaterial('#3d7330'), bushes, ([x, z, s, r], m) => m.compose(V(x, 0.55 * s, z), q.setFromAxisAngle(up, r), V(s * 1.4, s * 0.9, s * 1.2)));
+    // 줄기 + 가지
+    const BGU = THREE.BufferGeometryUtils, cyl = (r0, r1, h, x, y, z, rx, rz) => { const g = new THREE.CylinderGeometry(r0, r1, h, 7, 1); g.translate(0, h / 2, 0); g.rotateX(rx || 0); g.rotateZ(rz || 0); g.translate(x, y, z); return g; };
+    const trunkG = BGU.mergeBufferGeometries([cyl(0.2, 0.34, 3.4, 0, 0, 0), cyl(0.08, 0.14, 1.8, 0, 2.4, 0, 0, 0.8), cyl(0.08, 0.14, 1.7, 0, 2.6, 0, 0.7, -0.3), cyl(0.07, 0.12, 1.6, 0, 2.8, 0, -0.8, -0.4)]);
+    const pineTrunkG = cyl(0.16, 0.3, 7.5, 0, 0, 0);
+    const barkM = stdMat({ map: TEX.bark, roughness: 0.95 });
+    inst(trunkG, barkM, all.filter(t => TREES.pine.indexOf(t) < 0), ([x, z, s, r], m) => m.compose(V(x, 0, z), q.setFromAxisAngle(up, r), V(s, s, s)));
+    inst(pineTrunkG, barkM, TREES.pine, ([x, z, s, r], m) => m.compose(V(x, 0, z), q.setFromAxisAngle(up, r), V(s, s, s)));
+    // 잎 카드 묶음 지오메트리 (바깥쪽을 향하는 둥근 법선 → 부드러운 수관 음영)
+    const cards = (n, fn, size, cx, cy, cz) => { const P = [], N = [], U = [], I = []; let sd = n * 13 + 1; const R = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < n; i++) { const c = fn(R, i), sz = size * (0.75 + R() * 0.5), ax = new THREE.Vector3(R() - 0.5, (R() - 0.5) * 0.6, R() - 0.5).normalize(), u = new THREE.Vector3().crossVectors(ax, new THREE.Vector3(0.3, 1, 0.2)).normalize(), v = new THREE.Vector3().crossVectors(ax, u).normalize();
+        const b = P.length / 3; [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, bb]) => { const px = c.x + (u.x * a + v.x * bb) * sz / 2, py = c.y + (u.y * a + v.y * bb) * sz / 2, pz = c.z + (u.z * a + v.z * bb) * sz / 2; P.push(px, py, pz);
+          const nn = new THREE.Vector3(px - cx, (py - cy) * 1.3 + 0.6, pz - cz).normalize(); N.push(nn.x, nn.y, nn.z); U.push((a + 1) / 2, (bb + 1) / 2); });
+        I.push(b, b + 1, b + 2, b, b + 2, b + 3, b, b + 2, b + 1, b, b + 3, b + 2); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2)); g.setIndex(I); return g; };
+    const ell = (rx, ry, rz, cy) => (R) => { const t = R() * 6.283, u = R() * 2 - 1, k = Math.cbrt(0.35 + R() * 0.65), sq = Math.sqrt(1 - u * u); return new THREE.Vector3(Math.cos(t) * sq * rx * k, cy + u * ry * k, Math.sin(t) * sq * rz * k); };
+    const crownG = BGU.mergeBufferGeometries([cards(46, ell(2.6, 1.9, 2.6, 4.4), 1.9, 0, 4.4, 0), cards(18, ell(1.5, 1.2, 1.5, 3.6), 1.6, 0, 4.4, 0).translate(1.1, 0.3, 0.6)]);
+    const pineG = cards(70, (R, i) => { const h = R(), rr = (1 - h) * 2.4 + 0.2, t = R() * 6.283; return new THREE.Vector3(Math.cos(t) * rr * (0.5 + R() * 0.5), 2.2 + h * 6.2, Math.sin(t) * rr * (0.5 + R() * 0.5)); }, 1.7, 0, 4.5, 0);
+    const bushG = cards(14, ell(1.1, 0.6, 1.0, 0.6), 1.0, 0, 0.4, 0);
+    for (const type of ['round', 'cherry', 'autumn']) { const [lm, ld] = leafMaterial(TEX.leaf[type]); inst(crownG, lm, TREES[type], ([x, z, s, r], m) => m.compose(V(x, 0, z), q.setFromAxisAngle(up, r), V(s, s * (0.9 + (r % 1) * 0.2), s)), ld); }
+    { const [lm, ld] = leafMaterial(TEX.leaf.pine); inst(pineG, lm, TREES.pine, ([x, z, s, r], m) => m.compose(V(x, 0, z), q.setFromAxisAngle(up, r), V(s, s, s)), ld); }
+    { const [lm, ld] = leafMaterial(TEX.leaf.bush); inst(bushG, lm, bushes, ([x, z, s, r], m) => m.compose(V(x, 0, z), q.setFromAxisAngle(up, r), V(s * 1.3, s, s * 1.2)), ld); }
     const fl = bushes.filter((b, i) => i % 3 === 0), FC = ['#e8425a', '#f7c948', '#f28fb0', '#ffffff', '#9b6fd6'];
-    FC.forEach((c, j) => inst(new THREE.IcosahedronGeometry(0.22, 0), mat(c), fl.filter((b, i) => i % 5 === j), ([x, z, s, r], m) => m.compose(V(x + Math.cos(r) * 0.9, 1.05 * s, z + Math.sin(r) * 0.9), q, V(1, 1, 1))));
+    FC.forEach((c, j) => inst(new THREE.IcosahedronGeometry(0.12, 0), mat(c, { roughness: 0.6 }), [].concat(...fl.filter((b, i) => i % 5 === j).map(b => [0, 1, 2, 3, 4, 5].map(k => [b[0] + Math.cos(b[3] + k) * (0.6 + k * 0.12), b[1] + Math.sin(b[3] + k) * (0.6 + k * 0.1), b[2], b[3]]))),
+      ([x, z, s, r], m) => m.compose(V(x, 0.95 * s, z), q, V(1, 0.6, 1))));
   }
   // 3) 캠퍼스를 둘러싼 산 (지도 북·동쪽 숲)
-  const hillM = mat('#3d6e34'), hillM2 = mat('#4a7d3c');
-  for (let i = 0; i < 26; i++) { const a = -Math.PI * 1.05 + i / 25 * Math.PI * 1.25, R = 205 + rnd() * 30;
-    const h = new THREE.Mesh(new THREE.ConeGeometry(40 + rnd() * 25, 34 + rnd() * 30, 7), i % 2 ? hillM : hillM2); h.position.set(Math.cos(a) * R * 1.05, 12, Math.sin(a) * R * 0.85 - 10); scene.add(h); }
+  { const hn = vnoise(512, 512, 40, 77), hillG = [];
+    for (let i = 0; i < 22; i++) { const a = -Math.PI * 1.05 + i / 21 * Math.PI * 1.25, R = 262 + rnd() * 30, rad = 60 + rnd() * 30, ht = 30 + rnd() * 32;
+      const g = new THREE.SphereGeometry(1, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), P = g.attributes.position, cs = [];
+      for (let k = 0; k < P.count; k++) { const vx = P.getX(k), vy = P.getY(k), vz = P.getZ(k), wx = vx * rad + Math.cos(a) * R * 1.05, wz = vz * rad + Math.sin(a) * R * 0.85 - 10;
+        const n = hn((wx + 600) % 512, (wz + 600) % 512), y = Math.pow(vy, 1.4) * ht * (0.75 + n * 0.5); P.setXYZ(k, wx, y - 1, wz);
+        const c = new THREE.Color().setRGB(0.16 + n * 0.08, 0.27 + n * 0.1 + vy * 0.03, 0.13 + n * 0.04); cs.push(c.r, c.g, c.b); }
+      g.setAttribute('color', new THREE.Float32BufferAttribute(cs, 3)); g.computeVertexNormals(); hillG.push(g); }
+    const hm = new THREE.Mesh(THREE.BufferGeometryUtils.mergeBufferGeometries(hillG), stdMat({ vertexColors: true, roughness: 1 })); hm.userData.noShadow = true; scene.add(hm); }
   const bh = textSprite('비호동산', 2.4, '#e9f5d8'); bh.position.set(-20, 10, -128); scene.add(bh);
   // 4) 사랑광장 분수
   const fc = new THREE.Mesh(new THREE.CylinderGeometry(5, 5.4, 0.8, 24), mat('#c9c2b4')); fc.position.set(24, 0.4, -30); scene.add(fc); solid(24, -30, 9, 9);

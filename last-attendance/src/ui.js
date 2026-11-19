@@ -11,7 +11,7 @@ const SPECIAL = { '재난문자': { name: '긴급재난문자', color: '#ffd23a'
 // --- 초상화 렌더 (오프스크린) ---
 function renderPortraits() {
   const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(256, 256); r.setPixelRatio(1);
-  const sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight('#fff', '#666', 1.1)); const dl = new THREE.DirectionalLight('#fff', 0.5); dl.position.set(2, 3, 4); sc.add(dl);
+  r.outputEncoding = THREE.sRGBEncoding; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.15; const sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight('#fff', '#888', 1.0)); const dl = new THREE.DirectionalLight('#fff', 1.6); dl.position.set(2, 3, 4); sc.add(dl);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
   for (const ch of CHARS) {
     const m = makeHuman(ch); sc.add(m); const s = ch.height / 172;

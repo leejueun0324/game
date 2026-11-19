@@ -30,7 +30,7 @@ function loop(now) {
   }
   if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(-20 + Math.sin(t) * 110, 50, -30 + Math.cos(t) * 110); camera.lookAt(-20, 4, -30); updateZombies(dt); }
   syncModels(dt); updateCamera(dt); updateEnv(dt);
-  renderer.render(scene, camera);
+  renderFrame();
   UI.drawHUD();
   requestAnimationFrame(loop);
 }
