@@ -86,7 +86,7 @@ const NET = {
       z: G.zombies.map(z => [z.id, z.kind, r(z.x), r(z.z), r(z.face), Math.round(z.hp), z.maxHp, z.stun > 0 ? 1 : 0, z.mark > 0 ? 1 : 0, z.confused > 0 ? 1 : 0, z.root > 0 ? 1 : 0, r(z.speedNow || 0), z.atkAnim > 0 ? 1 : 0, z.fl || 0]),
       p: G.pickups.map(p => [p.id, p.type, r(p.x), r(p.z), p.mission || '', p.fl || 0]),
       it: STORY.allInteracts().map(i => [i.id, r(i.x), r(i.z), i.label, !i.used && (!i.enabled || i.enabled()) ? 1 : 0]),
-      q: [G.chapterIdx, G.questIdx, G.qprog, STORY.questOverride || null], inv: G.inv, night: G.night, buffs: G.buffs, md: G.missionsDone, ev: this.events };
+      q: [G.chapterIdx, G.questIdx, G.qprog, STORY.questOverride || null], inv: G.inv, env: [ENV.hour, ENV.curW], buffs: G.buffs, md: G.missionsDone, ev: this.events };
     this.events = [];
     this.broadcast(snap);
   },
@@ -114,7 +114,7 @@ const NET = {
     if (!s.q) { for (const ev of s.ev || []) this.applyEvent(ev); return; }
     const qChanged = G.chapterIdx !== s.q[0] || G.questIdx !== s.q[1] || G.qprog !== s.q[2];
     G.chapterIdx = s.q[0]; G.questIdx = s.q[1]; G.qprog = s.q[2]; STORY.questOverride = s.q[3];
-    G.inv = s.inv; G.buffs = s.buffs; G.missionsDone = s.md; if (G.night !== s.night) setNight(s.night);
+    G.inv = s.inv; G.buffs = s.buffs; G.missionsDone = s.md; if (s.env) { if (Math.abs(ENV.hour - s.env[0]) > 0.05) ENV.hour = s.env[0]; if (ENV.curW !== s.env[1]) setWeather(s.env[1]); }
     if (qChanged) { UI.refreshQuest(); UI.refreshInv(); }
     for (const ev of s.ev || []) this.applyEvent(ev);
   },
@@ -127,7 +127,7 @@ const NET = {
     else if (ev.e === 'dialog') UI.dialogStart(ev.lines, null, true);
     else if (ev.e === 'dlgi') { const D = UI.dialog; if (D && ev.i !== D.i && ev.i < D.list.length) { D.i = ev.i; $('rollcall').classList.add('hidden'); UI.showLine(); } }
     else if (ev.e === 'dlgend') { if (UI.dialog) { UI.dialog.i = UI.dialog.list.length; UI.dialog.local = true; $('rollcall').classList.add('hidden'); UI.showLine(); } }
-    else if (ev.e === 'chapter') { const ch = CHAPTERS[ev.idx]; G.chapterIdx = ev.idx; const sp = WORLD.spawns[ch.start]; G.me.x = sp.x + rand(-1, 1); G.me.z = sp.z + rand(-1, 1); G.me.state = 'active'; setNight(ch.night); UI.chapterCard(ch); UI.refreshQuest(); }
+    else if (ev.e === 'chapter') { const ch = CHAPTERS[ev.idx]; G.chapterIdx = ev.idx; const sp = WORLD.spawns[ch.start]; G.me.x = sp.x + rand(-1, 1); G.me.z = sp.z + rand(-1, 1); G.me.state = 'active'; setChapterEnv(ch.id); UI.chapterCard(ch); UI.refreshQuest(); }
     else if (ev.e === 'fail') UI.fail(ev.reason);
     else if (ev.e === 'retry') $('failScr').classList.add('hidden');
     else if (ev.e === 'ending') UI.ending();
@@ -214,7 +214,7 @@ const ROOMNET = {
     NET.snapT -= dt; if (NET.snapT > 0 || !this.R) return; NET.snapT = 0.15; this.tick++;
     const r = v => Math.round(v * 10) / 10, emit = d => this.R.emit('h', d).catch(() => {});
     const a = { t: 'snap', k: 'a', u: G.units.map(u => [u.id, r(u.x), r(u.z), r(u.face), Math.round(u.hp), u.state, r(u.speed || 0), u.atkAnim > 0 ? 1 : 0, u.absent ? 1 : 0, u.hidden > 0 ? 1 : 0, Math.round(u.downT), u.weapon || '', r(u.reviveT), u.fl || 0]),
-      q: [G.chapterIdx, G.questIdx, G.qprog, STORY.questOverride || null], inv: G.inv, night: G.night, buffs: G.buffs, md: G.missionsDone, ev: [] };
+      q: [G.chapterIdx, G.questIdx, G.qprog, STORY.questOverride || null], inv: G.inv, env: [ENV.hour, ENV.curW], buffs: G.buffs, md: G.missionsDone, ev: [] };
     let evs = NET.events; NET.events = [];
     const fit = [], rest = []; let size = JSON.stringify(a).length;
     for (const ev of evs) { const l = JSON.stringify(ev).length; if (size + l < 3600) { fit.push(ev); size += l; } else rest.push(ev); }

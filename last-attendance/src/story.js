@@ -40,7 +40,7 @@ const STORY = {
     G.units.forEach((u, i) => { const a = i / G.units.length * 6.283; u.x = sp.x + Math.sin(a) * 1.8; u.z = sp.z + Math.cos(a) * 1.8; pushOut(u);
       u.fl = 0; u.state = 'active'; u.hp = u.maxHp; u.absent = false; u.scripted = false; u.scriptMove = null; u.skillCd = 2; u.hidden = 0; });
     if (G.me) { G.me.x = sp.x; G.me.z = sp.z; G.me.fl = 0; } G.floorSeen = {};
-    setNight(ch.night);
+    setChapterEnv(ch.id);
     (CH_SETUP[ch.id] || (() => {}))(this);
     if (!underground(sp.x) && idx <= 4) MISSIONS.place();
     UI.chapterCard(ch, () => {
@@ -187,10 +187,10 @@ const CH_ONQUEST = {
   ch3(S, qi) {
     if (qi === 1) { const e = unitByCh(S.quest().id); if (e) { [e.x, e.z] = at('seongsan', 2, -29.5); e.state = 'down'; e.hp = 0; e.downT = 60; e.scripted = true; e.wasDown = true; say(e, '꺄악!', 2);
       for (let i = 0; i < 6; i++) spawnAround('walker', ...at('seongsan', 0, -26), 8, 16); } }
-    if (qi === 3) { S.amb = { n: 40, min: 8, max: 22, at: { x: at('seongsan', 0, -48)[0], z: at('seongsan', 0, -48)[1] }, runner: 0.35, brute: 0.08, every: 0.5, burst: 2 }; UI.banner('밤이 깊어진다. 옆문과 뒷문을 지켜!', '#9aa8ff'); setNight(0.9); }
+    if (qi === 3) { S.amb = { n: 40, min: 8, max: 22, at: { x: at('seongsan', 0, -48)[0], z: at('seongsan', 0, -48)[1] }, runner: 0.35, brute: 0.08, every: 0.5, burst: 2 }; UI.banner('밤이 깊어지고 폭풍우가 몰아친다. 옆문과 뒷문을 지켜!', '#9aa8ff'); setHour(21.5); setWeather('storm'); }
   },
   ch4(S, qi) {
-    if (qi === 2) { const y = unitByCh('yujun'); if (y) y.scripted = false; setNight(0.45); UI.banner('오전 5시 56분. 운동장으로.', '#ffe9a8'); }
+    if (qi === 2) { const y = unitByCh('yujun'); if (y) y.scripted = false; setHour(5.93); setWeather('cloudy'); UI.banner('오전 5시 56분. 안개가 걷히고 있다. 운동장으로.', '#ffe9a8'); }
     if (qi === 3) {
       UI.banner('헬리콥터 소리가 들린다— K-13', '#ffd36b');
       const h = makeHeli(); h.position.set(WORLD.field.x + 18, 40, WORLD.field.z + 10); h.rotation.y = 0.6; scene.add(h); S.heli = h; S.heliT = 0;

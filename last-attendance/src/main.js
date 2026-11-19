@@ -12,7 +12,7 @@ function startGame(players, myPid, chIdx) {
   G.running = true; G.paused = false; document.body.classList.add('playing');
   if (isTouch) document.body.classList.add('touch');
   G.zoom = innerHeight > innerWidth ? 24 : 26;
-  if (G.mode === 'client') { G.chapterIdx = chIdx; const ch = CHAPTERS[chIdx]; const sp = WORLD.spawns[ch.start]; G.me.x = sp.x; G.me.z = sp.z; setNight(ch.night); UI.refreshQuest(); UI.refreshInv(); }
+  if (G.mode === 'client') { G.chapterIdx = chIdx; const ch = CHAPTERS[chIdx]; const sp = WORLD.spawns[ch.start]; G.me.x = sp.x; G.me.z = sp.z; setChapterEnv(ch.id); UI.refreshQuest(); UI.refreshInv(); }
   else STORY.start(chIdx);
   camera.position.set(G.me.x, 40, G.me.z + 30);
 }
@@ -29,13 +29,13 @@ function loop(now) {
     if (G.questIdxShown !== G.questIdx + '/' + G.qprog) { G.questIdxShown = G.questIdx + '/' + G.qprog; UI.refreshQuest(); }
   }
   if (!G.running) { const t = now / 1000 * 0.05; camera.position.set(-20 + Math.sin(t) * 110, 50, -30 + Math.cos(t) * 110); camera.lookAt(-20, 4, -30); updateZombies(dt); }
-  syncModels(dt); updateCamera(dt);
+  syncModels(dt); updateCamera(dt); updateEnv(dt);
   renderer.render(scene, camera);
   UI.drawHUD();
   requestAnimationFrame(loop);
 }
 window.addEventListener('load', () => {
   initRenderer(); initInput(); UI.init();
-  G.me = null; setNight(0.55); for (let i = 0; i < 40; i++) spawnAround(i % 4 ? 'walker' : 'runner', -20, -10, 5, 80);
+  G.me = null; ENV.hour = 18.3; setWeather('clear', true); for (let i = 0; i < 40; i++) spawnAround(i % 4 ? 'walker' : 'runner', -20, -10, 5, 80);
   requestAnimationFrame(loop);
 });

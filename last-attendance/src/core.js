@@ -22,7 +22,10 @@ function initRenderer() {
   sun = new THREE.DirectionalLight('#fff3dc', 0.7); sun.position.set(40, 80, 30); scene.add(sun);
   flash = new THREE.PointLight('#fff2c8', 0, 22, 1.6); scene.add(flash);
   hud = document.getElementById('hud'); hctx = hud.getContext('2d');
+  makeTextures();
   buildWorld(scene);
+  shadowAll(scene, true, true);
+  initEnv();
   addEventListener('resize', onResize); onResize();
 }
 function onResize() {
@@ -31,14 +34,6 @@ function onResize() {
   hctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   document.body.classList.toggle('portrait', h > w);
 }
-function setNight(n) {
-  G.night = n; const ug = G.me && underground(G.me.x);
-  const day = new THREE.Color('#9cc7e6'), nite = new THREE.Color('#0b1022'), c = day.clone().lerp(nite, ug ? 1 : n);
-  const lab = ug && G.me.z > 70;
-  scene.background = c; scene.fog.color = c; scene.fog.near = ug ? 14 : 60 - n * 40; scene.fog.far = ug ? (lab ? 70 : 48) : 160 - n * 100;
-  hemi.intensity = ug ? (lab ? 0.75 : 0.42) : 0.85 - n * 0.55; sun.intensity = ug ? (lab ? 0.3 : 0) : 0.7 - n * 0.55;
-}
-
 // ---------------- 입력 ----------------
 const keys = {}, mouse = { x: 0, y: 0, down: false, world: { x: 0, z: 0 }, rdrag: null };
 let pressSkill = false, pressInteract = false, isTouch = false, pad = null;
@@ -141,7 +136,7 @@ function makeUnit(ch, x, z) {
   const model = makeHuman(ch); scene.add(model);
   const u = { id: G.nextId++, kind: 'unit', ch, x, z, r: 0.45, hp: statHP(ch), maxHp: statHP(ch), face: 0, model, atkT: 0, atkAnim: 0, skillCd: 2,
     state: 'active', downT: 0, reviveT: 0, ctrl: 'ai', weapon: null, speed: 0, inv: 0, block: 0, hidden: 0, say: null, hurt: 0, slot: G.units.length, fl: 0, stamina: 100 };
-  model.position.set(x, 0, z); G.units.push(u); return u;
+  model.position.set(x, 0, z); shadowAll(model, true, false); G.units.push(u); return u;
 }
 function setWeapon(u, w) { u.weapon = w; setWeaponModel(u.model, w); }
 function activeUnits() { return G.units.filter(u => u.state === 'active'); }
@@ -156,7 +151,7 @@ const ZDEF = {
 function spawnZombie(kind, x, z, fl) {
   const d = ZDEF[kind];
   const model = kind === 'agent' ? makeAgent() : kind === 'mimic' ? makeMimic() : kind === 'n1' ? makeNumberOne() : makeZombie(kind);
-  scene.add(model); model.position.set(x, 0, z);
+  scene.add(model); model.position.set(x, 0, z); shadowAll(model, true, false);
   const zb = { id: G.nextId++, kind, x, z, r: d.r, hp: d.hp, maxHp: d.hp, spd: d.spd * rand(0.9, 1.1), dmg: d.dmg, model, target: null, retarget: 0,
     atkCd: 0, atkAnim: 0, stun: 0, root: 0, confused: 0, mark: 0, dead: false, face: 0, stuck: 0, detour: 0, dside: 1, wander: rand(0, 6), shotT: rand(1, 2), hitFlash: 0, fl: fl || 0 };
   G.zombies.push(zb); return zb;

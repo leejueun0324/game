@@ -49,7 +49,7 @@ const UI = {
     $('btnLobbyStart').onclick = () => NET.startGame();
     // 상단 버튼
     $('tPhone').onclick = () => this.togglePhone(); $('tCards').onclick = () => this.openCards(); $('tRel').onclick = () => this.openRelations();
-    $('tPause').onclick = () => this.togglePause(); $('tView').onclick = () => toggleView(); $('tSound').onclick = () => { muted = !muted; $('tSound').textContent = muted ? '🔇' : '🔊'; };
+    $('tPause').onclick = () => this.togglePause(); $('tView').onclick = () => toggleView(); $('tGfx').onclick = () => cycleGfx(); $('tSound').onclick = () => { muted = !muted; $('tSound').textContent = muted ? '🔇' : '🔊'; };
     $('modalClose').onclick = () => this.closeModal(); $('modal').onclick = e => { if (e.target.id === 'modal') this.closeModal(); };
     // 폰
     $('phoneClose').onclick = () => this.togglePhone(false);
@@ -312,7 +312,7 @@ const UI = {
       if (it) { const p = scr(it.x, FY(me) + 1.6, it.z); c.font = '800 14px sans-serif'; const t = `${isTouch ? '[사용]' : '[E]'} ${it.label}`; const w = c.measureText(t).width + 18;
         c.fillStyle = 'rgba(0,0,0,.7)'; this.rr(c, p.x - w / 2, p.y - 13, w, 26, 8); c.fill(); c.fillStyle = '#ffe066'; c.fillText(t, p.x, p.y); }
       for (const it of STORY.allInteracts()) { if (it.used || (it.enabled && !it.enabled()) || (it.fl || 0) !== (me.fl || 0)) continue; const p = scr(it.x, 1.2, it.z); if (!p.ok) continue; c.fillStyle = '#ffe066'; c.font = '900 16px sans-serif'; c.fillText('◆', p.x, p.y + Math.sin(G.t * 4) * 3); }
-      for (const p0 of G.pickups) { if ((p0.fl || 0) !== (me.fl || 0)) continue; const p = scr(p0.x, FY(p0) + 1.3, p0.z); if (!p.ok || p.x < 0 || p.x > W || p.y < 0 || p.y > H) continue; c.font = '700 10px sans-serif'; c.fillStyle = p0.mission ? '#ffe066' : '#fff'; c.fillText((p0.mission ? '★ ' : '') + PICKNAME[p0.type], p.x, p.y); }
+      for (const p0 of G.pickups) { if ((p0.fl || 0) !== (me.fl || 0) || D2(p0, me) > 32) continue; const p = scr(p0.x, FY(p0) + 1.3, p0.z); if (!p.ok || p.x < 0 || p.x > W || p.y < 0 || p.y > H) continue; c.font = '700 10px sans-serif'; c.fillStyle = p0.mission ? '#ffe066' : '#fff'; c.fillText((p0.mission ? '★ ' : '') + PICKNAME[p0.type], p.x, p.y); }
       const tgt = this.objectiveTarget();
       if (tgt) { const p = scr(tgt.x, 0.5, tgt.z), dist = Math.round(Math.hypot(tgt.x - me.x, tgt.z - me.z));
         const off = p.x < 30 || p.x > W - 30 || p.y < 80 || p.y > H - 60 || !p.ok;
@@ -377,6 +377,8 @@ const UI = {
     for (const p of G.pickups) if (p.mission && !ug) { const [x, y] = P(p.x, p.z); c.fillStyle = '#ffe066'; c.font = '9px sans-serif'; c.fillText('★', x, y); }
     for (const u of G.units) { if (u.absent) continue; const [x, y] = P(u.x, u.z); c.fillStyle = u === G.me ? '#fff' : u.ctrl !== 'ai' ? '#ffe066' : u.state === 'down' ? '#f55' : '#7dff7d'; c.beginPath(); c.arc(x, y, u === G.me ? 3.5 : 2.3, 0, 7); c.fill(); }
     const t = this.objectiveTarget(); if (t) { const [x, y] = P(t.x, t.z); c.strokeStyle = '#ffe066'; c.lineWidth = 2; c.beginPath(); c.arc(clamp(x, mx, mx + mw), clamp(y, my, my + mh), 5 + Math.sin(G.t * 5) * 1.5, 0, 7); c.stroke(); }
+    { const hh = ((ENV.hour % 24) + 24) % 24, H12 = Math.floor(hh) % 12 || 12, mm = String(Math.floor((hh % 1) * 60)).padStart(2, '0'), ic = ug ? '🔦' : { clear: G.night > 0.5 ? '🌙' : '☀', cloudy: '☁', rain: '🌧', storm: '⛈', fog: '🌫' }[ENV.curW] || '☀';
+      c.font = '700 10px sans-serif'; c.fillStyle = '#dfe8f2'; c.fillText(`${ic} ${hh < 12 ? '오전' : '오후'} ${H12}:${mm}${ug ? ' · 지하' : ' · ' + WEATHER[ENV.curW].name} · 바람 ${ENV.wind.s.toFixed(1)}`, mx + mw / 2, my + mh + 24); }
     c.font = '700 10px sans-serif'; c.fillStyle = '#fff'; c.fillText(ug ? (me.z > 70 ? 'K-13 연구소 (지하)' : '지하 주차장') : (inBuilding(me.x, me.z) ? inBuilding(me.x, me.z).name + ` · ${(me.fl || 0) + 1}층` : '대구대 경산캠퍼스'), mx + mw / 2, my + mh + 11);
   },
   drawSkill(c, W, H, portrait) {

@@ -3,7 +3,7 @@
 import os
 here = os.path.dirname(os.path.abspath(__file__)); src = os.path.join(here, 'src')
 r = lambda f: open(os.path.join(src, f), encoding='utf-8').read()
-js = ['data.js', 'world.js', 'models.js', 'core.js', 'story.js', 'ui.js', 'net.js', 'main.js']
+js = ['data.js', 'env.js', 'world.js', 'models.js', 'core.js', 'story.js', 'ui.js', 'net.js', 'main.js']
 html = f'''<!DOCTYPE html>
 <html lang="ko">
 <head>
