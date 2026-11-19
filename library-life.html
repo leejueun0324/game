@@ -125,6 +125,7 @@
     font: inherit; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--bg); color: var(--ink); margin: 6px 0 12px;
   }
+  input.name::placeholder { color: #9a9a9a; opacity: 1; }
   .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 12px; }
   .choice.sel { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
   .field-label { font-weight: 700; font-size: 14px; margin: 4px 0 0; }
@@ -704,7 +705,7 @@ function startScreen() {
   box.innerHTML = `<div class="emoji">🎒</div><h2>어서 와, 대구대학교 문헌정보학과는 처음이지?</h2>
     <div class="body"><p>교육목표는 ‘미래사회를 선도하는 지식정보 전문가’. 경산 캠퍼스에서의 4년 동안 매달 할 일을 고르고, 방학을 보내고, 졸업 후의 진로를 찾아보자.</p>
     <p class="field-label">이름</p>
-    <input class="name" id="nameIn" maxlength="10" placeholder="내 이름을 적어 주세요" autocomplete="off">
+    <input class="name" id="nameIn" maxlength="10" placeholder="예시) 홍길동" autocomplete="off">
     <p class="field-label">성별</p>
     <div class="seg" id="genderCh"></div>
     <p class="field-label">나는 어떤 신입생일까?</p></div>
