@@ -175,13 +175,31 @@ const TRAITS = {
   diligent: { name: '✏️ 성실파', desc: '체력 +10, 모든 전공 +3', fx: { hp: 10, org: 3, svc: 3, dig: 3, edu: 3, arc: 3 }, avatar: '🙂' }
 };
 
-// 매 달 할 수 있는 행동
+
+// 학기별 전공 과목 (실제 교과과정을 아는 학기는 여기에 등록, 나머지는 기본 과목)
+const CURRICULUM = {
+  '1-1': [
+    { id: 'c11a', name: '도서관 문화사', desc: '도서관의 탄생과 역사', fx: { arc: 3, edu: 3, stress: 4, hp: -3 } },
+    { id: 'c11b', name: '문헌정보학의 이해', desc: '문헌정보학 입문', fx: { org: 2, svc: 2, dig: 1, edu: 1, stress: 4, hp: -3 } }
+  ],
+  '1-2': [
+    { id: 'c12a', name: '지능정보사회와 정보활용', desc: 'AI 시대의 정보 탐색·활용', fx: { dig: 4, svc: 2, stress: 5, hp: -3 } },
+    { id: 'c12b', name: '장서관리론', desc: '자료 선정·수집·평가', fx: { org: 4, edu: 2, stress: 5, hp: -3 } }
+  ]
+};
+const DEFAULT_STUDY = [
+  { id: 'org', name: '자료조직론', desc: '분류(KDC·DDC)와 목록 규칙', fx: { org: 6, stress: 5, hp: -3 } },
+  { id: 'svc', name: '정보서비스론', desc: '참고봉사, 이용자 응대', fx: { svc: 6, stress: 5, hp: -3 } },
+  { id: 'dig', name: '디지털도서관·데이터', desc: '메타데이터, DB, 코딩', fx: { dig: 6, stress: 6, hp: -3 } },
+  { id: 'edu', name: '독서교육론', desc: '독서지도, 북큐레이션', fx: { edu: 6, stress: 4, hp: -3 } },
+  { id: 'arc', name: '기록관리학', desc: '기록물 평가·보존', fx: { arc: 6, stress: 5, hp: -3 } }
+];
+function availableActions(s) { return studyList(s).concat(ACTIONS); }
+function studyList(s) {
+  return (CURRICULUM[s.year + '-' + s.sem] || DEFAULT_STUDY).map(c => Object.assign({ group: '전공 공부', study: true }, c));
+}
+// 전공 외 행동
 const ACTIONS = [
-  { group: '전공 공부', id: 'org', name: '자료조직론', desc: '분류(KDC·DDC)와 목록 규칙', fx: { org: 6, stress: 5, hp: -3 }, study: true },
-  { group: '전공 공부', id: 'svc', name: '정보서비스론', desc: '참고봉사, 이용자 응대', fx: { svc: 6, stress: 5, hp: -3 }, study: true },
-  { group: '전공 공부', id: 'dig', name: '디지털도서관·데이터', desc: '메타데이터, DB, 코딩', fx: { dig: 6, stress: 6, hp: -3 }, study: true },
-  { group: '전공 공부', id: 'edu', name: '독서교육론', desc: '독서지도, 북큐레이션', fx: { edu: 6, stress: 4, hp: -3 }, study: true },
-  { group: '전공 공부', id: 'arc', name: '기록관리학', desc: '기록물 평가·보존', fx: { arc: 6, stress: 5, hp: -3 }, study: true },
   { group: '전공 공부', id: 'teach', name: '교직 수업', desc: '사서교사 과정 (교직 이수자)', fx: { edu: 4, prep: 3, stress: 6, hp: -3 }, study: true, need: s => s.teacher },
   { group: '활동', id: 'work', name: '중앙도서관 근로', desc: '서가 정리하며 용돈벌이', fx: { money: 25, exp: 4, org: 2, hp: -6, stress: 3 } },
   { group: '활동', id: 'job', name: '카페 아르바이트', desc: '돈은 되지만 피곤하다', fx: { money: 40, hp: -9, stress: 6 } },
@@ -218,7 +236,7 @@ const QUIZ = [
 
 // 무작위 사건
 const EVENTS = [
-  { emoji: '📚', title: '선배의 족보', body: '학과 선배가 지난 학기 자료조직론 정리 노트를 건네준다.', choices: [
+  { emoji: '📚', title: '선배의 족보', body: '학과 선배가 지난 학기 전공 정리 노트를 건네준다.', choices: [
     { label: '감사히 받는다', fx: { org: 4, social: 3 } },
     { label: '밥 한 끼 사며 받는다', fx: { org: 4, social: 7, money: -10 } } ] },
   { emoji: '🤒', title: '환절기 감기', body: '목이 칼칼하더니 결국 감기에 걸렸다.', choices: [
@@ -342,7 +360,7 @@ function render() {
   if (S.done) { $('actions').innerHTML = '<h2>졸업을 축하합니다 🎓</h2><p>‘처음부터’를 눌러 다시 시작할 수 있어요.</p>'; }
   else {
     const groups = {};
-    ACTIONS.forEach(a => { (groups[a.group] = groups[a.group] || []).push(a); });
+    availableActions(S).forEach(a => { (groups[a.group] = groups[a.group] || []).push(a); });
     let html = `<h2>이번 달에는 무엇을 할까? <span style="font-weight:500">(${Math.min(S.turn + 1, 4)}/4)</span></h2>`;
     for (const g in groups) {
       html += `<h3>${g}</h3><div class="btns">` + groups[g].map(a => {
@@ -392,7 +410,7 @@ function fxSub(fx) {
 
 // ================= 게임 진행 =================
 function doAction(id) {
-  const a = ACTIONS.find(x => x.id === id);
+  const a = availableActions(S).find(x => x.id === id);
   if (!a || (a.need && !a.need(S))) return;
   if (a.fx.money < 0 && S.money + a.fx.money < 0) {
     queue({ emoji: '💳', title: '잔고 부족', body: '<p>통장 잔고가 부족하다… 다른 걸 해보자.</p>' });
