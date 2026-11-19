@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문정과 4년 라이프</title>
+<style>
+  :root {
+    --bg: #f4ede0;
+    --paper: #fffaf1;
+    --ink: #2f2418;
+    --muted: #7a6a55;
+    --line: #e2d5bf;
+    --accent: #1f5fa8;
+    --accent-soft: #dce8f7;
+    --good: #2e8b57;
+    --bad: #c0392b;
+    --warn: #c8811a;
+    --shadow: 0 2px 10px rgba(60, 40, 10, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1814;
+      --paper: #26221c;
+      --ink: #f1e8d8;
+      --muted: #b3a48c;
+      --line: #3d362c;
+      --accent: #7fb1ec;
+      --accent-soft: #24364d;
+      --good: #6fcf97;
+      --bad: #ff7b6b;
+      --warn: #f0b35a;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1814; --paper: #26221c; --ink: #f1e8d8; --muted: #b3a48c; --line: #3d362c;
+    --accent: #7fb1ec; --accent-soft: #24364d; --good: #6fcf97; --bad: #ff7b6b; --warn: #f0b35a;
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 20px 16px 40px; }
+  header.top {
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between;
+    border-bottom: 2px solid var(--line); padding-bottom: 12px; margin-bottom: 16px;
+  }
+  header.top h1 { margin: 0; font-size: 22px; letter-spacing: -0.5px; }
+  header.top h1 small { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .when { font-weight: 700; color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .card h2 { margin: 0 0 10px; font-size: 15px; color: var(--muted); font-weight: 700; }
+  .profile { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  .avatar { font-size: 40px; width: 56px; height: 56px; display: grid; place-items: center; background: var(--accent-soft); border-radius: 50%; }
+  .profile b { font-size: 17px; }
+  .profile .sub { font-size: 13px; color: var(--muted); }
+  .stat { margin: 7px 0; font-size: 13px; }
+  .stat .row { display: flex; justify-content: space-between; }
+  .bar { height: 7px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 3px; }
+  .bar i { display: block; height: 100%; border-radius: 99px; transition: width .4s; }
+  .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; font-size: 13px; margin-top: 10px; }
+  .kv div { background: var(--bg); border-radius: 8px; padding: 6px 8px; }
+  .kv span { display: block; color: var(--muted); font-size: 11px; }
+  .kv b { font-size: 15px; }
+  .actions h3 { font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+  .actions h3:first-child { margin-top: 0; }
+  .btns { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  button.act, .choice {
+    font: inherit; text-align: left; cursor: pointer;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px;
+    transition: transform .08s, border-color .15s, background .15s;
+  }
+  button.act:hover:not(:disabled), .choice:hover { border-color: var(--accent); background: var(--accent-soft); }
+  button.act:active:not(:disabled) { transform: scale(0.98); }
+  button.act:disabled { opacity: .45; cursor: not-allowed; }
+  button.act b { display: block; font-size: 14px; }
+  button.act small { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+  .log { max-height: 280px; overflow-y: auto; font-size: 14px; display: flex; flex-direction: column-reverse; }
+  .log p { margin: 0; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .log p:last-child { border-bottom: none; }
+  .log .t { color: var(--muted); font-size: 12px; margin-right: 6px; }
+  .up { color: var(--good); font-weight: 700; }
+  .down { color: var(--bad); font-weight: 700; }
+  .main { display: flex; flex-direction: column; gap: 16px; }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tools button {
+    font: inherit; font-size: 12px; cursor: pointer; background: transparent; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px;
+  }
+  .tools button:hover { color: var(--ink); border-color: var(--ink); }
+
+  /* 모달 */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(20, 14, 6, 0.55);
+    display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+  }
+  .modal-bg.hidden { display: none; }
+  .modal {
+    background: var(--paper); color: var(--ink); border-radius: 14px; max-width: 520px; width: 100%;
+    padding: 22px 22px 18px; box-shadow: 0 10px 40px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto;
+    animation: pop .18s ease-out;
+  }
+  @keyframes pop { from { transform: scale(.95); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal .emoji { font-size: 42px; line-height: 1; }
+  .modal h2 { margin: 8px 0 8px; font-size: 20px; }
+  .modal .body { font-size: 15px; }
+  .modal .body p { margin: 0 0 10px; }
+  .modal .choices { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .choice { width: 100%; }
+  .choice small { display: block; color: var(--muted); font-size: 12px; }
+  input.name {
+    font: inherit; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink); margin: 6px 0 12px;
+  }
+  .note { font-size: 12px; color: var(--muted); margin-top: 24px; text-align: center; }
+  table.tr { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  table.tr td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
+  table.tr td:last-child { text-align: right; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>📚 문정과 4년 라이프 <small>대구대학교 문헌정보학과 시뮬레이션</small></h1>
+    <div class="when" id="when"></div>
+  </header>
+
+  <div class="grid">
+    <aside class="card" id="side"></aside>
+    <section class="main">
+      <div class="card actions" id="actions"></div>
+      <div class="card">
+        <h2>📝 생활 기록</h2>
+        <div class="log" id="log"></div>
+      </div>
+      <div class="tools">
+        <button id="saveBtn">저장</button>
+        <button id="loadBtn">불러오기</button>
+        <button id="resetBtn">처음부터</button>
+      </div>
+    </section>
+  </div>
+  <p class="note">팬메이드 시뮬레이션 게임입니다. 대구대학교 및 문헌정보학과의 공식 콘텐츠가 아니며, 등장하는 사건과 수치는 모두 허구입니다.</p>
+</div>
+
+<div class="modal-bg hidden" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script>
+// ================= 기본 데이터 =================
+const LABEL = {
+  org: '자료조직', svc: '정보서비스', dig: '디지털·데이터', edu: '독서·교육', arc: '기록관리',
+  hp: '체력', stress: '스트레스', money: '돈', social: '인맥', exp: '실무경력', prep: '시험준비'
+};
+const MAJORS = ['org', 'svc', 'dig', 'edu', 'arc'];
+const COLOR = { org: '#3a7bd5', svc: '#2e9e6b', dig: '#7b5cd6', edu: '#e08a2c', arc: '#8c6b4a', hp: '#e05a7a', stress: '#c0392b', social: '#2fa3b5', exp: '#b38b1d', prep: '#555f9e' };
+const MONTHS = [[3, 4, 5, 6], [9, 10, 11, 12]];
+
+const TRAITS = {
+  bookworm: { name: '📖 책벌레', desc: '독서·교육 +12, 자료조직 +6', fx: { edu: 12, org: 6 }, avatar: '🤓' },
+  coder:    { name: '💻 컴퓨터 덕후', desc: '디지털·데이터 +15, 인맥 -3', fx: { dig: 15, social: -3 }, avatar: '🧑‍💻' },
+  insider:  { name: '🎉 인싸', desc: '인맥 +15, 스트레스 내성', fx: { social: 15 }, avatar: '😎' },
+  diligent: { name: '✏️ 성실파', desc: '체력 +10, 모든 전공 +3', fx: { hp: 10, org: 3, svc: 3, dig: 3, edu: 3, arc: 3 }, avatar: '🙂' }
+};
+
+// 매 달 할 수 있는 행동
+const ACTIONS = [
+  { group: '전공 공부', id: 'org', name: '자료조직론', desc: '분류(KDC·DDC)와 목록 규칙', fx: { org: 6, stress: 5, hp: -3 }, study: true },
+  { group: '전공 공부', id: 'svc', name: '정보서비스론', desc: '참고봉사, 이용자 응대', fx: { svc: 6, stress: 5, hp: -3 }, study: true },
+  { group: '전공 공부', id: 'dig', name: '디지털도서관·데이터', desc: '메타데이터, DB, 코딩', fx: { dig: 6, stress: 6, hp: -3 }, study: true },
+  { group: '전공 공부', id: 'edu', name: '독서교육론', desc: '독서지도, 북큐레이션', fx: { edu: 6, stress: 4, hp: -3 }, study: true },
+  { group: '전공 공부', id: 'arc', name: '기록관리학', desc: '기록물 평가·보존', fx: { arc: 6, stress: 5, hp: -3 }, study: true },
+  { group: '전공 공부', id: 'teach', name: '교직 수업', desc: '사서교사 과정 (교직 이수자)', fx: { edu: 4, prep: 3, stress: 6, hp: -3 }, study: true, need: s => s.teacher },
+  { group: '활동', id: 'work', name: '중앙도서관 근로', desc: '서가 정리하며 용돈벌이', fx: { money: 25, exp: 4, org: 2, hp: -6, stress: 3 } },
+  { group: '활동', id: 'job', name: '카페 아르바이트', desc: '돈은 되지만 피곤하다', fx: { money: 40, hp: -9, stress: 6 } },
+  { group: '활동', id: 'club', name: '학과 동아리·학생회', desc: '선후배와 친해지기', fx: { social: 8, stress: -6, money: -5, hp: -2 } },
+  { group: '활동', id: 'contest', name: '공모전·프로젝트', desc: '데이터·독서 공모전 참가', fx: { dig: 4, edu: 2, exp: 5, stress: 8, hp: -4 } },
+  { group: '활동', id: 'exam', name: '임용·공무원 시험공부', desc: '3학년부터 가능', fx: { prep: 8, stress: 9, hp: -4 }, need: s => s.year >= 3 },
+  { group: '휴식', id: 'rest', name: '자취방에서 휴식', desc: '푹 자고 일어나기', fx: { hp: 18, stress: -15 } },
+  { group: '휴식', id: 'play', name: '친구들과 놀기', desc: '동성로 나들이', fx: { stress: -22, social: 4, money: -15, hp: -2 } }
+];
+
+// 방학 선택지
+const VACATIONS = [
+  { id: 'season', name: '계절학기', desc: '전공 2개 +5, 다음 학기 학점 보너스', fx: { stress: 6, money: -20 }, run: s => { const a = pick2(); s[a[0]] += 5; s[a[1]] += 5; s.bonusGpa = 0.15; return LABEL[a[0]] + '·' + LABEL[a[1]] + ' +5'; } },
+  { id: 'intern', name: '도서관 현장실습', desc: '3학년부터 · 실무경력 크게 상승', fx: { exp: 15, svc: 5, org: 5, stress: 8, hp: -8 }, need: s => s.year >= 3 },
+  { id: 'academy', name: '시험 대비 특강', desc: '3학년부터 · 시험준비 +15', fx: { prep: 15, money: -40, stress: 12 }, need: s => s.year >= 3 },
+  { id: 'parttime', name: '방학 내내 알바', desc: '돈 +90', fx: { money: 90, hp: -12, stress: 8 } },
+  { id: 'reading', name: '독서 마라톤', desc: '책 50권 완독 도전', fx: { edu: 8, org: 2, stress: -8 } },
+  { id: 'hackathon', name: '데이터 해커톤', desc: '디지털·데이터와 경력', fx: { dig: 8, exp: 5, stress: 8, hp: -5 } },
+  { id: 'trip', name: '여행 가기', desc: '돈 -60, 스트레스 대폭 해소', fx: { money: -60, stress: -40, hp: 10, social: 4 } },
+  { id: 'home', name: '본가에서 쉬기', desc: '집밥 먹고 회복', fx: { hp: 25, stress: -25, money: 15 } }
+];
+
+// KDC 퀴즈
+const QUIZ = [
+  { q: '이용자가 “경제학 입문서 어디 있어요?” 하고 묻는다. KDC 몇 번대 서가로 안내할까?', a: '300번대 (사회과학)', w: ['500번대 (기술과학)', '100번대 (철학)'], ex: '경제학은 KDC 320, 사회과학 류에 속한다.' },
+  { q: '어린이가 해리 포터 시리즈를 찾는다. KDC로는 몇 번대일까?', a: '800번대 (문학)', w: ['700번대 (언어)', '000번대 (총류)'], ex: '영미 소설은 KDC 843, 문학 류다.' },
+  { q: '“파이썬 프로그래밍 책 있나요?” KDC 어디서 찾아야 할까?', a: '000번대 (총류)', w: ['500번대 (기술과학)', '400번대 (자연과학)'], ex: 'KDC에서 컴퓨터과학·프로그래밍은 총류(004~005)에 있다.' },
+  { q: '심리학 교양서를 찾는 이용자. KDC 몇 번대일까?', a: '100번대 (철학)', w: ['300번대 (사회과학)', '400번대 (자연과학)'], ex: 'KDC에서 심리학은 180, 철학 류에 속한다.' },
+  { q: '한국사 능력 검정 시험 교재를 찾는다. 어느 서가로 갈까?', a: '900번대 (역사)', w: ['300번대 (사회과학)', '000번대 (총류)'], ex: '한국사는 KDC 911, 역사 류다.' },
+  { q: '영어 문법책은 KDC 몇 번대에 꽂혀 있을까?', a: '700번대 (언어)', w: ['800번대 (문학)', '300번대 (사회과학)'], ex: '영어는 KDC 740, 언어 류다.' },
+  { q: '요리책을 찾는 이용자. KDC 몇 번대로 안내할까?', a: '500번대 (기술과학)', w: ['600번대 (예술)', '400번대 (자연과학)'], ex: '요리·식품은 가정학에 속해 기술과학(590번대)에 있다.' },
+  { q: '불교 경전 해설서는 KDC 몇 번대일까?', a: '200번대 (종교)', w: ['100번대 (철학)', '900번대 (역사)'], ex: '불교는 KDC 220, 종교 류다.' }
+];
+
+// 무작위 사건
+const EVENTS = [
+  { emoji: '📚', title: '선배의 족보', body: '학과 선배가 지난 학기 자료조직론 정리 노트를 건네준다.', choices: [
+    { label: '감사히 받는다', fx: { org: 4, social: 3 } },
+    { label: '밥 한 끼 사며 받는다', fx: { org: 4, social: 7, money: -10 } } ] },
+  { emoji: '🤒', title: '환절기 감기', body: '목이 칼칼하더니 결국 감기에 걸렸다.', choices: [
+    { label: '병원에 간다', fx: { money: -8, hp: 5 } },
+    { label: '그냥 버틴다', fx: { hp: -12, stress: 6 } } ] },
+  { emoji: '🧑‍🏫', title: '교수님 면담', body: '지도교수님이 진로 면담을 하자고 부르셨다.', choices: [
+    { label: '진지하게 진로 상담', fx: { prep: 3, exp: 2, stress: -4 } },
+    { label: '대학원 이야기를 여쭤본다', fx: { arc: 3, dig: 3 } } ] },
+  { emoji: '🗂️', title: '반납 도서 대란', body: '근로하던 친구가 아프다며 대신 반납 도서 정리를 부탁한다.', choices: [
+    { label: '도와준다', fx: { org: 3, social: 5, hp: -5 } },
+    { label: '미안하지만 거절', fx: { social: -3 } } ] },
+  { emoji: '💸', title: '용돈 입금', body: '부모님이 “밥은 잘 챙겨 먹니?” 문자와 함께 용돈을 보내주셨다.', choices: [
+    { label: '감사 전화를 드린다', fx: { money: 30, stress: -5 } } ] },
+  { emoji: '📱', title: '팀플 무임승차', body: '디지털도서관 팀플에서 한 명이 연락이 안 된다.', choices: [
+    { label: '내가 다 해버린다', fx: { dig: 5, stress: 12, hp: -5 } },
+    { label: '교수님께 상황을 말씀드린다', fx: { stress: 4, social: -2 } } ] },
+  { emoji: '🏛️', title: '기록물 정리 봉사', body: '학교 근처 마을의 오래된 기록물 정리 봉사자를 모집한다.', choices: [
+    { label: '참여한다', fx: { arc: 6, exp: 3, hp: -4 } },
+    { label: '이번엔 패스', fx: {} } ] },
+  { emoji: '☕', title: '중도 앞 벤치', body: '중앙도서관 앞에서 동기들과 우연히 마주쳤다.', choices: [
+    { label: '같이 커피 한잔', fx: { social: 5, stress: -6, money: -5 } },
+    { label: '공부하러 들어간다', fx: { svc: 2, org: 2 } } ] },
+  { emoji: '🌸', title: '캠퍼스 산책', body: '경산 캠퍼스가 유난히 예쁜 날이다.', choices: [
+    { label: '한 바퀴 걷는다', fx: { stress: -10, hp: 3 } } ] },
+  { emoji: '🧾', title: '사서 자격증 이야기', body: '선배가 “문헌정보학과를 졸업하면 정사서 2급 자격이 나온다”고 알려준다. 진로가 조금 선명해진다.', choices: [
+    { label: '열심히 해야겠다!', fx: { stress: -4, prep: 2 } } ] }
+];
+
+// 엔딩용 진로
+const CAREERS = {
+  gov:     { name: '사서직 공무원', emoji: '🏢', check: s => s.prep >= 70 && s.svc >= 45 },
+  teacher: { name: '사서교사', emoji: '🍎', check: s => s.teacher && s.prep >= 70 && s.edu >= 60 && avgGpa(s) >= 3.5, need: s => s.teacher },
+  univ:    { name: '대학·전문도서관 사서', emoji: '🏫', check: s => s.exp >= 35 && s.org >= 55 && avgGpa(s) >= 3.3 },
+  arc:     { name: '기록관리 전문가', emoji: '🗄️', check: s => s.arc >= 65 && avgGpa(s) >= 3.5 },
+  data:    { name: '데이터·IT 기업', emoji: '📊', check: s => s.dig >= 65 && s.exp >= 25 },
+  pub:     { name: '출판·북큐레이터', emoji: '📖', check: s => s.edu >= 55 && s.social >= 45 },
+  grad:    { name: '대학원 진학', emoji: '🎓', check: s => avgGpa(s) >= 4.0 && avgMajor(s) >= 55 }
+};
+const ENDINGS = {
+  gov:     s => s.prep >= 90 && s.org >= 70 && s.svc >= 60
+    ? ['🏛️', '국가직 사서 합격!', '높은 경쟁률을 뚫고 국가직 사서로 최종 합격했다. 첫 출근 날, 끝없이 이어진 서고를 보며 4년 동안 외운 분류번호가 떠올랐다.']
+    : ['🏢', '사서직 공무원 합격', '지방직 사서 공무원 시험에 합격해 공공도서관으로 발령받았다. 어린이 열람실에서 아이들에게 책을 읽어주는 게 요즘의 낙이다.'],
+  teacher: () => ['🍎', '사서교사 임용 합격', '임용시험에 합격해 학교도서관의 사서교사가 되었다. 교생실습 때 만난 학생처럼, 책을 싫어하던 아이가 도서관 단골이 되는 순간이 제일 보람차다.'],
+  univ:    () => ['🏫', '대학도서관 사서', '현장실습과 근로 경험을 인정받아 대학도서관에 입사했다. 학위논문 검색을 도와주며 “선생님 덕분에 졸업해요”라는 인사를 듣는다.'],
+  arc:     () => ['🗄️', '기록관리학 대학원 → 기록전문가의 길', '기록관리학 대학원에 진학했다. 언젠가 기록연구사가 되어 사라질 뻔한 기록을 지키는 사람이 되겠다고 다짐한다.'],
+  data:    () => ['📊', '데이터 기업 취업', '메타데이터와 검색을 아는 데이터 인재로 IT 기업에 입사했다. 회의 때마다 “이건 분류 체계부터 다시 짜야 해요”라고 말하는 사람이 되었다.'],
+  pub:     () => ['📖', '출판사·북큐레이터', '출판사에 입사해 책을 기획하고 큐레이션하는 일을 한다. 서점 매대에 내가 고른 책이 놓인 날, 사진을 백 장은 찍었다.'],
+  grad:    () => ['🎓', '대학원 진학', '우수한 성적으로 문헌정보학 대학원에 진학했다. 연구실 책상 위에 “정보는 연결될 때 가치가 생긴다”라고 적어 두었다.'],
+  none:    () => ['🌱', '졸업, 그리고 새로운 시작', '정사서 2급 자격과 함께 졸업장을 받았다. 아직 정해진 길은 없지만, 4년 동안 쌓은 경험은 어디로든 데려다줄 것이다.']
+};
+
+// ================= 상태 =================
+let S = null;
+let pendingQueue = []; // 순서대로 띄울 모달
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rand = (a, b) => a + Math.random() * (b - a);
+const pickOne = arr => arr[Math.floor(Math.random() * arr.length)];
+function pick2() { const a = MAJORS.slice().sort(() => Math.random() - .5); return [a[0], a[1]]; }
+function avgGpa(s) { return s.gpas.length ? s.gpas.reduce((a, b) => a + b, 0) / s.gpas.length : 0; }
+function avgMajor(s) { return MAJORS.reduce((a, k) => a + s[k], 0) / MAJORS.length; }
+
+function newState(name, trait) {
+  const s = {
+    name, trait, year: 1, sem: 1, turn: 0,
+    org: 10, svc: 10, dig: 10, edu: 10, arc: 10,
+    hp: 80, stress: 20, money: 100, social: 10, exp: 0, prep: 0,
+    gpas: [], studyCount: 0, teacher: false, teacherAsked: false, career: null,
+    bonusGpa: 0, log: [], done: false
+  };
+  applyFx(s, TRAITS[trait].fx);
+  return s;
+}
+
+// 효과 적용 + 설명 문자열 반환
+function applyFx(s, fx) {
+  const parts = [];
+  for (const k in fx) {
+    let v = fx[k];
+    if (!v) continue;
+    // 인싸 특성: 스트레스 증가 20% 감소
+    if (k === 'stress' && v > 0 && s.trait === 'insider') v = Math.round(v * 0.8);
+    s[k] += v;
+    if (k === 'money') s[k] = Math.round(s[k]);
+    else s[k] = clamp(s[k], 0, 100);
+    const good = k === 'stress' ? v < 0 : v > 0;
+    parts.push(`<span class="${good ? 'up' : 'down'}">${LABEL[k]} ${v > 0 ? '+' : ''}${v}${k === 'money' ? '만원' : ''}</span>`);
+  }
+  return parts.join(' · ');
+}
+
+function whenText(s) {
+  if (s.done) return '졸업';
+  const m = MONTHS[s.sem - 1][Math.min(s.turn, 3)];
+  return `${s.year}학년 ${s.sem}학기 · ${m}월`;
+}
+
+function addLog(html) {
+  S.log.unshift({ t: whenText(S), h: html });
+  if (S.log.length > 80) S.log.pop();
+}
+
+// ================= 화면 그리기 =================
+function render() {
+  if (!S) return;
+  $('when').textContent = whenText(S);
+  const tr = TRAITS[S.trait];
+  const bar = k => `<div class="stat"><div class="row"><span>${LABEL[k]}</span><b>${S[k]}</b></div><div class="bar"><i style="width:${S[k]}%;background:${COLOR[k]}"></i></div></div>`;
+  $('side').innerHTML = `
+    <div class="profile"><div class="avatar">${tr.avatar}</div>
+      <div><b>${esc(S.name)}</b><div class="sub">문헌정보학과 · ${tr.name}${S.teacher ? ' · 교직 이수' : ''}</div>
+      ${S.career ? `<div class="sub">목표: ${CAREERS[S.career].emoji} ${CAREERS[S.career].name}</div>` : ''}</div></div>
+    <h2>전공 능력</h2>${MAJORS.map(bar).join('')}
+    <h2 style="margin-top:14px">컨디션</h2>${bar('hp')}${bar('stress')}
+    <h2 style="margin-top:14px">스펙</h2>${bar('social')}${bar('exp')}${bar('prep')}
+    <div class="kv">
+      <div><span>돈</span><b>${S.money}만원</b></div>
+      <div><span>평균 학점</span><b>${S.gpas.length ? avgGpa(S).toFixed(2) : '-'} / 4.5</b></div>
+    </div>`;
+
+  if (S.done) { $('actions').innerHTML = '<h2>졸업을 축하합니다 🎓</h2><p>‘처음부터’를 눌러 다시 시작할 수 있어요.</p>'; }
+  else {
+    const groups = {};
+    ACTIONS.forEach(a => { (groups[a.group] = groups[a.group] || []).push(a); });
+    let html = `<h2>이번 달에는 무엇을 할까? <span style="font-weight:500">(${Math.min(S.turn + 1, 4)}/4)</span></h2>`;
+    for (const g in groups) {
+      html += `<h3>${g}</h3><div class="btns">` + groups[g].map(a => {
+        const ok = !a.need || a.need(S);
+        if (!ok && a.id === 'teach') return '';
+        return `<button class="act" data-id="${a.id}" ${ok ? '' : 'disabled'}><b>${a.name}</b><small>${a.desc}</small></button>`;
+      }).join('') + '</div>';
+    }
+    $('actions').innerHTML = html;
+    $('actions').querySelectorAll('button.act').forEach(b => b.onclick = () => doAction(b.dataset.id));
+  }
+  $('log').innerHTML = S.log.map(l => `<p><span class="t">${l.t}</span>${l.h}</p>`).join('');
+}
+
+function esc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+// ================= 모달 =================
+function showModal(m) {
+  // m: {emoji, title, body, choices:[{label, sub, fn}]}
+  const box = $('modal');
+  box.innerHTML = `${m.emoji ? `<div class="emoji">${m.emoji}</div>` : ''}<h2>${m.title}</h2><div class="body">${m.body || ''}</div><div class="choices"></div>`;
+  const wrap = box.querySelector('.choices');
+  (m.choices || [{ label: '확인' }]).forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.innerHTML = `${c.label}${c.sub ? `<small>${c.sub}</small>` : ''}`;
+    b.onclick = () => {
+      $('modalBg').classList.add('hidden');
+      if (c.fn) c.fn();
+      render();
+      nextModal();
+    };
+    wrap.appendChild(b);
+  });
+  $('modalBg').classList.remove('hidden');
+  const first = wrap.querySelector('button'); if (first) first.focus();
+}
+function queue(m) { pendingQueue.push(m); }
+function nextModal() {
+  if (!$('modalBg').classList.contains('hidden')) return;
+  const m = pendingQueue.shift();
+  if (m) showModal(typeof m === 'function' ? m() : m);
+}
+function fxSub(fx) {
+  return Object.keys(fx).filter(k => fx[k]).map(k => `${LABEL[k]} ${fx[k] > 0 ? '+' : ''}${fx[k]}`).join(', ');
+}
+
+// ================= 게임 진행 =================
+function doAction(id) {
+  const a = ACTIONS.find(x => x.id === id);
+  if (!a || (a.need && !a.need(S))) return;
+  if (a.fx.money < 0 && S.money + a.fx.money < 0) {
+    queue({ emoji: '💳', title: '잔고 부족', body: '<p>통장 잔고가 부족하다… 다른 걸 해보자.</p>' });
+    nextModal(); return;
+  }
+  const res = applyFx(S, a.fx);
+  if (a.study) S.studyCount++;
+  addLog(`<b>${a.name}</b> — ${res}`);
+
+  // 컨디션 체크
+  if (S.hp <= 0) {
+    S.hp = 25; S.studyCount = Math.max(0, S.studyCount - 1);
+    const r = applyFx(S, { money: -10, stress: 5 });
+    addLog(`🚑 과로로 쓰러졌다. 병원 신세… ${r}`);
+    queue({ emoji: '🚑', title: '쓰러졌다!', body: '<p>무리하다가 결국 몸살이 났다. 수업도 몇 번 빠지게 됐다.</p><p>체력 관리도 실력이다.</p>' });
+  } else if (S.stress >= 100) {
+    S.stress = 70;
+    addLog('🔥 번아웃이 왔다. 아무것도 손에 잡히지 않는다.');
+    queue({ emoji: '🔥', title: '번아웃', body: '<p>스트레스가 한계에 달했다. 이번 학기 성적에 영향이 있을지도…</p>' });
+    S.burnout = true;
+  }
+
+  S.turn++;
+  fixedOrRandomEvent();
+  if (S.turn >= 4) queue(() => endSemester());
+  render();
+  nextModal();
+}
+
+function fixedOrRandomEvent() {
+  const month = MONTHS[S.sem - 1][S.turn - 1];
+  // 고정 이벤트
+  if (S.sem === 1 && month === 5) { queue(festival()); return; }
+  if (S.sem === 2 && month === 10) { queue(fieldTrip()); return; }
+  if (S.year === 4 && S.sem === 1 && month === 4 && S.teacher) { queue(practicum()); return; }
+  // 무작위 이벤트
+  if (Math.random() < 0.4) {
+    if (Math.random() < 0.45) queue(quizEvent());
+    else queue(eventModal(pickOne(EVENTS)));
+  }
+}
+
+function eventModal(e) {
+  return {
+    emoji: e.emoji, title: e.title, body: `<p>${e.body}</p>`,
+    choices: e.choices.map(c => ({ label: c.label, sub: fxSub(c.fx), fn: () => {
+      const r = applyFx(S, c.fx); addLog(`${e.emoji} ${e.title}: ${c.label}${r ? ' — ' + r : ''}`);
+    } }))
+  };
+}
+
+function quizEvent() {
+  const q = pickOne(QUIZ);
+  const opts = [q.a, ...q.w].sort(() => Math.random() - .5);
+  return {
+    emoji: '🔎', title: '참고봉사 데스크', body: `<p>${q.q}</p>`,
+    choices: opts.map(o => ({ label: o, fn: () => {
+      const right = o === q.a;
+      const r = applyFx(S, right ? { svc: 4, org: 3, stress: -3 } : { stress: 4 });
+      addLog(`🔎 참고봉사 퀴즈 ${right ? '정답!' : '오답…'} — ${r}`);
+      pendingQueue.unshift({ emoji: right ? '⭕' : '❌', title: right ? '정답!' : '아쉽다!', body: `<p>${q.ex}</p><p>${r}</p>` });
+    } }))
+  };
+}
+
+function festival() {
+  return eventModal({ emoji: '🎆', title: '대동제 시즌', body: '캠퍼스가 축제로 들썩인다. 학과에서도 부스를 연다고 한다.', choices: [
+    { label: '학과 주점 운영 돕기', fx: { social: 10, money: 10, hp: -10 } },
+    { label: '공연 보며 즐기기', fx: { stress: -18, money: -10 } },
+    { label: '축제? 나는 도서관으로', fx: { org: 3, svc: 3, social: -3 } } ] });
+}
+function fieldTrip() {
+  return eventModal({ emoji: '🚌', title: '학과 답사', body: '가을 학과 답사 행선지를 고를 수 있다.', choices: [
+    { label: '국립중앙도서관 견학 (서울)', fx: { svc: 5, org: 4, exp: 3, money: -15 } },
+    { label: '대구 지역 공공도서관 탐방', fx: { svc: 4, edu: 4, exp: 2 } },
+    { label: '기록관 견학', fx: { arc: 8, exp: 2, money: -5 } } ] });
+}
+function practicum() {
+  return eventModal({ emoji: '🏫', title: '교생 실습', body: '학교도서관으로 교생 실습을 나갔다. 학생들이 “선생님!” 하고 부른다.', choices: [
+    { label: '독서 수업을 열심히 준비한다', fx: { edu: 10, exp: 6, hp: -10, stress: 6 } },
+    { label: '도서관 행사를 기획한다', fx: { edu: 6, social: 6, exp: 6, hp: -6 } } ] });
+}
+
+function endSemester() {
+  let g = 2.2 + S.studyCount * 0.45 + (avgMajor(S) / 100) * 0.6 + S.bonusGpa + rand(-0.15, 0.15);
+  if (S.stress >= 80 || S.burnout) g -= 0.4;
+  if (S.hp < 20) g -= 0.2;
+  g = Math.round(clamp(g, 0, 4.5) * 100) / 100;
+  S.gpas.push(g);
+  const label = `${S.year}학년 ${S.sem}학기`;
+  addLog(`📄 <b>${label} 성적: ${g.toFixed(2)}</b> (공부한 달 ${S.studyCount}번)`);
+  S.studyCount = 0; S.bonusGpa = 0; S.burnout = false;
+  const comment = g >= 4.2 ? '과탑을 노려볼 만하다!' : g >= 3.5 ? '꽤 괜찮은 성적이다.' : g >= 2.5 ? '조금 더 분발하자.' : '학사경고는 피했지만… 위험하다.';
+
+  // 방학 선택 (4학년 2학기면 바로 졸업)
+  if (S.year === 4 && S.sem === 2) queue(() => graduation());
+  else queue(() => vacationModal());
+
+  return { emoji: '📄', title: `${label} 기말고사 끝!`, body: `<p>이번 학기 학점은 <b>${g.toFixed(2)}</b> / 4.5</p><p>${comment}</p><p>누적 평균 ${avgGpa(S).toFixed(2)}</p>` };
+}
+
+function vacationModal() {
+  const season = S.sem === 1 ? '여름방학' : '겨울방학';
+  return {
+    emoji: S.sem === 1 ? '🏖️' : '⛄', title: `${S.year}학년 ${season}`, body: '<p>방학을 어떻게 보낼까?</p>',
+    choices: VACATIONS.filter(v => !v.need || v.need(S)).map(v => ({ label: v.name, sub: v.desc, fn: () => {
+      if (v.fx.money < 0 && S.money + v.fx.money < 0) { addLog(`💳 돈이 부족해 ${v.name}은(는) 포기하고 집에서 쉬었다.`); applyFx(S, { hp: 15, stress: -10 }); }
+      else {
+        let r = applyFx(S, v.fx);
+        if (v.run) r += (r ? ' · ' : '') + `<span class="up">${v.run(S)}</span>`;
+        addLog(`${season}: <b>${v.name}</b> — ${r}`);
+      }
+      startNextSemester();
+    } }))
+  };
+}
+
+function startNextSemester() {
+  if (S.sem === 1) S.sem = 2; else { S.sem = 1; S.year++; }
+  S.turn = 0;
+  // 생활비와 장학금
+  const last = S.gpas[S.gpas.length - 1];
+  let msg = applyFx(S, { money: -40 });
+  let body = `<p>새 학기 생활비가 나갔다. ${msg}</p>`;
+  if (last >= 4.2) { const r = applyFx(S, { money: 100 }); body += `<p>🏅 성적우수 장학금! ${r}</p>`; addLog(`🏅 성적우수 장학금 — ${r}`); }
+  else if (last >= 3.8) { const r = applyFx(S, { money: 50 }); body += `<p>🎖️ 성적 장학금 일부 지급! ${r}</p>`; addLog(`🎖️ 성적 장학금 — ${r}`); }
+  if (S.money < 0) { S.money = 20; applyFx(S, { stress: 10 }); body += '<p>😥 돈이 바닥나 부모님께 손을 벌렸다. 스트레스 +10</p>'; }
+  addLog(`🌱 ${S.year}학년 ${S.sem}학기 개강`);
+  queue({ emoji: '🌱', title: `${S.year}학년 ${S.sem}학기 개강`, body });
+
+  // 2학년 1학기: 교직 이수 신청
+  if (S.year === 2 && S.sem === 1 && !S.teacherAsked) {
+    S.teacherAsked = true;
+    const g = avgGpa(S);
+    if (g >= 3.3) queue({ emoji: '🍎', title: '교직 이수 선발', body: `<p>1학년 평균 학점 ${g.toFixed(2)}로 교직 이수 신청 자격이 생겼다. 사서교사가 되려면 교직 과정이 필요하다.</p><p>대신 수업 부담이 늘어난다.</p>`, choices: [
+      { label: '신청한다', sub: '‘교직 수업’ 행동 해금 · 스트레스 +5', fn: () => { S.teacher = true; applyFx(S, { stress: 5 }); addLog('🍎 교직 이수 확정!'); } },
+      { label: '신청하지 않는다', fn: () => addLog('교직 이수는 신청하지 않았다.') } ] });
+    else queue({ emoji: '🍎', title: '교직 이수 선발', body: `<p>1학년 평균 학점 ${g.toFixed(2)}로는 교직 이수 기준(3.3)에 못 미쳤다. 사서교사의 길은 닫혔지만 다른 길은 많다!</p>` });
+  }
+  // 3학년 1학기: 시험공부 해금 안내
+  if (S.year === 3 && S.sem === 1) queue({ emoji: '📘', title: '3학년이 되었다', body: '<p>이제 ‘임용·공무원 시험공부’와 방학 중 ‘도서관 현장실습’을 할 수 있다. 진로를 슬슬 정해야 할 때다.</p>' });
+  // 4학년 1학기: 진로 결정
+  if (S.year === 4 && S.sem === 1) queue(() => careerModal());
+}
+
+function careerModal() {
+  return {
+    emoji: '🧭', title: '진로 결정', body: '<p>졸업까지 1년. 어떤 길을 목표로 할까? 목표를 이루려면 조건을 채워야 한다.</p>',
+    choices: Object.keys(CAREERS).filter(k => !CAREERS[k].need || CAREERS[k].need(S)).map(k => ({
+      label: `${CAREERS[k].emoji} ${CAREERS[k].name}`, sub: careerHint(k),
+      fn: () => { S.career = k; addLog(`🧭 진로 목표: <b>${CAREERS[k].name}</b>`); }
+    }))
+  };
+}
+function careerHint(k) {
+  return {
+    gov: '시험준비 70+, 정보서비스 45+',
+    teacher: '시험준비 70+, 독서·교육 60+, 학점 3.5+',
+    univ: '실무경력 35+, 자료조직 55+, 학점 3.3+',
+    arc: '기록관리 65+, 학점 3.5+',
+    data: '디지털·데이터 65+, 실무경력 25+',
+    pub: '독서·교육 55+, 인맥 45+',
+    grad: '학점 4.0+, 전공 평균 55+'
+  }[k];
+}
+
+function graduation() {
+  S.done = true;
+  let key = 'none', missed = false;
+  if (S.career && CAREERS[S.career].check(S)) key = S.career;
+  else {
+    if (S.career) missed = true;
+    for (const k of Object.keys(CAREERS)) if (CAREERS[k].check(S)) { key = k; break; }
+  }
+  const [emoji, title, text] = ENDINGS[key](S);
+  addLog(`🎓 졸업! 엔딩: <b>${title}</b>`);
+  render();
+  const rows = [...MAJORS, 'social', 'exp', 'prep'].map(k => `<tr><td>${LABEL[k]}</td><td>${S[k]}</td></tr>`).join('');
+  const gp = S.gpas.map((g, i) => `${Math.floor(i / 2) + 1}-${i % 2 + 1}: ${g.toFixed(2)}`).join(' · ');
+  try { localStorage.removeItem('lis-sim-save'); } catch (e) {}
+  return {
+    emoji, title: `엔딩 — ${title}`,
+    body: `${missed ? `<p style="color:var(--warn)">목표였던 ‘${CAREERS[S.career].name}’은(는) 아쉽게 이루지 못했다. 하지만…</p>` : ''}
+      <p>${text}</p>
+      <p><b>${esc(S.name)}</b> · 최종 평균 학점 <b>${avgGpa(S).toFixed(2)}</b></p>
+      <p style="font-size:12px;color:var(--muted)">${gp}</p>
+      <table class="tr">${rows}</table>`,
+    choices: [{ label: '🔁 다시 하기', fn: () => startScreen() }, { label: '기록 보기' }]
+  };
+}
+
+// ================= 시작 / 저장 =================
+function startScreen() {
+  S = null; pendingQueue = [];
+  $('side').innerHTML = ''; $('actions').innerHTML = ''; $('log').innerHTML = ''; $('when').textContent = '';
+  const box = $('modal');
+  box.innerHTML = `<div class="emoji">🎒</div><h2>대구대학교 문헌정보학과에 입학했다!</h2>
+    <div class="body"><p>경산 캠퍼스에서의 4년. 매달 할 일을 고르고, 방학을 보내고, 졸업 후의 진로를 찾아보자.</p>
+    <label>이름<input class="name" id="nameIn" maxlength="10" placeholder="이름을 입력하세요" value="새내기"></label>
+    <p style="margin-bottom:6px">나는 어떤 신입생일까?</p></div><div class="choices" id="traitCh"></div>`;
+  const wrap = $('traitCh');
+  Object.keys(TRAITS).forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.innerHTML = `${TRAITS[k].name}<small>${TRAITS[k].desc}</small>`;
+    b.onclick = () => {
+      const name = ($('nameIn').value || '새내기').trim().slice(0, 10) || '새내기';
+      S = newState(name, k);
+      addLog(`🎒 ${esc(name)}, 문헌정보학과 입학! (${TRAITS[k].name})`);
+      $('modalBg').classList.add('hidden');
+      render();
+      queue({ emoji: '🎉', title: '개강총회', body: '<p>학과 개강총회에서 동기와 선배들을 만났다. “문정과는 졸업하면 정사서 2급 자격증이 나와!” 선배의 말에 눈이 반짝인다.</p><p>한 학기는 4달. 공부·활동·휴식의 균형을 잘 맞춰 보자. 체력이 0이 되거나 스트레스가 100이 되면 위험하다!</p>', choices: [{ label: '시작하기', fn: () => applyFx(S, { social: 3 }) }] });
+      nextModal();
+    };
+    wrap.appendChild(b);
+  });
+  $('modalBg').classList.remove('hidden');
+}
+
+function save() {
+  if (!S) return;
+  try { localStorage.setItem('lis-sim-save', JSON.stringify(S)); toast('💾 저장했어요'); }
+  catch (e) { toast('이 브라우저에서는 저장할 수 없어요'); }
+}
+function load() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem('lis-sim-save')); } catch (e) {}
+  if (!data) { toast('저장된 기록이 없어요'); return; }
+  S = data; pendingQueue = []; $('modalBg').classList.add('hidden');
+  render(); toast('📂 불러왔어요');
+}
+function toast(msg) {
+  queue({ emoji: '', title: msg, choices: [{ label: '확인' }] }); nextModal();
+}
+
+$('saveBtn').onclick = save;
+$('loadBtn').onclick = load;
+$('resetBtn').onclick = () => {
+  queue({ emoji: '⚠️', title: '처음부터 다시 할까요?', body: '<p>저장하지 않은 진행은 사라집니다.</p>', choices: [
+    { label: '네, 새로 시작', fn: () => setTimeout(startScreen, 0) }, { label: '취소' } ] });
+  nextModal();
+};
+
+startScreen();
+</script>
+</body>
+</html>
