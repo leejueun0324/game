@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>공구방 추억 회상</title>
+<style>
+  :root {
+    --bg: #2b2420;
+    --chat: #cfdbe6;
+    --me: #ffd2a8;
+    --other: #ffffff;
+    --ink: #2a2622;
+    --sub: #5d6873;
+    --accent: #ff8a3d;
+    --good: #2fbf71;
+    --bad: #ef5a5a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--bg);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  #app {
+    position: relative;
+    max-width: 460px; height: 100vh; height: 100dvh;
+    margin: 0 auto;
+    display: flex; flex-direction: column;
+    background: var(--chat);
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(0,0,0,.45);
+  }
+
+  /* ===== 상단 바 ===== */
+  header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px;
+    background: rgba(207,219,230,.96);
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    z-index: 2;
+  }
+  header .back { font-size: 24px; color: #444; line-height: 1; }
+  header .room { flex: 1; font-weight: 800; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header .room small { color: var(--sub); font-weight: 600; margin-left: 4px; }
+  .pill { border: none; background: #fff; border-radius: 999px; padding: 5px 10px; font-size: 13px; font-weight: 800; }
+  #fastBtn.on { background: var(--accent); color: #fff; }
+  #score.bump { animation: bump .4s; }
+  @keyframes bump { 40% { transform: scale(1.25); background: #ffe2c8; } }
+
+  /* ===== 대화창 ===== */
+  #chat { flex: 1; overflow-y: auto; padding: 8px 12px 16px; scroll-behavior: smooth; transition: opacity .5s; }
+  #chat.fade { opacity: 0; }
+  .row { display: flex; gap: 8px; margin-top: 5px; animation: pop .22s ease-out; }
+  .row.first { margin-top: 12px; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .av { width: 38px; height: 38px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; flex: none; }
+  .av.ghost { visibility: hidden; height: 0; }
+  .col { display: flex; flex-direction: column; max-width: 76%; }
+  .name { font-size: 12px; color: #4a5560; margin: 0 0 4px 2px; }
+  .line { display: flex; align-items: flex-end; gap: 5px; }
+  .bub {
+    background: var(--other);
+    padding: 8px 11px;
+    border-radius: 4px 14px 14px 14px;
+    font-size: 14.5px; line-height: 1.45;
+    word-break: keep-all; overflow-wrap: anywhere;
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+  }
+  .cont .bub { border-radius: 14px; }
+  .time { font-size: 10px; color: var(--sub); white-space: nowrap; }
+  .row.me { justify-content: flex-end; }
+  .row.me .line { flex-direction: row-reverse; }
+  .row.me .bub { background: var(--me); border-radius: 14px 4px 14px 14px; }
+  .row.me.cont .bub { border-radius: 14px; }
+  .sys {
+    margin: 12px auto 4px; text-align: center;
+    font-size: 12px; color: #fff;
+    background: rgba(40,50,60,.3);
+    padding: 5px 12px; border-radius: 999px;
+    width: fit-content; max-width: 92%;
+    animation: pop .22s;
+  }
+  .date { display: flex; align-items: center; gap: 10px; margin: 20px 0 6px; font-size: 12px; color: #4a5560; animation: pop .22s; }
+  .date::before, .date::after { content: ""; flex: 1; height: 1px; background: rgba(0,0,0,.13); }
+  .typing .bub { display: flex; gap: 4px; padding: 13px 12px; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: #9aa4ad; animation: blink 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; }
+  .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes blink { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+
+  /* ===== 하단 입력 패널 ===== */
+  #panel {
+    background: #fff;
+    border-top: 1px solid rgba(0,0,0,.08);
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+    min-height: 66px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  #panel:empty::before { content: "…"; color: #b8c0c8; text-align: center; font-size: 20px; letter-spacing: 4px; }
+  .hint { font-size: 13px; color: var(--sub); text-align: center; line-height: 1.5; }
+  .hint b { color: var(--accent); }
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choices.grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .choices.grid5 { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .chip {
+    border: 1.5px solid #e6dcd2; background: #fffaf5;
+    border-radius: 14px; padding: 12px 10px;
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    transition: transform .08s, background .15s;
+  }
+  .chip:active { transform: scale(.96); }
+  .chip:hover { background: #fff0e2; }
+  .chip.who { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; font-size: 13px; }
+  .chip.who span { font-size: 22px; }
+  .chip.good { background: #d8f7e5; border-color: var(--good); }
+  .chip.bad { background: #fde0e0; border-color: var(--bad); }
+  .big {
+    border: none; border-radius: 16px; padding: 16px;
+    font-size: 19px; font-weight: 900; color: #fff;
+    background: linear-gradient(180deg, #ffa25e, #ff7a2e);
+    box-shadow: 0 4px 0 #d85e1a;
+    touch-action: manipulation; user-select: none;
+  }
+  .big:active { transform: translateY(3px); box-shadow: 0 1px 0 #d85e1a; }
+  .big.wait { background: linear-gradient(180deg, #c3cbd3, #a7b1bb); box-shadow: 0 4px 0 #87929d; }
+  .big.go { background: linear-gradient(180deg, #ff5f7a, #e8304f); box-shadow: 0 4px 0 #b51d39; animation: go .35s infinite alternate; }
+  @keyframes go { to { transform: scale(1.03); } }
+  .bar { height: 6px; background: #eee; border-radius: 99px; overflow: hidden; }
+  .bar div { height: 100%; width: 100%; background: linear-gradient(90deg, #ff5f7a, #ffb46b); border-radius: 99px; }
+  .quote { background: #fff6ec; border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 12px; font-size: 15px; font-weight: 700; line-height: 1.5; }
+
+  .parcel { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 4px 0; }
+  .parcel.in { animation: slideIn .2s ease-out; }
+  .parcel.shake { animation: shake .3s; }
+  @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .pbox { font-size: 48px; }
+  .label { background: #fff8dc; border: 1.5px dashed #c9a85a; border-radius: 8px; padding: 6px 12px; display: flex; flex-direction: column; min-width: 150px; }
+  .label small { font-size: 11px; color: #8a7a55; }
+  .label b { font-size: 20px; }
+  .label span { font-size: 12px; color: #6d6047; }
+  .tally { text-align: center; font-size: 13px; font-weight: 700; color: var(--sub); }
+
+  /* ===== 전체 화면 카드 (타이틀/챕터/앨범) ===== */
+  #card {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(30,24,20,.9);
+    color: #fff; text-align: center;
+    opacity: 0; pointer-events: none; transition: opacity .35s;
+    overflow-y: auto;
+  }
+  #card.show { opacity: 1; pointer-events: auto; }
+  .title-e { font-size: 54px; letter-spacing: 6px; }
+  .title-t { font-size: 34px; font-weight: 900; margin: 10px 0 4px; color: #ffd2a8; text-shadow: 0 0 20px rgba(255,138,61,.6); }
+  .title-s { font-size: 15px; line-height: 1.75; color: #eadfd6; margin: 14px 0 26px; }
+  .ch-n { font-size: 13px; letter-spacing: 4px; color: #ffb46b; font-weight: 800; }
+  .ch-e { font-size: 64px; margin: 10px 0; }
+  .ch-s { font-size: 15px; color: #d9cfc6; }
+  .ch-t { font-size: 28px; font-weight: 900; margin: 4px 0 10px; }
+  .ch-d { font-size: 13px; color: #b9aea4; }
+  .ch-tap { margin-top: 30px; font-size: 12px; color: #8f857c; animation: blink 1.4s infinite; }
+  .album { width: 100%; }
+  .album h2 { margin: 0 0 4px; font-size: 24px; color: #ffd2a8; }
+  .album .sub { font-size: 13px; color: #cbbfb4; margin-bottom: 16px; }
+  .photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .photo { background: #fdfaf4; color: var(--ink); padding: 8px 8px 10px; border-radius: 4px; box-shadow: 0 6px 14px rgba(0,0,0,.35); animation: drop .5s backwards; }
+  .photo:nth-child(odd) { transform: rotate(-2.5deg); }
+  .photo:nth-child(even) { transform: rotate(2deg); }
+  @keyframes drop { from { opacity: 0; transform: translateY(-20px) rotate(0); } }
+  .photo .img { height: 74px; border-radius: 2px; display: grid; place-items: center; font-size: 40px; }
+  .photo .cap { font-size: 12px; font-weight: 800; margin-top: 6px; }
+  .photo .pts { font-size: 12px; color: var(--accent); font-weight: 800; }
+  .photo .cmt { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .final { font-size: 15px; margin-bottom: 4px; color: #eadfd6; }
+  .rank { font-size: 26px; font-weight: 900; margin-bottom: 22px; }
+  .card-btn { min-width: 220px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="back">‹</span>
+    <span class="room">우리동네 공구방<small>5</small></span>
+    <button class="pill" id="fastBtn" title="대화 빨리 넘기기">⏩ 빨리</button>
+    <span class="pill" id="score">🧡 0</span>
+  </header>
+  <div id="chat"></div>
+  <div id="panel"></div>
+  <div id="card"></div>
+</div>
+
+<script>
+// ===== 등장인물 =====
+const M = {
+  bee:   { name: '꿀벌맘',   emoji: '🐝', bg: '#ffe58a' },  // 방장
+  calc:  { name: '김정산',   emoji: '🧮', bg: '#bfe0ff' },  // 총무
+  box:   { name: '택배요정', emoji: '📦', bg: '#ffc9d6' },  // 택배 담당
+  quiet: { name: '눈팅러',   emoji: '👀', bg: '#d9ceff' },  // 말 없는 사람
+  me:    { name: '나',       emoji: '🙂', bg: '#ffd2a8' },
+};
+
+const $ = s => document.querySelector(s);
+const chat = $('#chat'), panel = $('#panel'), card = $('#card'), scoreEl = $('#score');
+
+let fast = false, score = 0, lastWho = null;
+const memo = [];     // 퀴즈에 나올 "명대사" 기록
+const results = [];  // 챕터별 점수
+
+// ===== 도구 함수 =====
+const wait = ms => new Promise(r => setTimeout(r, ms));          // 게임용 (속도 고정)
+const sleep = ms => wait(fast ? ms * 0.35 : ms);                  // 대화용 (빨리감기 적용)
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const won = n => n.toLocaleString('ko-KR') + '원';
+function h(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+$('#fastBtn').onclick = e => { fast = !fast; e.currentTarget.classList.toggle('on', fast); };
+
+function addScore(n) {
+  score += n;
+  scoreEl.textContent = '🧡 ' + score;
+  scoreEl.classList.remove('bump'); void scoreEl.offsetWidth; scoreEl.classList.add('bump');
+}
+
+// ===== 시계 (말풍선 옆 시간) =====
+let clock = { h: 9, m: 0 };
+const setClock = (hh, mm) => { clock = { h: hh, m: mm }; };
+function tick() { clock.m += rnd(2); if (clock.m >= 60) { clock.m -= 60; clock.h = (clock.h + 1) % 24; } }
+function timeStr() {
+  const ap = clock.h < 12 ? '오전' : '오후';
+  let hh = clock.h % 12; if (hh === 0) hh = 12;
+  return `${ap} ${hh}:${String(clock.m).padStart(2, '0')}`;
+}
+
+// ===== 대화 엔진 =====
+function scrollDown() { requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; }); }
+function add(el) { chat.appendChild(el); scrollDown(); return el; }
+
+function avatar(who, ghost) {
+  const av = h('div', 'av' + (ghost ? ' ghost' : ''), M[who].emoji);
+  av.style.background = M[who].bg;
+  return av;
+}
+
+function bubble(who, text) {
+  const cont = lastWho === who; lastWho = who;
+  const row = h('div', 'row' + (who === 'me' ? ' me' : '') + (cont ? ' cont' : ' first'));
+  if (who !== 'me') row.appendChild(avatar(who, cont));
+  const col = h('div', 'col');
+  if (who !== 'me' && !cont) col.appendChild(h('div', 'name', M[who].name));
+  const line = h('div', 'line');
+  line.appendChild(h('div', 'bub', esc(text).replace(/\n/g, '<br>')));
+  line.appendChild(h('span', 'time', timeStr()));
+  col.appendChild(line); row.appendChild(col);
+  return row;
+}
+
+// 상대방이 입력 중… 표시 후 말하기
+async function say(who, text, o = {}) {
+  if (who !== 'me') {
+    const cont = lastWho === who;
+    const t = h('div', 'row typing' + (cont ? ' cont' : ' first'));
+    t.appendChild(avatar(who, cont));
+    const col = h('div', 'col');
+    if (!cont) col.appendChild(h('div', 'name', M[who].name));
+    col.appendChild(h('div', 'bub', '<i></i><i></i><i></i>'));
+    t.appendChild(col); add(t);
+    await sleep(o.t ?? Math.min(1500, 420 + text.length * 30));
+    t.remove();
+  }
+  tick(); add(bubble(who, text));
+  if (o.memo) memo.push({ who, text });
+  await sleep(o.after ?? 380);
+}
+function post(who, text) { tick(); add(bubble(who, text)); }   // 바로 올라오는 말풍선
+function sys(text) { lastWho = null; add(h('div', 'sys', esc(text))); }
+function dateLine(text) { lastWho = null; add(h('div', 'date', esc(text))); }
+
+// ===== 하단 패널 =====
+function setPanel(html) { panel.innerHTML = html || ''; }
+
+function choose(opts, hint = '') {
+  return new Promise(res => {
+    setPanel((hint ? `<div class="hint">${hint}</div>` : '') + '<div class="choices"></div>');
+    const box = panel.querySelector('.choices');
+    opts.forEach((o, i) => {
+      const b = h('button', 'chip', esc(o));
+      b.onclick = async () => { setPanel(''); await say('me', o); res(i); };
+      box.appendChild(b);
+    });
+  });
+}
+
+function timedChoice(labels, ms, hint, extra = '') {
+  return new Promise(res => {
+    setPanel(`<div class="hint">${hint}</div>${extra}<div class="bar"><div></div></div><div class="choices grid"></div>`);
+    const fill = panel.querySelector('.bar div'), box = panel.querySelector('.choices');
+    const start = performance.now();
+    let done = false, raf = 0;
+    const end = i => {
+      if (done) return; done = true; cancelAnimationFrame(raf);
+      const left = Math.max(0, 1 - (performance.now() - start) / ms);
+      setPanel(''); res({ i, left });
+    };
+    labels.forEach((l, i) => { const b = h('button', 'chip', esc(l)); b.onclick = () => end(i); box.appendChild(b); });
+    const loop = () => {
+      const f = 1 - (performance.now() - start) / ms;
+      fill.style.width = Math.max(0, f * 100) + '%';
+      if (f <= 0) end(-1); else raf = requestAnimationFrame(loop);
+    };
+    loop();
+  });
+}
+
+// ===== 전체 화면 카드 =====
+function showCard(html, { ms = 0, button = null } = {}) {
+  return new Promise(res => {
+    card.innerHTML = html; card.classList.add('show');
+    let done = false;
+    const fin = () => {
+      if (done) return; done = true;
+      card.classList.remove('show'); card.onclick = null;
+      setTimeout(res, 350);
+    };
+    if (button) card.querySelector(button).onclick = fin;
+    else { card.onclick = fin; if (ms) setTimeout(fin, ms); }
+  });
+}
+
+async function chapter(n, emoji, season, title, date, hh, mm) {
+  setPanel('');
+  await showCard(`
+    <div>
+      <div class="ch-n">CHAPTER ${n}</div>
+      <div class="ch-e">${emoji}</div>
+      <div class="ch-s">${season}</div>
+      <div class="ch-t">${title}</div>
+      <div class="ch-d">${date}</div>
+      <div class="ch-tap">화면을 누르면 시작</div>
+    </div>`, { ms: 3500 });
+  setClock(hh, mm);
+  dateLine(date);
+  await sleep(400);
+}
+
+// =====================================================
+// 미니게임 1: 선착순 딸기 입금 (반응 속도)
+// =====================================================
+async function gameFirstCome() {
+  const fakes = [
+    '곧 열게요~', '잠깐만요 계좌번호 복사 중…', '오…', '오이 공구도 할까요? 🥒',
+    '오늘 날씨 좋네요 ☀️', '오픈 전에 공지 한 번 더! 1인 2박스까지예요',
+    '오, 벌써 대기 중이신 분들 많네요 ㅎㅎ', '오…늘 딸기 진짜 달아요', '오픈… 은 3초 뒤에!',
+  ];
+  let total = 0;
+  for (let r = 1; r <= 3; r++) {
+    sys(`${r}차 오픈 대기 중 · 남은 딸기 ${[30, 18, 7][r - 1]}박스`);
+    let phase = 'wait', t0 = 0, resolveTap;
+    const tapP = new Promise(res => (resolveTap = res));
+    setPanel(`<div class="hint">꿀벌맘이 <b>“오픈!”</b>을 외치면 바로 누르세요.<br>먼저 누르면 무효!</div>`);
+    const b = h('button', 'big wait', '입금 완료!');
+    panel.appendChild(b);
+    b.onpointerdown = e => {
+      e.preventDefault();
+      if (phase === 'wait') { phase = 'done'; resolveTap('early'); }
+      else if (phase === 'go') { phase = 'done'; resolveTap(performance.now() - t0); }
+    };
+
+    // 낚시 메시지
+    const pool = shuffle(fakes.slice());
+    const n = 1 + rnd(3);
+    for (let i = 0; i < n && phase === 'wait'; i++) {
+      await Promise.race([wait(900 + Math.random() * 1600), tapP]);
+      if (phase === 'wait') post('bee', pool[i]);
+    }
+    if (phase === 'wait') await Promise.race([wait(700 + Math.random() * 1800), tapP]);
+
+    let result;
+    if (phase !== 'wait') result = 'early';
+    else {
+      post('bee', '🍓 오픈!!!');
+      t0 = performance.now(); phase = 'go';
+      b.classList.remove('wait'); b.classList.add('go');
+      result = await Promise.race([tapP, wait(3000).then(() => 'late')]);
+      phase = 'done';
+    }
+    setPanel('');
+
+    let pts = 0;
+    if (result === 'early') {
+      await say('me', '입금했어요!');
+      await say('bee', '앗 아직 안 열었어요 😅 이번 판은 무효!');
+    } else if (result === 'late') {
+      await say('calc', '마감되었습니다~ 다음 기회에! 🙏');
+    } else {
+      const ms = Math.round(result);
+      const rank = Math.max(1, Math.min(30, 1 + Math.floor((ms - 200) / 45)));
+      pts = Math.max(10, 100 - (rank - 1) * 3);
+      post('me', '입금 완료! 🍓');
+      await sleep(400);
+      sys(`반응 속도 ${ms}ms · ${rank}등으로 입금 성공!`);
+      await say('calc', rank <= 3 ? `${rank}등! 손이 안 보였어요 👍` : rank <= 10 ? `${rank}등 확인했습니다~` : `${rank}등… 아슬아슬했네요 😮‍💨`);
+    }
+    total += pts; addScore(pts);
+    await sleep(400);
+  }
+  return total;
+}
+
+// =====================================================
+// 미니게임 2: 수박 정산 (암산)
+// =====================================================
+function makeCalcQ(type) {
+  if (type === 0) {
+    const n = 3 + rnd(4), p = (10 + rnd(21)) * 500;
+    const s = [3000, 4000, 5000, 6000][rnd(4)];
+    return { q: `수박 ${n + rnd(3)}통 ${won(p * n - s)}에 택배비 ${won(s)}!\n${n}명이 똑같이 나누면 1인당 얼마죠?`, a: p };
+  }
+  if (type === 1) {
+    const p = (16 + rnd(20)) * 500;
+    const paid = Math.ceil((p + 1) / 10000) * 10000 + (rnd(2) ? 0 : 10000);
+    return { q: `1인당 ${won(p)}인데 꿀벌맘님이 ${won(paid)}을 보내셨어요.\n얼마 돌려드려야 하죠?`, a: paid - p };
+  }
+  const price = (20 + rnd(30)) * 1000, pct = [10, 20, 30][rnd(3)], k = 2 + rnd(2);
+  return { q: `정가 ${won(price)}짜리 아이스박스를 ${pct}% 할인해서 ${k}개 샀어요.\n총 얼마죠?`, a: price * (100 - pct) / 100 * k };
+}
+function distract(a) {
+  const set = new Set([a]);
+  for (const d of shuffle([500, 1000, 1500, 2000, 100, -500, -1000, -1500, -100, 2500, -2000])) {
+    if (set.size >= 4) break;
+    if (a + d > 0) set.add(a + d);
+  }
+  return shuffle([...set]);
+}
+async function gameCalc() {
+  let total = 0;
+  const types = shuffle([0, 1, 2]);
+  for (let i = 0; i < 3; i++) {
+    const { q, a } = makeCalcQ(types[i]);
+    await say('calc', `[정산 ${i + 1}/3]\n${q}`, { t: 900 });
+    const opts = distract(a);
+    const r = await timedChoice(opts.map(won), 15000, '15초 안에 골라 주세요! 🧮');
+    let pts = 0;
+    if (r.i < 0) {
+      await say('calc', `시간 초과! ⏰ 정답은 ${won(a)}입니다`);
+    } else {
+      await say('me', won(opts[r.i]));
+      if (opts[r.i] === a) {
+        pts = Math.round(60 + 40 * r.left);
+        await say('calc', pick(['정확합니다! 1원도 안 틀렸어요 👏', '완벽해요. 총무 자리 물려드릴까요?', '오… 계산기보다 빠르시네요']));
+      } else {
+        await say('calc', `음… 정답은 ${won(a)}예요 😅`);
+      }
+    }
+    total += pts; addScore(pts);
+  }
+  return total;
+}
+
+// =====================================================
+// 미니게임 3: 택배 분류 (20초 타임어택)
+// =====================================================
+function gameParcel() {
+  const items = {
+    bee:   ['김장매트 🥬', '고무장갑 🧤', '꿀 3병 🍯'],
+    calc:  ['계산기 🧮', '가계부 📒', '영수증 파일 📁'],
+    box:   ['뽁뽁이 50m 🫧', '박스테이프 📦', '운동화 👟'],
+    quiet: ['귤 10kg 🍊', '이어폰 🎧', '만화책 📚'],
+    me:    ['딸기잼 🍓', '수면양말 🧦', '텀블러 🥤'],
+  };
+  const keys = Object.keys(items);
+  return new Promise(res => {
+    let ok = 0, bad = 0, cur = null, done = false;
+    setPanel(`<div class="hint">송장의 <b>받는 분</b>을 보고 눌러 주세요! (20초)</div>
+      <div class="bar"><div></div></div>
+      <div class="parcel"><div class="pbox">📦</div><div class="label"></div></div>
+      <div class="choices grid5"></div>
+      <div class="tally">✅ 0 · ❌ 0</div>`);
+    const fill = panel.querySelector('.bar div'), parcel = panel.querySelector('.parcel');
+    const label = panel.querySelector('.label'), grid = panel.querySelector('.choices'), tally = panel.querySelector('.tally');
+
+    function next() {
+      let k; do { k = pick(keys); } while (k === cur && Math.random() < 0.7);
+      cur = k;
+      label.innerHTML = `<small>받는 분</small><b>${M[k].name}</b><span>${pick(items[k])}</span>`;
+      parcel.classList.remove('in', 'shake'); void parcel.offsetWidth; parcel.classList.add('in');
+    }
+    function flash(b, c) { b.classList.add(c); setTimeout(() => b.classList.remove(c), 220); }
+    keys.forEach(k => {
+      const b = h('button', 'chip who', `<span>${M[k].emoji}</span>${M[k].name}`);
+      b.onclick = () => {
+        if (done) return;
+        if (k === cur) { ok++; flash(b, 'good'); next(); }
+        else { bad++; flash(b, 'bad'); parcel.classList.remove('in'); parcel.classList.add('shake'); setTimeout(next, 250); }
+        tally.textContent = `✅ ${ok} · ❌ ${bad}`;
+      };
+      grid.appendChild(b);
+    });
+    const start = performance.now(), ms = 20000;
+    const loop = () => {
+      const f = 1 - (performance.now() - start) / ms;
+      fill.style.width = Math.max(0, f * 100) + '%';
+      if (f <= 0) { done = true; setPanel(''); res({ ok, bad }); }
+      else requestAnimationFrame(loop);
+    };
+    next(); loop();
+  });
+}
+
+// =====================================================
+// 미니게임 4: 누가 한 말이게? (기억력 퀴즈)
+// =====================================================
+async function gameQuiz() {
+  // 사람별로 하나씩 고르기 → 최대한 다양하게
+  const byWho = {};
+  shuffle(memo.slice()).forEach(m => { (byWho[m.who] ??= []).push(m); });
+  const qs = [];
+  for (const who of shuffle(Object.keys(byWho))) qs.push(byWho[who].shift());
+  const rest = shuffle(Object.values(byWho).flat());
+  while (qs.length < 4 && rest.length) qs.push(rest.shift());
+  shuffle(qs);
+
+  const opts = ['bee', 'calc', 'box', 'quiet'];
+  let total = 0;
+  for (let i = 0; i < qs.length; i++) {
+    await say('quiet', `Q${i + 1}. 이 말, 누가 했을까요?`, { t: 700 });
+    const r = await timedChoice(opts.map(k => `${M[k].emoji} ${M[k].name}`), 12000, '기억을 더듬어 보세요… 🤔',
+      `<div class="quote">“${esc(qs[i].text)}”</div>`);
+    let pts = 0;
+    const ans = M[qs[i].who].name;
+    if (r.i < 0) await say('quiet', `시간 끝… 정답은 ${ans}님이었어요`);
+    else {
+      await say('me', `${M[opts[r.i]].name}님!`);
+      if (opts[r.i] === qs[i].who) {
+        pts = Math.round(70 + 30 * r.left);
+        await say(qs[i].who, qs[i].who === 'quiet' ? '…들켰다 🙈' : pick(['맞아요 그거 저예요 ㅋㅋㅋ', '어떻게 기억하셨어요?! 😳', '헉 제가 저런 말을 했었네요 ㅋㅋ']));
+      } else {
+        await say('quiet', `땡! ${ans}님이었어요`);
+      }
+    }
+    total += pts; addScore(pts);
+  }
+  return total;
+}
+
+// =====================================================
+// 이야기 진행
+// =====================================================
+async function titleScreen() {
+  await showCard(`
+    <div>
+      <div class="title-e">🍓🍉📦🍊</div>
+      <div class="title-t">공구방 추억 회상</div>
+      <div class="title-s">
+        3년 동안 함께한 <b>‘우리동네 공구방’</b>이<br>곧 문을 닫는대요.<br><br>
+        마지막으로, 대화 기록을 거슬러 올라가<br>그때 그 시절을 다시 겪어 볼까요?
+      </div>
+      <button class="big card-btn" id="startBtn">대화방 들어가기</button>
+    </div>`, { button: '#startBtn' });
+}
+
+async function prologue() {
+  setClock(21, 40);
+  dateLine('2026년 11월 20일 금요일');
+  sys('꿀벌맘님이 공지를 등록했습니다.');
+  await say('bee', '여러분… 우리 공구방 이번 달 말에 정리하려고 해요 🥲');
+  await say('calc', '헉 진짜요?');
+  await say('box', '안돼요ㅠㅠㅠㅠ');
+  await say('bee', '그 전에 우리 추억 한번 돌아봐요!\n대화 맨 위로 올려 볼게요~');
+  await choose(['좋아요! 같이 봐요 📜', '벌써 3년이나 됐네요…']);
+  sys('— 대화 기록을 거슬러 올라갑니다 —');
+  await sleep(1200);
+  chat.classList.add('fade');
+  await wait(600);
+  chat.innerHTML = ''; lastWho = null;
+  chat.classList.remove('fade');
+}
+
+async function chapter1() {
+  await chapter(1, '🍓', '2023년 봄', '전설의 딸기 공구', '2023년 4월 12일 수요일', 10, 2);
+  sys('꿀벌맘님이 ‘우리동네 공구방’을 만들었습니다.');
+  sys('김정산님, 택배요정님, 눈팅러님, 나님이 들어왔습니다.');
+  await say('bee', '안녕하세요~ 첫 공구는 논산 딸기입니다 🍓');
+  await say('bee', '한 박스 15,000원! 선착순 30박스예요');
+  await say('box', '딸기 너무 좋아요!!');
+  await say('calc', '입금 순서대로 명단 정리할게요. 제가 총무 하겠습니다', { memo: true });
+  await say('bee', "제가 '오픈!' 하면 그때 입금해 주세요~ 미리 보내면 무효예요 ㅎㅎ", { memo: true });
+  await choose(['손가락 풀고 있겠습니다 ✋', '오픈만 기다릴게요!']);
+  const s = await gameFirstCome();
+  results.push(s);
+  await say('box', '다들 손 너무 빨라요 😂');
+  await say('calc', '근데 딸기 2박스 받은 사람 누구예요? 저 한 박스 모자라요…', { memo: true });
+  await say('quiet', '…저도 딸기 좋아해요', { memo: true });
+  await say('bee', '헉 눈팅러님 처음 말하셨다 ㅋㅋㅋ', { after: 900 });
+}
+
+async function chapter2() {
+  await chapter(2, '🍉', '2023년 여름', '수박 정산 대소동', '2023년 7월 28일 금요일', 20, 11);
+  await say('bee', '고창 수박 공구 마감했습니다 🍉 다들 감사해요!');
+  await say('calc', '정산은 1원 단위까지 정확하게. 그게 제 철칙입니다', { memo: true });
+  await say('box', '저는 계산 못해요… 누가 대신 해줘요ㅠ', { memo: true });
+  await say('calc', '그럼 나님이 좀 도와주세요! 문제 드릴게요');
+  await choose(['계산기 앱 켰습니다 📱', '암산이면 자신 있죠 😎']);
+  const s = await gameCalc();
+  results.push(s);
+  await say('bee', '역시 총무님이랑 나님 최고~ 👍');
+  await say('box', '수박 너무 무거워서 엘리베이터 앞까지 굴렸어요 🍉', { memo: true });
+  await say('quiet', 'ㅋㅋㅋㅋㅋ', { after: 900 });
+}
+
+async function chapter3() {
+  await chapter(3, '📦', '2023년 가을', '블랙프라이데이 택배 대란', '2023년 11월 24일 금요일', 18, 47);
+  await say('box', '여러분!!! 택배 40개가 한꺼번에 왔어요!!');
+  await say('box', '경비실 앞이 택배 산이에요 📦📦📦');
+  await say('bee', '김장매트는 제 거예요! 절대 가져가지 마세요', { memo: true });
+  await say('calc', '이름표 보고 나눠 주시면 됩니다~');
+  await say('box', '나님 같이 분류해 줘요!! 20초 안에!');
+  await choose(['장갑 끼고 출동합니다 🧤', '맡겨 주세요!']);
+  const { ok, bad } = await gameParcel();
+  const s = Math.max(0, Math.min(300, ok * 20 - bad * 10));
+  addScore(s);
+  results.push(s);
+  sys(`택배 분류 결과 · 성공 ${ok}개 · 실수 ${bad}개`);
+  await say('box', ok >= 15 ? '와 진짜 택배 장인이세요!! 🏆' : ok >= 8 ? '덕분에 반은 끝냈어요! 고마워요 🙏' : '…나머지는 내일 할까요 😵');
+  await say('quiet', '제 택배… 혹시 귤 맞나요?', { memo: true });
+  await say('box', '택배요정은 오늘부로 은퇴합니다…', { memo: true, after: 900 });
+}
+
+async function chapter4() {
+  await chapter(4, '🎄', '2024년 겨울', '눈팅러의 송년 퀴즈', '2024년 12월 31일 화요일', 23, 12);
+  await say('bee', '올해 마지막 날이네요! 송년 퀴즈 할까요? 🎉');
+  await say('calc', '상품은 남은 귤 한 박스입니다 🍊');
+  await say('quiet', '제가… 진행해 봐도 될까요?');
+  await say('box', '헐 눈팅러님이 문장을?!');
+  await say('bee', '대박ㅋㅋㅋ 좋아요!!');
+  await say('quiet', '사실 그동안 다 보고 있었거든요.\n누가 무슨 말 했는지 맞혀 보세요');
+  await choose(['기억력 자신 있어요 🧠', '…다 까먹었는데요?']);
+  const s = await gameQuiz();
+  results.push(s);
+  await say('quiet', '다들 수고하셨어요. 귤은… 제가 먹을게요 🍊');
+  await say('calc', '???', { after: 900 });
+}
+
+const CHAPTERS = [
+  { e: '🍓', t: '전설의 딸기 공구', max: 300, bg: '#ffd9df' },
+  { e: '🍉', t: '수박 정산 대소동', max: 300, bg: '#d6f5d6' },
+  { e: '📦', t: '택배 대란', max: 300, bg: '#f3e2c7' },
+  { e: '🎄', t: '송년 퀴즈', max: 400, bg: '#d6e6ff' },
+];
+function comment(p) {
+  return p >= .85 ? '완벽하게 기억나요!' : p >= .6 ? '생생한 추억' : p >= .35 ? '어렴풋한 기억' : '그런 일이 있었나…?';
+}
+function rankTitle(p) {
+  if (p >= .85) return '👑 전설의 공구 고인물';
+  if (p >= .7) return '🧮 든든한 부총무';
+  if (p >= .5) return '🛒 성실한 단골';
+  if (p >= .3) return '🙂 가끔 오는 손님';
+  return '👀 사실은 눈팅러';
+}
+
+async function epilogue() {
+  chat.classList.add('fade'); await wait(600);
+  chat.innerHTML = ''; lastWho = null; chat.classList.remove('fade');
+  setClock(23, 58);
+  dateLine('2026년 11월 20일 금요일');
+  sys('— 다시 현재 —');
+  await say('bee', '다시 보니까 눈물 나네요 🥹');
+  await say('calc', '3년간 총 정산 금액 4,812,500원. 오차 0원입니다');
+  await say('box', '그동안 받은 택배 상자로 성 쌓을 수 있어요 🏰');
+  await say('quiet', '다들… 정말 감사했어요', { after: 900 });
+
+  // 추억 앨범
+  const maxTotal = CHAPTERS.reduce((a, c) => a + c.max, 0);
+  const p = score / maxTotal;
+  const photos = CHAPTERS.map((c, i) => {
+    const r = results[i] ?? 0;
+    return `<div class="photo" style="animation-delay:${i * .15}s">
+      <div class="img" style="background:${c.bg}">${c.e}</div>
+      <div class="cap">${c.t}</div>
+      <div class="pts">${r} / ${c.max}</div>
+      <div class="cmt">${comment(r / c.max)}</div>
+    </div>`;
+  }).join('');
+  await showCard(`
+    <div class="album">
+      <h2>📒 우리 공구방 추억 앨범</h2>
+      <div class="sub">2023.04 ~ 2026.11</div>
+      <div class="photos">${photos}</div>
+      <div class="final">추억 지수 ${score} / ${maxTotal}</div>
+      <div class="rank">${rankTitle(p)}</div>
+      <button class="big card-btn" id="byeBtn">마지막 인사하러 가기</button>
+    </div>`, { button: '#byeBtn' });
+
+  const c = await choose(['3년 동안 정말 즐거웠어요 🧡', '딸기 맛은 평생 못 잊을 거예요 🍓', '…사실 저 수박값 덜 보냈어요'], '마지막 한마디를 골라 주세요');
+  if (c === 0) await say('bee', '저도요 나님 🧡 늘 일등으로 입금해 주셔서 고마웠어요');
+  else if (c === 1) await say('box', '그 딸기 진짜 달았죠 🍓 아직도 생각나요');
+  else await say('calc', '알고 있었습니다. 500원입니다.');
+  await say('bee', '그럼 이제 진짜 안녕… 👋', { after: 1200 });
+  await say('bee', '…근데 그래서 말인데요');
+  await say('bee', '다음 주에 제주 귤 공구 할 사람? 🍊');
+  await say('box', '저요!!!', { t: 400 });
+  await say('calc', '저요. 정산은 제가', { t: 500 });
+  await say('quiet', '저도요', { t: 500 });
+  await choose(['저요!!! 🙋', '…역시 이럴 줄 알았어요 ㅋㅋ']);
+  sys('꿀벌맘님이 ‘우리동네 공구방 시즌2’를 만들었습니다. 🎉');
+  await sleep(600);
+
+  setPanel('');
+  const again = h('button', 'big', '🔁 처음부터 다시 회상하기');
+  again.onclick = () => location.reload();
+  panel.appendChild(again);
+}
+
+async function main() {
+  await titleScreen();
+  await prologue();
+  await chapter1();
+  await chapter2();
+  await chapter3();
+  await chapter4();
+  await epilogue();
+}
+main();
+</script>
+</body>
+</html>
