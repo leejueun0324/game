@@ -21,10 +21,14 @@
   --lantern: #f2c46d;
   --glass: rgba(23, 18, 31, 0.84);
   --line: rgba(251, 243, 239, 0.14);
-  --c-haeon: #7fb2e5;
-  --c-haram: #eaa77e;
-  --c-taeo: #f2cf3d;
-  --c-mujin: #8fd3b6;
+  --c-seoyul: #7fb2e5;
+  --c-eunho: #eaa77e;
+  --c-dohyun: #f2cf3d;
+  --c-sian: #b7c3e6;
+  --c-geon: #d9b38c;
+  --c-hayul: #6fd0c0;
+  --c-hajin: #f39ab8;
+  --c-jaemin: #b4e07a;
   --f-story: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
   --f-ui: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   color-scheme: dark;
@@ -74,6 +78,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
 .bg-dawn { background: linear-gradient(180deg, #4b5d9a 0%, #b9a6c9 50%, #f6c9b0 85%, #f4b9a0 100%); }
 .bg-dawn::after { background: radial-gradient(120% 35% at 50% 108%, #4a3a5a 60%, transparent 61%); }
 .bg-dark { background: #0d0a12; }
+.bg-cafe { background: linear-gradient(180deg, #6b4a36 0%, #a9774f 55%, #4a3022 100%); }
+.bg-cafe::before { background: linear-gradient(90deg, transparent 8%, rgba(255,232,190,.4) 8% 44%, transparent 44% 56%, rgba(255,232,190,.35) 56% 92%, transparent 92%); clip-path: inset(8% 0 50% 0); }
+.bg-cafe::after { background: radial-gradient(12% 10% at 25% 62%, rgba(255,210,150,.5), transparent 70%), radial-gradient(12% 10% at 75% 62%, rgba(255,210,150,.5), transparent 70%); }
+.bg-pool { background: linear-gradient(180deg, #0e2433 0%, #12455c 45%, #1b7a8f 46%, #0c3a4a 100%); }
+.bg-pool::before { background: repeating-linear-gradient(90deg, transparent 0 18%, rgba(255,255,255,.18) 18% 18.6%); clip-path: inset(46% 0 0 0); }
+.bg-pool::after { background: radial-gradient(60% 20% at 50% 70%, rgba(140,230,255,.25), transparent 70%); }
+.bg-attic { background: linear-gradient(160deg, #1b1830 0%, #2c2547 60%, #141120 100%); }
+.bg-attic::before { background: linear-gradient(135deg, transparent 49.5%, rgba(10,8,18,.9) 50%), linear-gradient(225deg, transparent 49.5%, rgba(10,8,18,.9) 50%); clip-path: inset(0 0 60% 0); }
+.bg-attic::after { background: radial-gradient(22% 18% at 70% 45%, rgba(150,190,255,.35), transparent 70%); }
+.bg-office { background: linear-gradient(180deg, #2a2f3a 0%, #46505f 55%, #232731 100%); }
+.bg-office::before { background: repeating-linear-gradient(180deg, transparent 0 30px, rgba(255,255,255,.05) 30px 31px), radial-gradient(40% 25% at 50% 20%, rgba(255,240,200,.25), transparent 70%); }
+.bg-ballpark { background: linear-gradient(180deg, #9fd0f0 0%, #d8eef5 45%, #6aa35a 46%, #b88a5a 75%, #8c643e 100%); }
+.bg-ballpark::after { background: radial-gradient(40% 12% at 50% 80%, rgba(200,150,100,.6), transparent 70%); }
 
 #fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #veil { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.25), transparent 18%, transparent 55%, rgba(13,10,18,.7)); pointer-events: none; }
@@ -138,6 +155,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 60px 170px;
   background: rgba(13,10,18,.35);
+  overflow-y: auto; justify-content: safe center;
 }
 .opt {
   width: min(560px, 100%); text-align: left; cursor: pointer;
@@ -180,9 +198,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
 #title { background: linear-gradient(180deg, rgba(23,18,31,.15), rgba(23,18,31,.75) 70%); justify-content: flex-end; }
 .titleBox { width: min(560px, 100%); display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; padding-bottom: 4vh; }
 .fan { display: flex; justify-content: center; margin-bottom: 4px; }
-.fan img { width: clamp(70px, 18vw, 112px); aspect-ratio: 3/4.2; object-fit: cover; object-position: 50% 12%; border-radius: 60px 60px 10px 10px; border: 2px solid var(--paper); box-shadow: 0 10px 30px rgba(0,0,0,.4); margin: 0 -8px; }
-.fan img:nth-child(1) { transform: rotate(-9deg) translateY(10px); } .fan img:nth-child(2) { transform: rotate(-3deg); z-index: 1; }
-.fan img:nth-child(3) { transform: rotate(3deg); z-index: 1; } .fan img:nth-child(4) { transform: rotate(9deg) translateY(10px); }
+.fan { flex-wrap: nowrap; }
+.fan img { width: clamp(44px, 11vw, 84px); aspect-ratio: 3/4.2; object-fit: cover; object-position: 50% 12%; border-radius: 60px 60px 10px 10px; border: 2px solid var(--paper); box-shadow: 0 10px 30px rgba(0,0,0,.4); margin: 0 -8px; }
+.fan img:nth-child(1) { transform: rotate(-12deg) translateY(16px); } .fan img:nth-child(2) { transform: rotate(-8deg) translateY(8px); }
+.fan img:nth-child(3) { transform: rotate(-4deg) translateY(2px); z-index: 1; } .fan img:nth-child(4) { transform: rotate(-1deg); z-index: 2; }
+.fan img:nth-child(5) { transform: rotate(1deg); z-index: 2; } .fan img:nth-child(6) { transform: rotate(4deg) translateY(2px); z-index: 1; }
+.fan img:nth-child(7) { transform: rotate(8deg) translateY(8px); } .fan img:nth-child(8) { transform: rotate(12deg) translateY(16px); }
 .logo { margin: 0; font-family: var(--f-story); font-weight: 700; font-size: clamp(48px, 12vw, 84px); letter-spacing: .12em; line-height: 1; text-shadow: 0 4px 30px rgba(243,165,189,.55); }
 .logo span { color: var(--blossom); }
 .tag { margin: 0; font-family: var(--f-story); color: var(--mist); font-size: 15px; letter-spacing: .04em; }
@@ -209,7 +230,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
 .meter { height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; }
 .meter i { display: block; height: 100%; background: var(--c); border-radius: 3px; }
 .spot .ep { font-size: 12px; color: var(--mist); margin-top: 6px; font-variant-numeric: tabular-nums; }
-@media (max-width: 520px) { .spots { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) {
+  .spots { gap: 8px; }
+  .spot { grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 8px; }
+  .spot img { width: 40px; height: 52px; }
+  .spot .place { font-size: 11px; letter-spacing: 0; }
+  .spot .nm { font-size: 15px; margin: 0 0 4px; }
+  .spot .ep { font-size: 11px; margin-top: 4px; }
+}
 
 /* status & log & endings */
 .list { display: flex; flex-direction: column; gap: 10px; }
@@ -270,10 +298,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
   <div id="title" class="layer">
     <div class="titleBox">
       <div class="fan">
-        <img src="img/haeon.jpg" alt="권해온"><img src="img/haram.jpg" alt="윤하람"><img src="img/taeo.jpg" alt="강태오"><img src="img/mujin.jpg" alt="차무진">
+        <img src="img/seoyul.jpg" alt="한서율"><img src="img/eunho.jpg" alt="여은호"><img src="img/dohyun.jpg" alt="강도현"><img src="img/sian.jpg" alt="백시안"><img src="img/geon.jpg" alt="류건"><img src="img/hayul.jpg" alt="정하율"><img src="img/hajin.jpg" alt="문하진"><img src="img/jaemin.jpg" alt="오재민">
       </div>
       <h1 class="logo">봄빛<span>·</span>하숙</h1>
-      <p class="tag">언덕 끝 하숙집, 축제까지 남은 두 주</p>
+      <p class="tag">언덕 끝 하숙집, 여덟 사람과 축제까지 두 주</p>
       <div class="row">
         <button class="btn main" id="bNew">새로 시작</button>
         <button class="btn" id="bCont">이어하기</button>
@@ -330,34 +358,42 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
 
 <script>window.SC = {};</script>
 <script src="story/common.js"></script>
-<script src="story/haeon.js"></script>
-<script src="story/haram.js"></script>
-<script src="story/taeo.js"></script>
-<script src="story/mujin.js"></script>
+<script src="story/seoyul.js"></script>
+<script src="story/eunho.js"></script>
+<script src="story/dohyun.js"></script>
+<script src="story/sian.js"></script>
+<script src="story/geon.js"></script>
+<script src="story/hayul.js"></script>
+<script src="story/hajin.js"></script>
+<script src="story/jaemin.js"></script>
 <script>
 // ================= 데이터 =================
 const CH = {
-  haeon: { name: '권해온', place: '밤의 체육관', img: 'img/haeon.jpg', c: 'var(--c-haeon)', bg: 'gym',
-    faces: Object.fromEntries(['shy', 'surprise', 'angry', 'sulky', 'laugh', 'smile', 'think', 'focus', 'sleepy'].map(f => [f, `img/haeon_${f}.jpg`])) },
-  haram: { name: '윤하람', place: '하숙집 옥상', img: 'img/haram.jpg', c: 'var(--c-haram)', bg: 'rooftop' },
-  taeo:  { name: '강태오', place: '도서관 3층', img: 'img/taeo.jpg',  c: 'var(--c-taeo)',  bg: 'library' },
-  mujin: { name: '차무진', place: '하숙 앞 편의점', img: 'img/mujin.jpg', c: 'var(--c-mujin)', bg: 'store' },
+  seoyul: { name: '한서율', place: '무용과 연습실', img: 'img/seoyul.jpg', c: 'var(--c-seoyul)',
+    faces: Object.fromEntries(['shy', 'surprise', 'angry', 'sulky', 'laugh', 'smile', 'think', 'focus', 'sleepy'].map(f => [f, `img/seoyul_${f}.jpg`])) },
+  eunho:  { name: '여은호', place: '언덕 아래 카페', img: 'img/eunho.jpg', c: 'var(--c-eunho)' },
+  dohyun: { name: '강도현', place: '실내 수영장', img: 'img/dohyun.jpg', c: 'var(--c-dohyun)' },
+  sian:   { name: '백시안', place: '하숙 다락방', img: 'img/sian.jpg', c: 'var(--c-sian)', pos: '42% 30%' },
+  geon:   { name: '류건', place: '총학생회실', img: 'img/geon.jpg', c: 'var(--c-geon)' },
+  hayul:  { name: '정하율', place: '응원단 연습장', img: 'img/hayul.jpg', c: 'var(--c-hayul)', pos: '52% 20%' },
+  hajin:  { name: '문하진', place: '야구 동아리', img: 'img/hajin.jpg', c: 'var(--c-hajin)', pos: '58% 25%' },
+  jaemin: { name: '오재민', place: '태권도장', img: 'img/jaemin.jpg', c: 'var(--c-jaemin)', pos: '55% 20%' },
 };
 const IDS = Object.keys(CH);
 // 1주차 월~금, 2주차 월~목은 자유 행동. 2주차 금요일 밤이 축제.
 const DAYS = ['1주차 월요일', '1주차 화요일', '1주차 수요일', '1주차 목요일', '1주차 금요일', '2주차 월요일', '2주차 화요일', '2주차 수요일', '2주차 목요일'];
 const FREE = DAYS.length, EPS = 9;
-const MAX = 100, GOOD = 70, GOOD_VISITS = 7;
+const MAX = 100, GOOD = 70, GOOD_VISITS = 8;
 
 const ENDINGS = [
-  ['haeon_good', 'HAPPY', '한여름보다 뜨거운 봄', '권해온'],
-  ['haeon_norm', 'NORMAL', '다시 뛰는 봄', '권해온'],
-  ['haram_good', 'HAPPY', '옥상에서 너에게', '윤하람'],
-  ['haram_norm', 'NORMAL', '아직 제목 없는 노래', '윤하람'],
-  ['taeo_good', 'HAPPY', '노란 우산 아래', '강태오'],
-  ['taeo_norm', 'NORMAL', '같은 조, 다음 학기에도', '강태오'],
-  ['mujin_good', 'HAPPY', '새벽 1시의 편의점', '차무진'],
-  ['mujin_norm', 'NORMAL', '폐기 직전의 다정함', '차무진'],
+  ['seoyul_good', 'HAPPY', '말 대신 춤으로', '한서율'], ['seoyul_norm', 'NORMAL', '무대 위의 봄', '한서율'],
+  ['eunho_good', 'HAPPY', '빈 의자에 앉은 사람', '여은호'], ['eunho_norm', 'NORMAL', '오후 세시의 라떼', '여은호'],
+  ['dohyun_good', 'HAPPY', '물 밖에서 숨 쉬는 법', '강도현'], ['dohyun_norm', 'NORMAL', '노란 킥판', '강도현'],
+  ['sian_good', 'HAPPY', '마지막 컷', '백시안'], ['sian_norm', 'NORMAL', '다락방의 불빛', '백시안'],
+  ['geon_good', 'HAPPY', '21시, 점화', '류건'], ['geon_norm', 'NORMAL', '완벽한 축제', '류건'],
+  ['hayul_good', 'HAPPY', '응원 말고 진심', '정하율'], ['hayul_norm', 'NORMAL', '엄지 척', '정하율'],
+  ['hajin_good', 'HAPPY', '빈 야구장의 직구', '문하진'], ['hajin_norm', 'NORMAL', '사물함 속 쪽지', '문하진'],
+  ['jaemin_good', 'HAPPY', '당첨, 한 개 더', '오재민'], ['jaemin_norm', 'NORMAL', '입대 전날', '오재민'],
   ['solo', 'SOLO', '혼자 보는 불꽃', '나'],
 ];
 
@@ -366,17 +402,21 @@ const ENDINGS = [
 const SC = window.SC;
 
 const FEST_OPT = {
-  haeon: '운동장으로 간다 — 해온이 있을 것 같다',
-  haram: '야외무대로 간다 — 하람의 공연이 곧 시작한다',
-  taeo:  '정문으로 간다 — 노란 우산이 있을지도',
-  mujin: '편의점으로 간다 — 무진의 퇴근 시간까지',
+  seoyul: '잔디밭으로 간다 — 서율의 무대가 막 끝났다',
+  eunho:  '카페 테라스로 간다 — 은호의 사진전이 열려 있다',
+  dohyun: '수영장으로 간다 — 도현이 불을 켜 두겠다고 했다',
+  sian:   '하숙 다락방으로 간다 — 시안은 축제에 안 온다고 했다',
+  geon:   '축제 본부 옥상으로 간다 — 건이 불꽃을 쏘아 올린다',
+  hayul:  '응원단 무대 뒤로 간다 — 하율의 공연이 끝났다',
+  hajin:  '빈 야구장으로 간다 — 사물함 쪽지에 9시라고 적혀 있었다',
+  jaemin: '언덕 버스 정류장으로 간다 — 재민은 다음 주에 떠난다',
 };
 
 // ================= 상태 =================
 const $ = id => document.getElementById(id);
-const KEY = 'bomhouse.save.v1', EKEY = 'bomhouse.endings.v1';
+const KEY = 'bomhouse.save.v2', EKEY = 'bomhouse.endings.v2';
 let S = fresh();
-function fresh() { return { name: '이봄', day: 0, aff: { haeon: 0, haram: 0, taeo: 0, mujin: 0 }, visits: { haeon: 0, haram: 0, taeo: 0, mujin: 0 } }; }
+function fresh() { const z = () => Object.fromEntries(IDS.map(id => [id, 0])); return { name: '이봄', day: 0, aff: z(), visits: z() }; }
 function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 function seenEndings() { const v = load(EKEY); return Array.isArray(v) ? v : []; }
@@ -469,7 +509,7 @@ function show(id, f) {
   const p = $('portrait'), img = $('pImg');
   if (p.classList.contains('on') && shown === id) return setFace(f || 'base');
   curFace = f;
-  const go = () => { img.src = faceSrc(id, curFace); img.alt = CH[id].name; p.style.setProperty('--who', CH[id].c); p.classList.add('on'); };
+  const go = () => { img.src = faceSrc(id, curFace); img.alt = CH[id].name; img.style.objectPosition = CH[id].pos || ''; p.style.setProperty('--who', CH[id].c); p.classList.add('on'); };
   if (p.classList.contains('on')) { p.classList.remove('on'); setTimeout(go, 260); } else go();
   shown = id;
 }
@@ -519,7 +559,7 @@ function openMap() {
   IDS.forEach(id => {
     const c = CH[id], v = S.visits[id];
     const b = document.createElement('button'); b.className = 'spot'; b.style.setProperty('--c', c.c);
-    b.innerHTML = `<img src="${c.img}" alt=""><div><div class="place">${c.place}</div><div class="nm">${c.name}</div>
+    b.innerHTML = `<img src="${c.img}" alt="" style="object-position:${c.pos || '50% 12%'}"><div><div class="place">${c.place}</div><div class="nm">${c.name}</div>
       <div class="meter"><i style="width:${S.aff[id] / MAX * 100}%"></i></div><div class="ep">이야기 ${v}/${EPS} · 호감 ${S.aff[id]}</div></div>`;
     if (v >= EPS) b.disabled = true;
     b.onclick = () => visit(id);
@@ -563,7 +603,7 @@ function showEnd(key) {
   layer('endCard', true);
 }
 function statHTML() {
-  return IDS.map(id => `<div class="stat" style="--c:${CH[id].c}"><img src="${CH[id].img}" alt="">
+  return IDS.map(id => `<div class="stat" style="--c:${CH[id].c}"><img src="${CH[id].img}" alt="" style="object-position:${CH[id].pos || '50% 12%'}">
     <div><div style="font-family:var(--f-story);font-weight:700">${CH[id].name}</div><div class="meter"><i style="width:${S.aff[id] / MAX * 100}%"></i></div></div>
     <span class="num">${S.aff[id]}</span></div>`).join('');
 }
@@ -809,7 +849,7 @@ const Music = (() => {
   }
   return { play, unlock, toggle, isOn: () => on };
 })();
-const BG_MOOD = { street: 'spring', house: 'spring', campus: 'spring', gym: 'night', rooftop: 'night', studio: 'night', library: 'cozy', store: 'cozy', dawn: 'cozy', rain: 'rain', festival: 'festival', field: 'festival' };
+const BG_MOOD = { street: 'spring', house: 'spring', campus: 'spring', ballpark: 'spring', gym: 'night', rooftop: 'night', studio: 'night', pool: 'night', attic: 'night', library: 'cozy', store: 'cozy', dawn: 'cozy', cafe: 'cozy', office: 'cozy', rain: 'rain', festival: 'festival', field: 'festival' };
 let moodLock = null;
 function setMood(b) { if (!moodLock) Music.play(BG_MOOD[b] || null); }
 function syncBgmBtns() { document.querySelectorAll('.bgmBtn').forEach(b => { b.setAttribute('aria-pressed', Music.isOn()); b.textContent = b.id === 'bBgm' ? (Music.isOn() ? '♪' : '♪̸') : (Music.isOn() ? '♪ BGM 켜짐' : '♪ BGM 꺼짐'); b.setAttribute('aria-label', Music.isOn() ? 'BGM 끄기' : 'BGM 켜기'); }); }
