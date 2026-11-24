@@ -24,10 +24,8 @@
   --c-seoyul: #7fb2e5;
   --c-eunho: #eaa77e;
   --c-dohyun: #f2cf3d;
-  --c-sian: #b7c3e6;
   --c-geon: #d9b38c;
   --c-hayul: #6fd0c0;
-  --c-hajin: #f39ab8;
   --c-jaemin: #b4e07a;
   --f-story: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
   --f-ui: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
@@ -199,11 +197,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
 .titleBox { width: min(560px, 100%); display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; padding-bottom: 4vh; }
 .fan { display: flex; justify-content: center; margin-bottom: 4px; }
 .fan { flex-wrap: nowrap; }
-.fan img { width: clamp(44px, 11vw, 84px); aspect-ratio: 3/4.2; object-fit: cover; object-position: 50% 12%; border-radius: 60px 60px 10px 10px; border: 2px solid var(--paper); box-shadow: 0 10px 30px rgba(0,0,0,.4); margin: 0 -8px; }
-.fan img:nth-child(1) { transform: rotate(-12deg) translateY(16px); } .fan img:nth-child(2) { transform: rotate(-8deg) translateY(8px); }
-.fan img:nth-child(3) { transform: rotate(-4deg) translateY(2px); z-index: 1; } .fan img:nth-child(4) { transform: rotate(-1deg); z-index: 2; }
-.fan img:nth-child(5) { transform: rotate(1deg); z-index: 2; } .fan img:nth-child(6) { transform: rotate(4deg) translateY(2px); z-index: 1; }
-.fan img:nth-child(7) { transform: rotate(8deg) translateY(8px); } .fan img:nth-child(8) { transform: rotate(12deg) translateY(16px); }
+.fan img { width: clamp(54px, 14vw, 96px); aspect-ratio: 3/4.2; object-fit: cover; object-position: 50% 12%; border-radius: 60px 60px 10px 10px; border: 2px solid var(--paper); box-shadow: 0 10px 30px rgba(0,0,0,.4); margin: 0 -8px; }
+.fan img:nth-child(1) { transform: rotate(-10deg) translateY(12px); } .fan img:nth-child(2) { transform: rotate(-6deg) translateY(4px); z-index: 1; }
+.fan img:nth-child(3) { transform: rotate(-2deg); z-index: 2; } .fan img:nth-child(4) { transform: rotate(2deg); z-index: 2; }
+.fan img:nth-child(5) { transform: rotate(6deg) translateY(4px); z-index: 1; } .fan img:nth-child(6) { transform: rotate(10deg) translateY(12px); }
 .logo { margin: 0; font-family: var(--f-story); font-weight: 700; font-size: clamp(48px, 12vw, 84px); letter-spacing: .12em; line-height: 1; text-shadow: 0 4px 30px rgba(243,165,189,.55); }
 .logo span { color: var(--blossom); }
 .tag { margin: 0; font-family: var(--f-story); color: var(--mist); font-size: 15px; letter-spacing: .04em; }
@@ -298,10 +295,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
   <div id="title" class="layer">
     <div class="titleBox">
       <div class="fan">
-        <img src="img/seoyul.jpg" alt="한서율"><img src="img/eunho.jpg" alt="여은호"><img src="img/dohyun.jpg" alt="강도현"><img src="img/sian.jpg" alt="백시안"><img src="img/geon.jpg" alt="류건"><img src="img/hayul.jpg" alt="정하율"><img src="img/hajin.jpg" alt="문하진"><img src="img/jaemin.jpg" alt="오재민">
+        <img src="img/seoyul.jpg" alt="한서율"><img src="img/eunho.jpg" alt="여은호"><img src="img/dohyun.jpg" alt="강도현"><img src="img/geon.jpg" alt="류건"><img src="img/hayul.jpg" alt="정하율"><img src="img/jaemin.jpg" alt="오재민">
       </div>
       <h1 class="logo">봄빛<span>·</span>하숙</h1>
-      <p class="tag">언덕 끝 하숙집, 여덟 사람과 축제까지 두 주</p>
+      <p class="tag">언덕 끝 하숙집, 여섯 사람과 축제까지 두 주</p>
       <div class="row">
         <button class="btn main" id="bNew">새로 시작</button>
         <button class="btn" id="bCont">이어하기</button>
@@ -361,23 +358,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--blossom); o
 <script src="story/seoyul.js"></script>
 <script src="story/eunho.js"></script>
 <script src="story/dohyun.js"></script>
-<script src="story/sian.js"></script>
 <script src="story/geon.js"></script>
 <script src="story/hayul.js"></script>
-<script src="story/hajin.js"></script>
 <script src="story/jaemin.js"></script>
 <script>
 // ================= 데이터 =================
 const CH = {
-  seoyul: { name: '한서율', place: '무용과 연습실', img: 'img/seoyul.jpg', c: 'var(--c-seoyul)',
-    faces: Object.fromEntries(['shy', 'surprise', 'angry', 'sulky', 'laugh', 'smile', 'think', 'focus', 'sleepy'].map(f => [f, `img/seoyul_${f}.jpg`])) },
+  seoyul: { name: '한서율', place: '무용과 연습실', img: 'img/seoyul.jpg', c: 'var(--c-seoyul)' },
   eunho:  { name: '여은호', place: '언덕 아래 카페', img: 'img/eunho.jpg', c: 'var(--c-eunho)' },
   dohyun: { name: '강도현', place: '실내 수영장', img: 'img/dohyun.jpg', c: 'var(--c-dohyun)' },
-  sian:   { name: '백시안', place: '하숙 다락방', img: 'img/sian.jpg', c: 'var(--c-sian)', pos: '42% 30%' },
   geon:   { name: '류건', place: '총학생회실', img: 'img/geon.jpg', c: 'var(--c-geon)' },
-  hayul:  { name: '정하율', place: '응원단 연습장', img: 'img/hayul.jpg', c: 'var(--c-hayul)', pos: '52% 20%' },
-  hajin:  { name: '문하진', place: '야구 동아리', img: 'img/hajin.jpg', c: 'var(--c-hajin)', pos: '58% 25%' },
-  jaemin: { name: '오재민', place: '태권도장', img: 'img/jaemin.jpg', c: 'var(--c-jaemin)', pos: '55% 20%' },
+  hayul:  { name: '정하율', place: '응원단 연습장', img: 'img/hayul.jpg', c: 'var(--c-hayul)' },
+  jaemin: { name: '오재민', place: '태권도장', img: 'img/jaemin.jpg', c: 'var(--c-jaemin)' },
 };
 const IDS = Object.keys(CH);
 // 1주차 월~금, 2주차 월~목은 자유 행동. 2주차 금요일 밤이 축제.
@@ -389,10 +381,8 @@ const ENDINGS = [
   ['seoyul_good', 'HAPPY', '말 대신 춤으로', '한서율'], ['seoyul_norm', 'NORMAL', '무대 위의 봄', '한서율'],
   ['eunho_good', 'HAPPY', '빈 의자에 앉은 사람', '여은호'], ['eunho_norm', 'NORMAL', '오후 세시의 라떼', '여은호'],
   ['dohyun_good', 'HAPPY', '물 밖에서 숨 쉬는 법', '강도현'], ['dohyun_norm', 'NORMAL', '노란 킥판', '강도현'],
-  ['sian_good', 'HAPPY', '마지막 컷', '백시안'], ['sian_norm', 'NORMAL', '다락방의 불빛', '백시안'],
   ['geon_good', 'HAPPY', '21시, 점화', '류건'], ['geon_norm', 'NORMAL', '완벽한 축제', '류건'],
   ['hayul_good', 'HAPPY', '응원 말고 진심', '정하율'], ['hayul_norm', 'NORMAL', '엄지 척', '정하율'],
-  ['hajin_good', 'HAPPY', '빈 야구장의 직구', '문하진'], ['hajin_norm', 'NORMAL', '사물함 속 쪽지', '문하진'],
   ['jaemin_good', 'HAPPY', '당첨, 한 개 더', '오재민'], ['jaemin_norm', 'NORMAL', '입대 전날', '오재민'],
   ['solo', 'SOLO', '혼자 보는 불꽃', '나'],
 ];
@@ -405,16 +395,14 @@ const FEST_OPT = {
   seoyul: '잔디밭으로 간다 — 서율의 무대가 막 끝났다',
   eunho:  '카페 테라스로 간다 — 은호의 사진전이 열려 있다',
   dohyun: '수영장으로 간다 — 도현이 불을 켜 두겠다고 했다',
-  sian:   '하숙 다락방으로 간다 — 시안은 축제에 안 온다고 했다',
   geon:   '축제 본부 옥상으로 간다 — 건이 불꽃을 쏘아 올린다',
   hayul:  '응원단 무대 뒤로 간다 — 하율의 공연이 끝났다',
-  hajin:  '빈 야구장으로 간다 — 사물함 쪽지에 9시라고 적혀 있었다',
   jaemin: '언덕 버스 정류장으로 간다 — 재민은 다음 주에 떠난다',
 };
 
 // ================= 상태 =================
 const $ = id => document.getElementById(id);
-const KEY = 'bomhouse.save.v2', EKEY = 'bomhouse.endings.v2';
+const KEY = 'bomhouse.save.v3', EKEY = 'bomhouse.endings.v3';
 let S = fresh();
 function fresh() { const z = () => Object.fromEntries(IDS.map(id => [id, 0])); return { name: '이봄', day: 0, aff: z(), visits: z() }; }
 function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
