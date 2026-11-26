@@ -5,8 +5,8 @@
  *           → 저장 → 함수 선택창에서 createSurvey 선택 → 실행(▶) → 권한 허용
  * 결과:     실행 로그에 응답 URL(배포용) / 편집 URL / 응답 시트 URL 출력
  *
- * 구성: 3페이지 · 9문항
- *   1페이지: Q1
+ * 구성: 3페이지 · 10문항
+ *   1페이지: Q0(학년), Q1
  *   2페이지: Q2~Q8  (Q1에서 '아니오'를 고르면 건너뜀)
  *   3페이지: Q9 (서술형, 선택)
  * 익명: 이메일 수집 안 함 · 로그인 요구 안 함
@@ -25,6 +25,14 @@ function createSurvey() {
   applySettings(form);
 
   // ===== 1페이지 =====
+  addChoice(form, 'Q0. 당신의 학년은?', [
+    '1학년',
+    '2학년',
+    '3학년',
+    '4학년',
+    '대학원생 또는 그 이상',
+  ]);
+
   const q1 = form.addMultipleChoiceItem()
     .setTitle('Q1. 자기 전에 휴대폰으로 숏폼이나 릴스를 보나요?')
     .setRequired(true);
@@ -108,8 +116,8 @@ function createSurvey() {
   const questions = form.getItems().filter(function (it) {
     return /^Q\d+\./.test(it.getTitle());
   });
-  if (questions.length !== 9) {
-    Logger.log('⚠️ 문항 수가 9개가 아닙니다: ' + questions.length + '개');
+  if (questions.length !== 10) {
+    Logger.log('⚠️ 문항 수가 10개가 아닙니다: ' + questions.length + '개');
   }
   Logger.log('✅ 설문 생성 완료 (문항 ' + questions.length + '개)');
   Logger.log('📝 응답 URL (배포용): ' + form.getPublishedUrl());
