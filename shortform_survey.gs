@@ -7,13 +7,23 @@
  *
  * 구성: 섹션 Ⅰ~Ⅵ (로마 숫자별로 한 페이지씩) · 21문항
  * 익명: 이메일 수집 안 함 · 로그인 요구 안 함
+ *
+ * 디자인: '밤하늘·별' 테마. 문구에 별·달 장식을 넣었습니다.
+ *        머리글 이미지(survey_header.png)와 색상은 폼 편집 화면의 🎨 테마에서 적용하세요.
  */
 
 const SURVEY_TITLE = '자기 전 숏폼과 알고리즘 설문';
 const SURVEY_DESCRIPTION =
-  '자기 전 숏폼(쇼츠·릴스·틱톡) 시청 습관과 알고리즘에 대한 생각을 묻는 설문입니다. (약 3분 소요)\n\n' +
-  '※ 익명으로 진행되며, 이름·이메일 등 개인정보를 수집하지 않습니다.';
-const CONFIRMATION_MESSAGE = '응답해 주셔서 감사합니다! 오늘은 조금 일찍 자 보는 건 어떨까요? 🌙';
+  '⋆ ˚｡⋆ 🌙 ⋆｡˚ ⋆\n' +
+  '잠들기 전, 당신의 손끝은 어디에 있나요?\n\n' +
+  '자기 전 숏폼(쇼츠·릴스·틱톡) 시청 습관과 알고리즘에 대한 생각을 묻는 설문입니다.\n' +
+  '⏱ 약 3분 소요\n\n' +
+  '✦ 익명으로 진행되며, 이름·이메일 등 개인정보를 수집하지 않습니다.';
+const CONFIRMATION_MESSAGE =
+  '⋆ ˚｡⋆ 🌙 ⋆｡˚ ⋆\n' +
+  '응답해 주셔서 감사합니다!\n' +
+  '오늘 밤은 폰을 조금 일찍 내려놓아 보는 건 어떨까요? 좋은 꿈 꾸세요 ✨';
+const DECO = '✦ ';  // 섹션 제목 앞 별 장식
 const SHEET_NAME = SURVEY_TITLE + ' (응답)';
 const EXPECTED_COUNT = 21;
 
@@ -25,7 +35,7 @@ function createSurvey() {
   applySettings(form);
 
   // ===== Ⅰ. 응답자 기본 정보 (첫 페이지) =====
-  form.addSectionHeaderItem().setTitle('Ⅰ. 응답자 기본 정보');
+  form.addSectionHeaderItem().setTitle(DECO + 'Ⅰ. 응답자 기본 정보');
   choice(form, '1. 당신의 학년은?',
     ['1학년', '2학년', '3학년', '4학년', '대학원생 또는 그 이상']);
   choice(form, '2. 당신의 학과는 어느 계열인가요?',
@@ -125,7 +135,7 @@ function applySettings(form) {
 
 // ----- 도우미 -----
 function section(form, title) {
-  return form.addPageBreakItem().setTitle(title);
+  return form.addPageBreakItem().setTitle(DECO + title);
 }
 
 function choice(form, title, choices) {
